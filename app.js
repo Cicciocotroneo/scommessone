@@ -13,6 +13,8 @@ let currentGiornata = null;
 // Funzione per fare richieste all'API utilizzando JSONP (aggira CORS)
 function fetchAPI(endpoint, action, data = null) {
   return new Promise((resolve, reject) => {
+      // Mostra i dettagli della richiesta in console
+    console.log(`Richiesta API: ${endpoint}/${action}`, data);
     // Crea un nome di callback unico
     const callbackName = 'jsonpCallback_' + Date.now() + Math.floor(Math.random() * 1000);
 
@@ -41,11 +43,15 @@ function fetchAPI(endpoint, action, data = null) {
     script.src = url;
 
     // Gestione errori
-    script.onerror = function() {
+    script.onerror = function(error) {
+      console.error("Errore API:", error);
       delete window[callbackName];
       document.head.removeChild(script);
-      reject(new Error('Errore di connessione al server'));
+      reject(new Error('Errore di connessione al server: ' + (error ? error.message : 'dettagli non disponibili')));
     };
+
+        // Mostra l'URL completo della richiesta
+    console.log("URL completo:", url);
 
     // Timeout per sicurezza (60 secondi)
     const timeoutId = setTimeout(() => {
