@@ -2215,4 +2215,68 @@ function setupEventListeners() {
     
     // Admin: Annulla form edizione albo d'oro
     document.getElementById('cancelEdizioneBtn')?.addEventListener('click', cancelEdizioneForm);
+
+  // Aggiungi questo codice dentro setupEventListeners(), prima della parentesi di chiusura }
+
+// Gestione dei tab per inserimento giocatori
+document.querySelectorAll('[data-input-tab]').forEach(tab => {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('[data-input-tab]').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Nascondi tutti i tab-content
+        document.querySelectorAll('#giocatoriSingoli, #giocatoriMassivi').forEach(content => {
+            content.classList.remove('active');
+            content.style.display = 'none';
+        });
+        
+        // Mostra il tab-content corrispondente
+        const targetId = this.getAttribute('data-input-tab');
+        document.getElementById(targetId).classList.add('active');
+        document.getElementById(targetId).style.display = 'block';
+    });
+});
+
+// Salva una squadra
+async function saveSquadra() {
+    const nome = document.getElementById('nomeSquadra').value.trim();
+    
+    if (!nome) {
+        showAlert('Il nome della squadra è obbligatorio', 'error');
+        return;
+    }
+    
+    // Raccogli giocatori
+    const giocatori = [];
+    document.querySelectorAll('#giocatoriList div span').forEach(span => {
+        giocatori.push(span.textContent);
+    });
+    
+    if (giocatori.length === 0) {
+        showAlert('Inserisci almeno un giocatore', 'error');
+        return;
+    }
+    
+    try {
+        const data = await fetchAPI('squadre', 'save', { 
+            nome,
+            giocatori
+        });
+        
+        if (data.success) {
+            showAlert(`Squadra salvata con successo con ${giocatori.length} giocatori!`, 'success');
+            
+            // Torna alla lista squadre
+            cancelSquadraForm();
+            
+            // Ricarica squadre
+            loadSquadre();
+        } else {
+            showAlert(data.message || 'Errore durante il salvataggio della squadra', 'error');
+        }
+    } catch (error) {
+        console.error('Errore durante il salvataggio della squadra:', error);
+        showAlert('Errore di connessione al server', 'error');
+    }
+}
 }
