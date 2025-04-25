@@ -611,25 +611,38 @@
                     </div>
 
                     <div id="squadraForm" style="display: none;">
-                        <h4>Dettagli Squadra</h4>
-                        <div class="form-group">
-                            <label for="nomeSquadra">Nome Squadra</label>
-                            <input type="text" id="nomeSquadra" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Giocatori</label>
-                            <div id="giocatoriList">
-                                <!-- Lista giocatori dinamica -->
-                            </div>
-                            <div class="form-group" style="display: flex; gap: 1rem;">
-                                <input type="text" id="nomeGiocatore" placeholder="Nome giocatore">
-                                <button type="button" id="addGiocatoreBtn" class="btn-secondary">Aggiungi</button>
-                            </div>
-                        </div>
-                        <div class="admin-controls">
-                            <button type="button" id="saveSquadraBtn">Salva Squadra</button>
-                            <button type="button" id="cancelSquadraBtn" class="btn-danger">Annulla</button>
-                        </div>
+                       <div class="form-group">
+    <label for="nomeSquadra">Nome Squadra</label>
+    <input type="text" id="nomeSquadra" required>
+</div>
+<div class="form-group">
+    <label>Giocatori</label>
+    <div class="tabs">
+        <div class="tab active" data-input-tab="giocatoriSingoli">Inserimento singolo</div>
+        <div class="tab" data-input-tab="giocatoriMassivi">Inserimento massivo</div>
+    </div>
+    
+    <!-- Tab inserimento singolo -->
+    <div id="giocatoriSingoli" class="tab-content active">
+        <div id="giocatoriList">
+            <!-- Lista giocatori dinamica -->
+        </div>
+        <div class="form-group" style="display: flex; gap: 1rem;">
+            <input type="text" id="nomeGiocatore" placeholder="Nome giocatore">
+            <button type="button" id="addGiocatoreBtn" class="btn-secondary">Aggiungi</button>
+        </div>
+    </div>
+    
+    <!-- Tab inserimento massivo -->
+    <div id="giocatoriMassivi" class="tab-content">
+        <p>Inserisci un giocatore per riga.</p>
+        <textarea id="giocatoriText" rows="10" style="width: 100%; margin-top: 10px;" 
+                  placeholder="Mario Rossi&#10;Giuseppe Verdi&#10;Carlo Bianchi"></textarea>
+        <button type="button" id="addGiocatoriMassiviBtn" class="btn-secondary" style="margin-top: 10px;">
+            Aggiungi giocatori
+        </button>
+    </div>
+</div>
                     </div>
                 </div>
 
