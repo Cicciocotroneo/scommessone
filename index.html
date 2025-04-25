@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lo Scommessone</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;      /* Blu scuro */
+            --primary-light: #3b82f6; /* Blu chiaro */
+            --secondary: #10b981;    /* Verde */
+            --background: #f3f4f6;   /* Grigio chiaro */
+            --text: #1f2937;         /* Grigio scuro */
+            --card: #fff;            /* Bianco */
+            --error: #ef4444;        /* Rosso */
+            --success: #22c55e;      /* Verde */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo h1 {
+            margin-left: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 1.5rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        nav ul li a:hover {
+            color: var(--secondary);
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        main {
+            padding: 2rem 0;
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .admin-panel {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .admin-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-section h4 {
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            margin: 1.5rem 0 0.5rem;
+            color: var(--primary-light);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="date"],
+        input[type="number"],
+        input[type="time"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #0d9488;
+        }
+
+        .btn-danger {
+            background-color: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            color: var(--error);
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background-color: #dcfce7;
+            color: var(--success);
+            border: 1px solid #bbf7d0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .match-card {
+            background-color: var(--card);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+
+        .match-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .match-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+        }
+
+        .team-name {
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        .vs {
+            margin: 0 1rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .match-result {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .result-input {
+            width: 50px;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .prediction-options {
+            margin-top: 1rem;
+        }
+
+        .scorer-section {
+            margin-top: 1rem;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            background-color: #f5f5f5;
+            margin-right: 0.5rem;
+        }
+
+        .tab.active {
+            background-color: white;
+            border-color: #ddd;
+            border-bottom-color: white;
+            margin-bottom: -1px;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .player-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .player-chip {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e5e7eb;
+            border-radius: 16px;
+            padding: 0.25rem 0.75rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .player-chip.selected {
+            background-color: var(--primary-light);
+            color: white;
+        }
+        
+        .podium {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        
+        .podium-position {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 1rem;
+        }
+        
+        .podium-position.first {
+            margin-top: 0;
+        }
+        
+        .podium-position.second {
+            margin-top: 30px;
+        }
+        
+        .podium-position.third {
+            margin-top: 60px;
+        }
+        
+        .podium-block {
+            width: 100px;
+            background-color: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .podium-block.first {
+            height: 120px;
+        }
+        
+        .podium-block.second {
+            height: 90px;
+        }
+        
+        .podium-block.third {
+            height: 60px;
+        }
+        
+        .podium-name {
+            margin-top: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .podium-points {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        footer {
+            background-color: var(--primary);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+        
+        .footer-section p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-section a {
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .footer-section a:hover {
+            text-decoration: underline;
+            color: var(--secondary);
+        }
+        
+        .copyright {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            header .container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            nav {
+                width: 100%;
+                margin-top: 1rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+            }
+            
+            nav ul li {
+                margin: 0;
+                margin-bottom: 0.5rem;
+            }
+            
+            .hamburger {
+                display: block;
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+            }
+            
+            nav {
+                display: none;
+            }
+            
+            nav.show {
+                display: block;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+            }
+            
+            .footer-section {
+                margin-bottom: 2rem;
+            }
+            
+            .podium {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .podium-position {
+                margin: 1rem 0;
+            }
+            
+            .podium-position.second,
+            .podium-position.third {
+                margin-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1 id="sitoTitle">Lo Scommessone</h1>
+            </div>
+            <div class="hamburger">☰</div>
+            <nav>
+                <ul>
+                    <li><a onclick="showSection('home')">Home</a></li>
+                    <li><a onclick="showSection('giornate')">Giornate</a></li>
+                    <li><a onclick="showSection('regolamento')">Regolamento</a></li>
+                    <li><a onclick="showSection('classifica')">Classifica</a></li>
+                    <li><a onclick="showSection('alboOro')">Albo d'Oro</a></li>
+                    <li><a onclick="showSection('account')">Il Mio Account</a></li>
+                    <li><a id="loginBtn">Accedi</a></li>
+                    <li><a id="adminBtn">Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Sezione Admin (inizialmente nascosta) -->
+        <div id="adminSection" class="card" style="display: none;">
+            <h2>Pannello di Amministrazione</h2>
+
+            <div id="adminLoginForm">
+                <div class="form-group">
+                    <label for="adminPassword">Password Amministratore</label>
+                    <input type="password" id="adminPassword">
+                </div>
+                <button id="adminLoginBtn">Accedi</button>
+            </div>
+
+            <div id="adminPanel" class="admin-panel" style="display: none;">
+                <div class="tabs">
+                    <div class="tab active" data-admin-tab="impostazioni">Impostazioni</div>
+                    <div class="tab" data-admin-tab="squadre">Squadre e Giocatori</div>
+                    <div class="tab" data-admin-tab="partite">Partite</div>
+                    <div class="tab" data-admin-tab="risultati">Risultati</div>
+                    <div class="tab" data-admin-tab="alboOro">Albo d'Oro</div>
+                </div>
+
+                <!-- Impostazioni -->
+                <div class="admin-section" id="adminImpostazioni">
+                    <h4>Impostazioni Generali</h4>
+                    <div class="form-group">
+                        <label for="nomeLega">Nome della Lega</label>
+                        <input type="text" id="nomeLega" placeholder="Es. Serie A 2025">
+                    </div>
+                    <div class="form-group">
+                        <label for="statoLega">Stato della Lega</label>
+                        <select id="statoLega">
+                            <option value="attiva">Attiva</option>
+                            <option value="conclusa">Conclusa</option>
+                        </select>
+                    </div>
+                    <button id="saveSettingsBtn">Salva Impostazioni</button>
+                </div>
+
+                <!-- Squadre e Giocatori -->
+                <div class="admin-section" id="adminSquadre" style="display: none;">
+                    <h4>Gestione Squadre</h4>
+                    <div class="form-group">
+                        <div class="admin-controls">
+                            <button id="addSquadraBtn" class="btn-secondary">Aggiungi Squadra</button>
+                        </div>
+                        <div id="squadreList" class="grid-container">
+                            <!-- Squadre caricate dinamicamente -->
+                        </div>
+                    </div>
+
+                    <div id="squadraForm" style="display: none;">
+                        <h4>Dettagli Squadra</h4>
+                        <div class="form-group">
+                            <label for="nomeSquadra">Nome Squadra</label>
+                            <input type="text" id="nomeSquadra" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Giocatori</label>
+                            <div id="giocatoriList">
+                                <!-- Lista giocatori dinamica -->
+                            </div>
+                            <div class="form-group" style="display: flex; gap: 1rem;">
+                                <input type="text" id="nomeGiocatore" placeholder="Nome giocatore">
+                                <button type="button" id="addGiocatoreBtn" class="btn-secondary">Aggiungi</button>
+                            </div>
+                        </div>
+                        <div class="admin-controls">
+                            <button type="button" id="saveSquadraBtn">Salva Squadra</button>
+                            <button type="button" id="cancelSquadraBtn" class="btn-danger">Annulla</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Partite -->
+                <div class="admin-section" id="adminPartite" style="display: none;">
+                    <h4>Gestione Partite</h4>
+                    <div class="form-group">
+                        <label for="giornataSelect">Giornata</label>
+                        <div style="display: flex; gap: 1rem;">
+                            <select id="giornataSelect" style="flex-grow: 1;">
+                                <!-- Giornate caricate dinamicamente -->
+                            </select>
+                            <button id="addGiornataBtn" class="btn-secondary">Nuova Giornata</button>
+                        </div>
+                    </div>
+
+                    <div id="giornataForm" style="display: none;">
+                        <h4>Nuova Giornata</h4>
+                        <div class="form-group">
+                            <label for="numeroGiornata">Numero Giornata</label>
+                            <input type="number" id="numeroGiornata" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dataGiornata">Data</label>
+                            <input type="date" id="dataGiornata" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="oraChiusura">Orario Chiusura Pronostici</label>
+                            <input type="time" id="oraChiusura" required>
+                        </div>
+                        <div class="admin-controls">
+                            <button type="button" id="saveGiornataBtn">Salva Giornata</button>
+                            <button type="button" id="cancelGiornataBtn" class="btn-danger">Annulla</button>
+                        </div>
+                    </div>
+
+                    <div id="partiteContainer" style="margin-top: 1.5rem;">
+                        <div class="admin-controls">
+                            <button id="addPartitaBtn" class="btn-secondary">Aggiungi Partita</button>
+                        </div>
+                        <div id="partiteList">
+                            <!-- Partite caricate dinamicamente -->
+                        </div>
+                    </div>
+
+                    <div id="partitaForm" style="display: none;">
+                        <h4>Dettagli Partita</h4>
+                        <div class="form-group">
+                            <label for="squadraCasa">Squadra Casa</label>
+                            <select id="squadraCasa" required>
+                                <option value="">-- Seleziona --</option>
+                                <!-- Squadre caricate dinamicamente -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="squadraTrasferta">Squadra Trasferta</label>
+                            <select id="squadraTrasferta" required>
+                                <option value="">-- Seleziona --</option>
+                                <!-- Squadre caricate dinamicamente -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dataPartita">Data</label>
+                            <input type="date" id="dataPartita" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="oraPartita">Orario</label>
+                            <input type="time" id="oraPartita" required>
+                        </div>
+                        <div class="admin-controls">
+                            <button type="button" id="savePartitaBtn">Salva Partita</button>
+                            <button type="button" id="cancelPartitaBtn" class="btn-danger">Annulla</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risultati -->
+                <div class="admin-section" id="adminRisultati" style="display: none;">
+                    <h4>Inserimento Risultati</h4>
+                    <div class="form-group">
+                        <label for="risultatiGiornataSelect">Giornata</label>
+                        <select id="risultatiGiornataSelect">
+                            <!-- Giornate caricate dinamicamente -->
+                        </select>
+                    </div>
+
+                    <div id="risultatiList">
+                        <!-- Partite da aggiornare caricate dinamicamente -->
+                    </div>
+
+                    <div class="admin-controls" style="margin-top: 1.5rem;">
+                        <button id="saveAllRisultatiBtn">Salva Tutti i Risultati</button>
+                        <button id="calcolaClassificaBtn">Calcola Classifica Giornata</button>
+                    </div>
+                </div>
+
+                <!-- Albo d'Oro -->
+                <div class="admin-section" id="adminAlboOro" style="display: none;">
+                    <h4>Gestione Albo d'Oro</h4>
+                    <div class="form-group">
+                        <div class="admin-controls">
+                            <button id="addEdizioneBtn" class="btn-secondary">Aggiungi Edizione</button>
+                        </div>
+                        <div id="edizioniList">
+                            <!-- Edizioni caricate dinamicamente -->
+                        </div>
+                    </div>
+
+                    <div id="edizioneForm" style="display: none;">
+                        <h4>Dettagli Edizione</h4>
+                        <div class="form-group">
+                            <label for="annoEdizione">Anno/Stagione</label>
+                            <input type="text" id="annoEdizione" placeholder="Es. 2024-2025" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nomeTorneo">Nome Torneo</label>
+                            <input type="text" id="nomeTorneo" placeholder="Es. Serie A" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="primoClassificato">1° Classificato</label>
+                            <input type="text" id="primoClassificato" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="secondoClassificato">2° Classificato</label>
+                            <input type="text" id="secondoClassificato">
+                        </div>
+                        <div class="form-group">
+                            <label for="terzoClassificato">3° Classificato</label>
+                            <input type="text" id="terzoClassificato">
+                        </div>
+                        <div class="admin-controls">
+                            <button type="button" id="saveEdizioneBtn">Salva Edizione</button>
+                            <button type="button" id="cancelEdizioneBtn" class="btn-danger">Annulla</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sezione Login/Registrazione (inizialmente nascosta) -->
+        <div id="authSection" class="card" style="display: none;">
+            <div class="tabs">
+                <div class="tab active" data-tab="login">Accedi</div>
+                <div class="tab" data-tab="register">Registrati</div>
+            </div>
+
+            <div class="tab-content active" id="login">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit">Accedi</button>
+                    <div class="form-links">
+                        <a href="#" id="forgotPasswordLink" onclick="showPasswordResetForm(); return false;">Password dimenticata?</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sezione recupero password -->
+            <div id="passwordResetSection" class="form-container" style="display: none;">
+                <h2>Recupera Password</h2>
+
+                <!-- Fase 1: Richiedi reset -->
+                <div id="requestResetForm">
+                    <p>Inserisci la tua email per ricevere il codice di reset.</p>
+                    <div class="form-group">
+                        <label for="resetEmail">Email</label>
+                        <input type="email" id="resetEmail" required>
+                    </div>
+                    <button type="button" id="requestResetBtn">Richiedi Reset</button>
+                    <div class="form-links">
+                        <a href="#" id="backToLoginLink">Torna al login</a>
+                    </div>
+                </div>
+
+                <!-- Fase 2: Inserisci codice e nuova password -->
+                <div id="confirmResetForm" style="display: none;">
+                    <p>Inserisci il codice di reset e la nuova password.</p>
+                    <div class="form-group">
+                        <label for="resetToken">Codice Reset</label>
+                        <input type="text" id="resetToken" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Nuova Password</label>
+                        <input type="password" id="newPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Conferma Nuova Password</label>
+                        <input type="password" id="confirmNewPassword" required>
+                    </div>
+                    <button type="button" id="confirmResetBtn">Conferma Reset</button>
+                </div>
+            </div>
+
+            <div class="tab-content" id="register">
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="registerName">Nome</label>
+                        <input type="text" id="registerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Conferma Password</label>
+                        <input type="password" id="confirmPassword" required>
+                    </div>
+                    <button type="submit">Registrati</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sezione Home -->
+        <div id="home" class="section active">
+            <div class="card">
+                <h2>Benvenuti a Lo Scommessone!</h2>
+                <p>Metti alla prova le tue capacità di previsione calcistica! Indovina i risultati delle partite, i marcatori, e competi con altri appassionati.</p>
+                <p>Partecipa ora e dimostra di essere il miglior pronosticatore della lega.</p>
+                <div style="margin-top: 1.5rem;">
+                    <button id="partecipaNowBtn" class="btn-secondary">Partecipa Ora</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Prossime Partite</h2>
+                <div id="prossimaGiornata">
+                    <!-- Prossime partite caricate dinamicamente -->
+                    <p>Nessuna partita disponibile al momento.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Classifica Attuale</h2>
+                <div id="homeClassifica">
+                    <!-- Classifica caricata dinamicamente -->
+                    <p>Classifica non ancora disponibile.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sezione Giornate -->
+        <div id="giornate" class="section" style="display: none;">
+            <div class="card">
+                <h2>Giornate del Campionato</h2>
+                
+                <div class="form-group">
+                    <label for="giornataSelectUser">Seleziona Giornata</label>
+                    <select id="giornataSelectUser">
+                        <!-- Giornate caricate dinamicamente -->
+                    </select>
+                </div>
+
+                <div id="partiteGiornata">
+                    <!-- Partite caricate dinamicamente -->
+                    <p>Nessuna partita disponibile per questa giornata.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sezione Regolamento -->
+        <div id="regolamento" class="section" style="display: none;">
+            <div class="card">
+                <h2>Regolamento del Concorso</h2>
+                
+                <h3>1) Pronostico Partite</h3>
+                <p>Per ogni partita, i partecipanti devono prevedere:</p>
+                <ul style="margin-left: 2rem;">
+                    <li>Il segno: 1 (vittoria casa), X (pareggio), 2 (vittoria trasferta)</li>
+                    <li>Il risultato esatto: ad esempio 2-1, 0-0, ecc.</li>
+                    <li>I marcatori: selezionare i giocatori che segneranno</li>
+                </ul>
+
+                <h3>2) Punteggio</h3>
+                <p>Il sistema di punteggio funziona così:</p>
+                <ul style="margin-left: 2rem;">
+                    <li>1 punto per l'esatto segno (1, X, 2)</li>
+                    <li>3 punti per il risultato esatto</li>
+                    <li>5 punti per risultato esatto + marcatori corretti</li>
+                    <li>In caso di 0-0, il punteggio massimo è 3 punti (non si considerano i marcatori)</li>
+                </ul>
+
+                <h3>3) Termine per i pronostici</h3>
+                <p>I pronostici possono essere inviati o modificati fino all'orario limite stabilito per ogni giornata. Superato questo limite, non sarà più possibile modificare i pronostici.</p>
+
+                <h3>4) Classifica</h3>
+                <p>La classifica viene aggiornata dopo ogni giornata di campionato e somma i punti ottenuti da ciascun partecipante. In caso di parità, i partecipanti condivideranno la stessa posizione.</p>
+
+                <h3>5) Vincitore</h3>
+                <p>Il vincitore sarà determinato al termine del campionato in base alla classifica finale. Verranno premiati i primi tre classificati che entreranno nell'Albo d'Oro.</p>
+            </div>
+        </div>
+
+        <!-- Sezione Classifica -->
+        <div id="classifica" class="section" style="display: none;">
+            <div class="card">
+                <h2>Classifica Partecipanti</h2>
+                
+                <div id="classificaInfo">
+                    <p>La classifica sarà disponibile dopo l'inizio del campionato e l'inserimento dei primi risultati.</p>
+                </div>
+
+                <div id="classificaAttualeContainer" style="display: none;">
+                    <div class="form-group">
+                        <label for="classificaGiornataSelect">Filtra per giornata</label>
+                        <select id="classificaGiornataSelect">
+                            <option value="all">Classifica completa</option>
+                            <!-- Giornate caricate dinamicamente -->
+                        </select>
+                    </div>
+
+                    <table id="classificaTable">
+                        <thead>
+                            <tr>
+                                <th>Pos.</th>
+                                <th>Partecipante</th>
+                                <th>Punti</th>
+                                <th>Dettaglio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classificaBody">
+                            <!-- Classifica caricata dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sezione Albo d'Oro -->
+        <div id="alboOro" class="section" style="display: none;">
+            <div class="card">
+                <h2>Albo d'Oro</h2>
+                <div id="alboOroContainer">
+                    <!-- Albo d'oro caricato dinamicamente -->
+                    <p>Non ci sono ancora edizioni registrate nell'Albo d'Oro.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sezione Account -->
+        <div id="account" class="section" style="display: none;">
+            <div class="card">
+                <h2>Il Mio Account</h2>
+                <div id="notLoggedInMessage">
+                    <p>Effettua l'accesso per visualizzare il tuo account e gestire i tuoi pronostici.</p>
+                    <button id="loginFromAccountBtn" style="margin-top: 1rem;">Accedi</button>
+                </div>
+                <div id="accountInfo" style="display: none;">
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <p id="accountName">-</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <p id="accountEmail">-</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Data Registrazione</label>
+                        <p id="accountRegDate">-</p>
+                    </div>
+                    <button id="logoutBtn" style="margin-top: 1rem;">Logout</button>
+                </div>
+            </div>
+
+            <div id="myScommesseSection" class="card" style="display: none;">
+                <h2>I Miei Pronostici</h2>
+                
+                <div class="form-group">
+                    <label for="pronosticiGiornataSelect">Seleziona Giornata</label>
+                    <select id="pronosticiGiornataSelect">
+                        <!-- Giornate caricate dinamicamente -->
+                    </select>
+                </div>
+
+                <div id="pronosticiList">
+                    <!-- Pronostici caricati dinamicamente -->
+                    <p>Nessun pronostico disponibile per questa giornata.</p>
+                </div>
+            </div>
+
+            <div class="card" id="statisticheSection" style="display: none;">
+                <h2>Le Mie Statistiche</h2>
+                <div id="statisticheContainer">
+                    <div class="form-group">
+                        <label>Punteggio Totale</label>
+                        <p id="totalScore">-</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Posizione in Classifica</label>
+                        <p id="currentPosition">-</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Risultati Esatti Indovinati</label>
+                        <p id="exactResults">-</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Segni Indovinati</label>
+                        <p id="correctSigns">-</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Marcatori Indovinati</label>
+                        <p id="correctScorers">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Lo Scommessone</h3>
+                    <p>Un concorso di pronostici calcistici per mettere alla prova le tue capacità.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Link Utili</h3>
+                    <p><a onclick="showSection('home')">Home</a></p>
+                    <p><a onclick="showSection('giornate')">Giornate</a></p>
+                    <p><a onclick="showSection('regolamento')">Regolamento</a></p>
+                    <p><a onclick="showSection('classifica')">Classifica</a></p>
+                    <p><a onclick="showSection('alboOro')">Albo d'Oro</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contatti</h3>
+                    <p>Email: admin@scommessone.it</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Lo Scommessone. Tutti i diritti riservati.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="constants.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
