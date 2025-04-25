@@ -1,7 +1,7 @@
 // app.js - Script Frontend per Lo Scommessone
 
 // Configurazione API (sostituisci con l'URL della tua Web App)
-const API_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyAeUS-GJzUhFn2wMis9jrTZMo4mLDxV1gL7wPTsdlqk4QN_gDOApaa8ouXpnaZ1Vv3_A/exec';
 
 // Token di autenticazione memorizzato localmente
 let token = localStorage.getItem('token');
