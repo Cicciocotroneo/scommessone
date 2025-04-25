@@ -2133,4 +2133,86 @@ function setupEventListeners() {
     });
     
     // Selezione giornata (pronostici)
-    document.getElementById('pronosticiGi
+    document.getElementById('pronosticiGiornataSelect')?.addEventListener('change', function() {
+        loadPronosticiGiornata(this.value);
+    });
+    
+    // Selezione giornata (classifica)
+    document.getElementById('classificaGiornataSelect')?.addEventListener('change', function() {
+        loadClassifica();
+    });
+    
+    // Selezione giornata (admin)
+    document.getElementById('giornataSelect')?.addEventListener('change', function() {
+        const giornataId = this.value;
+        if (giornataId) {
+            loadPartiteAdmin(giornataId);
+        } else {
+            document.getElementById('partiteList').innerHTML = '<p>Seleziona una giornata</p>';
+        }
+    });
+    
+    // Selezione giornata (risultati)
+    document.getElementById('risultatiGiornataSelect')?.addEventListener('change', function() {
+        const giornataId = this.value;
+        if (giornataId) {
+            loadRisultatiAdmin(giornataId);
+        } else {
+            document.getElementById('risultatiList').innerHTML = '<p>Seleziona una giornata</p>';
+        }
+    });
+    
+    // Admin: Salva impostazioni
+    document.getElementById('saveSettingsBtn')?.addEventListener('click', saveAdminSettings);
+    
+    // Admin: Aggiungi squadra
+    document.getElementById('addSquadraBtn')?.addEventListener('click', function() {
+        showSquadraForm();
+    });
+    
+    // Admin: Salva squadra
+    document.getElementById('saveSquadraBtn')?.addEventListener('click', saveSquadra);
+    
+    // Admin: Annulla form squadra
+    document.getElementById('cancelSquadraBtn')?.addEventListener('click', cancelSquadraForm);
+    
+    // Admin: Aggiungi giocatore
+    document.getElementById('addGiocatoreBtn')?.addEventListener('click', addGiocatore);
+    
+    // Admin: Aggiungi giornata
+    document.getElementById('addGiornataBtn')?.addEventListener('click', showGiornataForm);
+    
+    // Admin: Salva giornata
+    document.getElementById('saveGiornataBtn')?.addEventListener('click', saveGiornata);
+    
+    // Admin: Annulla form giornata
+    document.getElementById('cancelGiornataBtn')?.addEventListener('click', cancelGiornataForm);
+    
+    // Admin: Aggiungi partita
+    document.getElementById('addPartitaBtn')?.addEventListener('click', function() {
+        showPartitaForm();
+    });
+    
+    // Admin: Salva partita
+    document.getElementById('savePartitaBtn')?.addEventListener('click', savePartita);
+    
+    // Admin: Annulla form partita
+    document.getElementById('cancelPartitaBtn')?.addEventListener('click', cancelPartitaForm);
+    
+    // Admin: Salva tutti i risultati
+    document.getElementById('saveAllRisultatiBtn')?.addEventListener('click', saveAllRisultati);
+    
+    // Admin: Calcola classifica
+    document.getElementById('calcolaClassificaBtn')?.addEventListener('click', calcolaClassifica);
+    
+    // Admin: Aggiungi edizione albo d'oro
+    document.getElementById('addEdizioneBtn')?.addEventListener('click', function() {
+        showEdizioneForm();
+    });
+    
+    // Admin: Salva edizione albo d'oro
+    document.getElementById('saveEdizioneBtn')?.addEventListener('click', saveEdizione);
+    
+    // Admin: Annulla form edizione albo d'oro
+    document.getElementById('cancelEdizioneBtn')?.addEventListener('click', cancelEdizioneForm);
+}
