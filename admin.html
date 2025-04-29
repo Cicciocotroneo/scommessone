@@ -696,12 +696,92 @@
     </div>
   </div>
 
+  <!-- Modal per creare una nuova squadra -->
+  <div class="modal fade" id="createTeamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Aggiungi squadra</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="createTeamForm">
+            <div class="mb-3">
+              <label for="teamName" class="form-label">Nome squadra</label>
+              <input type="text" class="form-control" id="teamName" required>
+            </div>
+            <div class="mb-3">
+              <label for="teamAbbreviation" class="form-label">Abbreviazione</label>
+              <input type="text" class="form-control" id="teamAbbreviation" maxlength="3" required>
+              <small class="text-muted">Massimo 3 caratteri (es. JUV, INT, ROM)</small>
+            </div>
+            <div class="alert alert-danger" id="createTeamAlert" style="display: none;"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+          <button type="button" class="btn btn-primary" id="submitCreateTeam">Aggiungi squadra</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal per importare calciatori da file -->
+  <div class="modal fade" id="importPlayersModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Importa calciatori da file</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="importPlayersForm">
+            <div class="mb-3">
+              <label for="importTeam" class="form-label">Squadra</label>
+              <select class="form-select" id="importTeam" required>
+                <option value="">Seleziona una squadra</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="importPlayersFileType" class="form-label">Tipo di file</label>
+              <select class="form-select" id="importPlayersFileType" required>
+                <option value="csv">CSV</option>
+                <option value="xlsx">Excel (XLSX)</option>
+              </select>
+            </div>
+            <div class="file-upload">
+              <input type="file" id="importPlayersFile" class="form-control mb-3" accept=".csv,.xlsx" required>
+              <small class="text-muted">
+                Il file deve contenere le seguenti colonne: nome, cognome, ruolo
+              </small>
+            </div>
+            <div class="alert alert-info">
+              <h6>Formato del file:</h6>
+              <p class="mb-2">Il file deve avere una riga di intestazione con le seguenti colonne:</p>
+              <ul>
+                <li><strong>nome</strong>: nome del calciatore</li>
+                <li><strong>cognome</strong>: cognome del calciatore</li>
+                <li><strong>ruolo</strong>: ruolo del calciatore (es. P, D, C, A)</li>
+              </ul>
+            </div>
+            <div class="alert alert-danger" id="importPlayersAlert" style="display: none;"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+          <button type="button" class="btn btn-primary" id="submitImportPlayers">Importa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // Variabili globali
     let currentUser = null;
     let allLeagues = [];
     let allGameweeks = {};
+    let allTeams = [];
     const apiUrl = '<?= ScriptApp.getService().getUrl() ?>';
     
     // Funzione per verificare l'autenticazione dell'utente
@@ -751,6 +831,12 @@
       
       // Carica le statistiche
       loadStats();
+      
+      // Carica utenti
+      loadUsers();
+      
+      // Carica squadre
+      loadTeams();
     }
     
     // Carica tutte le leghe
@@ -1126,6 +1212,30 @@
       }, 1000);
     }
     
+    // Carica gli utenti
+    function loadUsers() {
+      // Questa funzione dovrebbe essere implementata per ottenere la lista degli utenti dal server
+      // Per ora mostreremo solo un messaggio di caricamento
+      document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="7" class="text-center">Nessun utente trovato</td></tr>';
+    }
+    
+    // Carica le squadre
+    function loadTeams() {
+      // Questa funzione dovrebbe essere implementata per ottenere la lista delle squadre dal server
+      // Per ora mostreremo solo un messaggio di caricamento
+      document.getElementById('teamsTableBody').innerHTML = '<tr><td colspan="5" class="text-center">Nessuna squadra trovata</td></tr>';
+      
+      // Popola il selettore delle squadre nel modal di importazione calciatori
+      const teamSelect = document.getElementById('importTeam');
+      if (teamSelect) {
+        teamSelect.innerHTML = '<option value="">Seleziona una squadra</option>';
+        
+        allTeams.forEach(team => {
+          teamSelect.innerHTML += `<option value="${team.id}">${team.nome}</option>`;
+        });
+      }
+    }
+    
     // Carica le partite di una giornata
     function loadGameweekMatches(gameweekId) {
       google.script.run
@@ -1298,7 +1408,7 @@
             const modal = bootstrap.Modal.getInstance(document.getElementById('createGameweekModal'));
             modal.hide();
             
-            // Mostra messaggio di successo
+       // Mostra messaggio di successo
             const alert = document.getElementById('gameweekSuccessAlert');
             alert.textContent = result.message;
             alert.style.display = 'block';
@@ -1449,678 +1559,276 @@
               matchId: matchId,
               risultatoCasa: homeScore,
               risultatoTrasferta: awayScore,
-              nuovo<!DOCTYPE html>
-<html>
-<head>
-  <base target="_top">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <style>
-    body {
-      background-color: #f8f9fa;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              nuovoStato: status
+            })
+          }
+        });
     }
-    .container {
-      max-width: 1200px;
-    }
-    .sidebar {
-      background-color: #fff;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      height: 100%;
-    }
-    .sidebar .nav-link {
-      color: #333;
-      padding: 10px 15px;
-      border-radius: 5px;
-      margin-bottom: 5px;
-      transition: all 0.3s;
-    }
-    .sidebar .nav-link:hover {
-      background-color: #f8f9fa;
-    }
-    .sidebar .nav-link.active {
-      background-color: #0d6efd;
-      color: white;
-    }
-    .sidebar .nav-link i {
-      margin-right: 10px;
-    }
-    .content-area {
-      background-color: #fff;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      min-height: 85vh;
-    }
-    .auth-info {
-      background-color: #f8f9fa;
-      border-radius: 5px;
-      padding: 10px;
-      margin-bottom: 15px;
-    }
-    .user-name {
-      font-weight: bold;
-    }
-    .card {
-      border: none;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-      margin-bottom: 20px;
-    }
-    .card-header {
-      background-color: #0d6efd;
-      color: white;
-      border-radius: 8px 8px 0 0 !important;
-      font-weight: bold;
-    }
-    .btn-primary {
-      background-color: #0d6efd;
-      border-color: #0d6efd;
-    }
-    .btn-outline-primary {
-      color: #0d6efd;
-      border-color: #0d6efd;
-    }
-    .admin-badge {
-      background-color: #dc3545;
-      color: white;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 0.8rem;
-      margin-left: 5px;
-    }
-    table.standings {
-      border-collapse: separate;
-      border-spacing: 0;
-      width: 100%;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    table.standings th {
-      background-color: #0d6efd;
-      color: white;
-      font-weight: normal;
-    }
-    table.standings tr:nth-child(even) {
-      background-color: #f8f9fa;
-    }
-    table.standings td, table.standings th {
-      padding: 10px;
-    }
-    .tab-content {
-      padding: 20px 0;
-    }
-    .alert {
-      margin-bottom: 15px;
-    }
-    .game-date {
-      font-size: 0.9rem;
-      color: #6c757d;
-    }
-    .file-upload {
-      margin: 25px 0;
-      padding: 15px;
-      border: 2px dashed #ddd;
-      border-radius: 5px;
-      text-align: center;
-      background-color: #fafafa;
-    }
-    #content-container {
-      display: none;
-    }
-    #loadingSpinner {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 85vh;
-    }
-  </style>
-</head>
-<body>
-  <div class="container py-4">
-    <div class="row">
-      <!-- Sidebar -->
-      <div class="col-md-3 mb-4">
-        <div class="sidebar">
-          <div class="auth-info mb-4">
-            <div class="user-name" id="userDisplayName">...</div>
-            <div class="user-email small text-muted" id="userEmail">...</div>
-            <span class="admin-badge">Admin</span>
-          </div>
-          
-          <div class="nav flex-column nav-pills" id="dashboard-tab" role="tablist">
-            <a class="nav-link active" id="admin-dashboard-tab" data-bs-toggle="pill" href="#admin-dashboard" role="tab">
-              <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a class="nav-link" id="leagues-tab" data-bs-toggle="pill" href="#leagues" role="tab">
-              <i class="fas fa-trophy"></i> Gestione Leghe
-            </a>
-            <a class="nav-link" id="gameweeks-tab" data-bs-toggle="pill" href="#gameweeks" role="tab">
-              <i class="fas fa-calendar-alt"></i> Giornate e Partite
-            </a>
-            <a class="nav-link" id="teams-tab" data-bs-toggle="pill" href="#teams" role="tab">
-              <i class="fas fa-futbol"></i> Squadre e Calciatori
-            </a>
-            <a class="nav-link" id="users-tab" data-bs-toggle="pill" href="#users" role="tab">
-              <i class="fas fa-users"></i> Utenti
-            </a>
-            <hr>
-            <a class="nav-link text-danger" href="#" id="logoutBtn">
-              <i class="fas fa-sign-out-alt"></i> Esci
-            </a>
-          </div>
-        </div>
-      </div>
+    
+    // Importa partite da file
+    function importMatches() {
+      const legaId = document.getElementById('importLeague').value;
+      const fileType = document.getElementById('importFileType').value;
+      const fileInput = document.getElementById('importFile');
       
-      <!-- Content Area -->
-      <div class="col-md-9">
-        <div id="loadingSpinner">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Caricamento...</span>
-          </div>
-        </div>
+      if (!legaId) {
+        document.getElementById('importMatchesAlert').textContent = 'Seleziona una lega';
+        document.getElementById('importMatchesAlert').style.display = 'block';
+        return;
+      }
+      
+      if (!fileInput.files || fileInput.files.length === 0) {
+        document.getElementById('importMatchesAlert').textContent = 'Seleziona un file';
+        document.getElementById('importMatchesAlert').style.display = 'block';
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const fileContent = e.target.result;
         
-        <div id="content-container" class="content-area">
-          <div class="tab-content">
-            <!-- Dashboard Tab -->
-            <div class="tab-pane fade show active" id="admin-dashboard" role="tabpanel">
-              <h2 class="mb-4">Pannello Amministratore</h2>
+        google.script.run
+          .withSuccessHandler(function(result) {
+            if (result.success) {
+              // Chiudi il modal
+              const modal = bootstrap.Modal.getInstance(document.getElementById('importMatchesModal'));
+              modal.hide();
               
-              <div class="alert alert-info">
-                <h5 class="alert-heading">Benvenuto nel pannello di amministrazione!</h5>
-                <p>Da qui puoi gestire tutti gli aspetti del sistema torneo previsioni.</p>
-              </div>
+              // Mostra messaggio di successo
+              const alert = document.getElementById('gameweekSuccessAlert');
+              alert.textContent = result.message;
+              alert.style.display = 'block';
               
-              <div class="row">
-                <div class="col-md-4 mb-4">
-                  <div class="card text-center h-100">
-                    <div class="card-body">
-                      <i class="fas fa-users fa-3x text-primary mb-3"></i>
-                      <h4 id="totalUsers">0</h4>
-                      <p class="text-muted">Utenti registrati</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                  <div class="card text-center h-100">
-                    <div class="card-body">
-                      <i class="fas fa-trophy fa-3x text-primary mb-3"></i>
-                      <h4 id="totalLeagues">0</h4>
-                      <p class="text-muted">Leghe attive</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                  <div class="card text-center h-100">
-                    <div class="card-body">
-                      <i class="fas fa-futbol fa-3x text-primary mb-3"></i>
-                      <h4 id="totalMatches">0</h4>
-                      <p class="text-muted">Partite registrate</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              // Nascondi il messaggio dopo 3 secondi
+              setTimeout(() => {
+                alert.style.display = 'none';
+              }, 3000);
               
-              <div class="row">
-                <div class="col-md-6 mb-4">
-                  <div class="card">
-                    <div class="card-header">
-                      <i class="fas fa-user-plus me-2"></i> Richieste di iscrizione
-                    </div>
-                    <div class="card-body">
-                      <div id="pendingRequestsContainer">
-                        <p class="text-center text-muted">Caricamento richieste...</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                  <div class="card">
-                    <div class="card-header">
-                      <i class="fas fa-tasks me-2"></i> Azioni rapide
-                    </div>
-                    <div class="card-body">
-                      <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="pill" data-bs-target="#leagues">
-                          <i class="fas fa-plus-circle me-2"></i> Crea nuova lega
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="pill" data-bs-target="#gameweeks">
-                          <i class="fas fa-calendar-plus me-2"></i> Aggiungi nuova giornata
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="pill" data-bs-target="#gameweeks">
-                          <i class="fas fa-upload me-2"></i> Importa partite da file
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              // Aggiorna la lista delle leghe per includere le nuove giornate
+              loadAllLeagues();
+            } else {
+              document.getElementById('importMatchesAlert').textContent = result.message;
+              document.getElementById('importMatchesAlert').style.display = 'block';
+            }
+          })
+          .doPost({
+            postData: {
+              contents: JSON.stringify({
+                action: 'importGameweeksAndMatches',
+                legaId: legaId,
+                fileContent: fileContent,
+                fileType: fileType
+              })
+            }
+          });
+      };
+      
+      if (fileType === 'csv') {
+        reader.readAsText(file);
+      } else {
+        reader.readAsBinaryString(file);
+      }
+    }
+    
+    // Carica le giornate di una lega
+    function loadLeagueGameweeks(leagueId) {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            const gameweeks = result.data;
+            allGameweeks[leagueId] = gameweeks;
             
-            <!-- Leagues Tab -->
-            <div class="tab-pane fade" id="leagues" role="tabpanel">
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Gestione Leghe</h2>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createLeagueModal">
-                  <i class="fas fa-plus me-1"></i> Crea nuova lega
-                </button>
-              </div>
-              
-              <div class="alert alert-success" id="leagueSuccessAlert" style="display: none;"></div>
-              
-              <div class="card mb-4">
-                <div class="card-header">
-                  Leghe esistenti
-                </div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Nome</th>
-                          <th>Descrizione</th>
-                          <th>Data creazione</th>
-                          <th>Admin</th>
-                          <th>Azioni</th>
-                        </tr>
-                      </thead>
-                      <tbody id="leaguesTableBody">
-                        <tr>
-                          <td colspan="6" class="text-center">Caricamento leghe...</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-              
-              <div id="leagueMembersContainer" style="display: none;">
-                <h3 class="mb-3">Membri della lega: <span id="currentLeagueName"></span></h3>
-                <div class="table-responsive">
-                  <table class="table table-striped table-hover">
-                    <thead>
-                      <tr>
-                        <th>Nome</th>
-                        <th>Cognome</th>
-                        <th>Email</th>
-                        <th>Data iscrizione</th>
-                      </tr>
-                    </thead>
-                    <tbody id="leagueMembersTableBody">
-                      <tr>
-                        <td colspan="4" class="text-center">Caricamento membri...</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              
-              <div id="pendingRequestsSection" style="display: none;">
-                <h3 class="mb-3">Richieste di iscrizione in attesa</h3>
-                <div id="pendingMembersContainer">
-                  <p class="text-center text-muted">Nessuna richiesta in attesa</p>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Gameweeks Tab -->
-            <div class="tab-pane fade" id="gameweeks" role="tabpanel">
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Giornate e Partite</h2>
-                <div>
-                  <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createGameweekModal">
-                    <i class="fas fa-plus me-1"></i> Crea giornata
-                  </button>
-                  <button class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#importMatchesModal">
-                    <i class="fas fa-upload me-1"></i> Importa partite
-                  </button>
-                  <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createMatchModal">
-                    <i class="fas fa-futbol me-1"></i> Aggiungi partita
-                  </button>
-                </div>
-              </div>
-              
-              <div class="alert alert-success" id="gameweekSuccessAlert" style="display: none;"></div>
-              
-              <div class="card mb-4">
-                <div class="card-header">
-                  Seleziona lega e giornata
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-md-6 mb-3">
-                      <label for="admin-league-select" class="form-label">Lega</label>
-                      <select class="form-select" id="admin-league-select">
-                        <option value="">Seleziona una lega</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label for="admin-gameweek-select" class="form-label">Giornata</label>
-                      <select class="form-select" id="admin-gameweek-select" disabled>
-                        <option value="">Seleziona prima una lega</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div id="matchesContainer" style="display: none;">
-                <h3 class="mb-3">Partite della giornata</h3>
-                <div class="table-responsive">
-                  <table class="table table-striped table-hover">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Squadra casa</th>
-                        <th>Squadra trasferta</th>
-                        <th>Data e ora</th>
-                        <th>Risultato</th>
-                        <th>Stato</th>
-                        <th>Azioni</th>
-                      </tr>
-                    </thead>
-                    <tbody id="matchesTableBody">
-                      <tr>
-                        <td colspan="7" class="text-center">Nessuna partita trovata</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Teams Tab -->
-            <div class="tab-pane fade" id="teams" role="tabpanel">
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Squadre e Calciatori</h2>
-                <div>
-                  <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createTeamModal">
-                    <i class="fas fa-plus me-1"></i> Aggiungi squadra
-                  </button>
-                  <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importPlayersModal">
-                    <i class="fas fa-upload me-1"></i> Importa calciatori
-                  </button>
-                </div>
-              </div>
-              
-              <div class="alert alert-success" id="teamSuccessAlert" style="display: none;"></div>
-              
-              <div class="card mb-4">
-                <div class="card-header">
-                  Squadre registrate
-                </div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Nome</th>
-                          <th>Abbreviazione</th>
-                          <th>Calciatori</th>
-                          <th>Azioni</th>
-                        </tr>
-                      </thead>
-                      <tbody id="teamsTableBody">
-                        <tr>
-                          <td colspan="5" class="text-center">Caricamento squadre...</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-              
-              <div id="playersContainer" style="display: none;">
-                <h3 class="mb-3">Calciatori di: <span id="currentTeamName"></span></h3>
-                <div class="table-responsive">
-                  <table class="table table-striped table-hover">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Nome</th>
-                        <th>Cognome</th>
-                        <th>Ruolo</th>
-                        <th>Azioni</th>
-                      </tr>
-                    </thead>
-                    <tbody id="playersTableBody">
-                      <tr>
-                        <td colspan="5" class="text-center">Caricamento calciatori...</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Users Tab -->
-            <div class="tab-pane fade" id="users" role="tabpanel">
-              <h2 class="mb-4">Gestione Utenti</h2>
-              
-              <div class="alert alert-success" id="userSuccessAlert" style="display: none;"></div>
-              
-              <div class="card">
-                <div class="card-header">
-                  Utenti registrati
-                </div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Nome</th>
-                          <th>Cognome</th>
-                          <th>Email</th>
-                          <th>Data registrazione</th>
-                          <th>Ruolo</th>
-                          <th>Azioni</th>
-                        </tr>
-                      </thead>
-                      <tbody id="usersTableBody">
-                        <tr>
-                          <td colspan="7" class="text-center">Caricamento utenti...</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Modal per creare una nuova lega -->
-  <div class="modal fade" id="createLeagueModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">Crea nuova lega</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="createLeagueForm">
-            <div class="mb-3">
-              <label for="leagueName" class="form-label">Nome lega</label>
-              <input type="text" class="form-control" id="leagueName" required>
-            </div>
-            <div class="mb-3">
-              <label for="leagueDescription" class="form-label">Descrizione</label>
-              <textarea class="form-control" id="leagueDescription" rows="3"></textarea>
-            </div>
-            <div class="alert alert-danger" id="createLeagueAlert" style="display: none;"></div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-          <button type="button" class="btn btn-primary" id="submitCreateLeague">Crea lega</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Modal per creare una nuova giornata -->
-  <div class="modal fade" id="createGameweekModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">Crea nuova giornata</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="createGameweekForm">
-            <div class="mb-3">
-              <label for="gameweekLeague" class="form-label">Lega</label>
-              <select class="form-select" id="gameweekLeague" required>
-                <option value="">Seleziona una lega</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="gameweekNumber" class="form-label">Numero giornata</label>
-              <input type="number" class="form-control" id="gameweekNumber" min="1" required>
-            </div>
-            <div class="mb-3">
-              <label for="gameweekStartDate" class="form-label">Data inizio</label>
-              <input type="date" class="form-control" id="gameweekStartDate" required>
-            </div>
-            <div class="mb-3">
-              <label for="gameweekEndDate" class="form-label">Data fine</label>
-              <input type="date" class="form-control" id="gameweekEndDate" required>
-            </div>
-            <div class="alert alert-danger" id="createGameweekAlert" style="display: none;"></div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-          <button type="button" class="btn btn-primary" id="submitCreateGameweek">Crea giornata</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Modal per creare una nuova partita -->
-  <div class="modal fade" id="createMatchModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">Aggiungi partita</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="createMatchForm">
-            <div class="mb-3">
-              <label for="matchGameweek" class="form-label">Giornata</label>
-              <select class="form-select" id="matchGameweek" required>
-                <option value="">Seleziona una giornata</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="matchHomeTeam" class="form-label">Squadra casa</label>
-              <input type="text" class="form-control" id="matchHomeTeam" required>
-            </div>
-            <div class="mb-3">
-              <label for="matchAwayTeam" class="form-label">Squadra trasferta</label>
-              <input type="text" class="form-control" id="matchAwayTeam" required>
-            </div>
-            <div class="mb-3">
-              <label for="matchDateTime" class="form-label">Data e ora</label>
-              <input type="datetime-local" class="form-control" id="matchDateTime" required>
-            </div>
-            <div class="alert alert-danger" id="createMatchAlert" style="display: none;"></div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-          <button type="button" class="btn btn-primary" id="submitCreateMatch">Aggiungi partita</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Modal per aggiornare il risultato di una partita -->
-  <div class="modal fade" id="updateMatchResultModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">Aggiorna risultato</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="updateMatchResultForm">
-            <input type="hidden" id="updateMatchId">
-            <div class="mb-3">
-              <label id="updateMatchTeams" class="form-label fw-bold">Squadra A vs Squadra B</label>
-            </div>
-            <div class="mb-3">
-              <label for="updateMatchStatus" class="form-label">Stato</label>
-              <select class="form-select" id="updateMatchStatus" required>
-                <option value="non iniziata">Non iniziata</option>
-                <option value="in corso">In corso</option>
-                <option value="completata">Completata</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Risultato</label>
-              <div class="row">
-                <div class="col-5">
-                  <input type="number" class="form-control" id="updateHomeScore" min="0" required>
-                </div>
-                <div class="col-2 text-center pt-2">
-                  <span class="fw-bold">-</span>
-                </div>
-                <div class="col-5">
-                  <input type="number" class="form-control" id="updateAwayScore" min="0" required>
-                </div>
-              </div>
-            </div>
-            <div class="mb-3" id="scorersGroup">
-              <label for="updateMatchScorers" class="form-label">Marcatori</label>
-              <small class="text-muted d-block mb-2">Inserisci i nomi dei marcatori separati da virgola</small>
-              <textarea class="form-control" id="updateMatchScorers" rows="3"></textarea>
-              <small class="text-muted">Necessario solo se la partita è completata e non è 0-0</small>
-            </div>
-            <div class="alert alert-danger" id="updateMatchAlert" style="display: none;"></div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-          <button type="button" class="btn btn-primary" id="submitUpdateMatch">Aggiorna</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Modal per importare partite da file -->
-  <div class="modal fade" id="importMatchesModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">Importa partite da file</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="importMatchesForm">
-            <div class="mb-3">
-              <label for="importLeague" class="form-label">Lega</label>
-              <select class="form-select" id="importLeague" required>
-                <option value="">Seleziona una lega</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="importFileType" class="form-label">Tipo di file</label>
-              <select class="form-select" id="importFileType" required>
-                <option value="csv">CSV</option>
-                <option value="xlsx">Excel (XLSX)</option>
-              </select>
-            </div>
-            <div class="file-upload">
-              <input type="file" id="importFile" class="form-control mb-3" accept=".csv,.xlsx" required>
-              <small class="text-muted">
-                Il file deve contenere le seguenti colonne: giornata, squadra_casa, squa
+            // Popola il selettore delle giornate
+            populateGameweekSelect(leagueId);
+          }
+        })
+        .doPost({
+          postData: {
+            contents: JSON.stringify({
+              action: 'getLeagueGameweeks',
+              legaId: leagueId
+            })
+          }
+        });
+    }
+    
+    // Popola il selettore delle giornate
+    function populateGameweekSelect(leagueId) {
+      const adminGameweekSelect = document.getElementById('admin-gameweek-select');
+      const matchGameweekSelect = document.getElementById('matchGameweek');
+      const gameweeks = allGameweeks[leagueId] || [];
+      
+      // Aggiorna il selettore principale delle giornate
+      adminGameweekSelect.innerHTML = '<option value="">Seleziona una giornata</option>';
+      
+      if (gameweeks.length === 0) {
+        adminGameweekSelect.disabled = true;
+        
+        // Nascondi il contenitore delle partite
+        document.getElementById('matchesContainer').style.display = 'none';
+        return;
+      }
+      
+      adminGameweekSelect.disabled = false;
+      
+      gameweeks.forEach(gameweek => {
+        // Formatta le date
+        const dataInizio = new Date(gameweek.dataInizio).toLocaleDateString();
+        const dataFine = new Date(gameweek.dataFine).toLocaleDateString();
+        
+        adminGameweekSelect.innerHTML += `
+          <option value="${gameweek.id}">Giornata ${gameweek.numero} (${dataInizio} - ${dataFine})</option>
+        `;
+      });
+      
+      // Aggiorna anche il selettore nel modal di creazione partita
+      if (matchGameweekSelect) {
+        matchGameweekSelect.innerHTML = '<option value="">Seleziona una giornata</option>';
+        
+        gameweeks.forEach(gameweek => {
+          matchGameweekSelect.innerHTML += `
+            <option value="${gameweek.id}">Giornata ${gameweek.numero}</option>
+          `;
+        });
+      }
+    }
+    
+    // Crea una nuova squadra
+    function createTeam() {
+      const teamName = document.getElementById('teamName').value;
+      const teamAbbreviation = document.getElementById('teamAbbreviation').value;
+      
+      if (!teamName || !teamAbbreviation) {
+        document.getElementById('createTeamAlert').textContent = 'Compila tutti i campi';
+        document.getElementById('createTeamAlert').style.display = 'block';
+        return;
+      }
+      
+      // Questa funzione dovrebbe chiamare l'API per creare una nuova squadra
+      // Per ora mostriamo solo un messaggio di successo
+      
+      // Chiudi il modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('createTeamModal'));
+      modal.hide();
+      
+      // Mostra messaggio di successo
+      const alert = document.getElementById('teamSuccessAlert');
+      alert.textContent = 'Squadra creata con successo';
+      alert.style.display = 'block';
+      
+      // Nascondi il messaggio dopo 3 secondi
+      setTimeout(() => {
+        alert.style.display = 'none';
+      }, 3000);
+      
+      // Ricarica le squadre
+      loadTeams();
+    }
+    
+    // Importa calciatori da file
+    function importPlayers() {
+      const teamId = document.getElementById('importTeam').value;
+      const fileType = document.getElementById('importPlayersFileType').value;
+      const fileInput = document.getElementById('importPlayersFile');
+      
+      if (!teamId) {
+        document.getElementById('importPlayersAlert').textContent = 'Seleziona una squadra';
+        document.getElementById('importPlayersAlert').style.display = 'block';
+        return;
+      }
+      
+      if (!fileInput.files || fileInput.files.length === 0) {
+        document.getElementById('importPlayersAlert').textContent = 'Seleziona un file';
+        document.getElementById('importPlayersAlert').style.display = 'block';
+        return;
+      }
+      
+      // Questa funzione dovrebbe chiamare l'API per importare i calciatori
+      // Per ora mostriamo solo un messaggio di successo
+      
+      // Chiudi il modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('importPlayersModal'));
+      modal.hide();
+      
+      // Mostra messaggio di successo
+      const alert = document.getElementById('teamSuccessAlert');
+      alert.textContent = 'Calciatori importati con successo';
+      alert.style.display = 'block';
+      
+      // Nascondi il messaggio dopo 3 secondi
+      setTimeout(() => {
+        alert.style.display = 'none';
+      }, 3000);
+    }
+    
+    // Gestione eventi al caricamento della pagina
+    document.addEventListener('DOMContentLoaded', function() {
+      // Controlla l'autenticazione
+      checkAuth();
+      
+      // Gestione del pulsante di logout
+      document.getElementById('logoutBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Rimuovi i dati di sessione
+        localStorage.removeItem('torneo_token');
+        localStorage.removeItem('torneo_user');
+        
+        // Reindirizza alla pagina di login
+        window.location.href = apiUrl;
+      });
+      
+      // Gestione della selezione della lega
+      document.getElementById('admin-league-select').addEventListener('change', function() {
+        const leagueId = this.value;
+        
+        if (leagueId) {
+          loadLeagueGameweeks(leagueId);
+        } else {
+          document.getElementById('admin-gameweek-select').innerHTML = '<option value="">Seleziona prima una lega</option>';
+          document.getElementById('admin-gameweek-select').disabled = true;
+          document.getElementById('matchesContainer').style.display = 'none';
+        }
+      });
+      
+      // Gestione della selezione della giornata
+      document.getElementById('admin-gameweek-select').addEventListener('change', function() {
+        const gameweekId = this.value;
+        
+        if (gameweekId) {
+          loadGameweekMatches(gameweekId);
+        } else {
+          document.getElementById('matchesContainer').style.display = 'none';
+        }
+      });
+      
+      // Gestione del form di creazione lega
+      document.getElementById('submitCreateLeague').addEventListener('click', createLeague);
+      
+      // Gestione del form di creazione giornata
+      document.getElementById('submitCreateGameweek').addEventListener('click', createGameweek);
+      
+      // Gestione del form di creazione partita
+      document.getElementById('submitCreateMatch').addEventListener('click', createMatch);
+      
+      // Gestione del form di aggiornamento risultato
+      document.getElementById('submitUpdateMatch').addEventListener('click', updateMatchResult);
+      
+      // Gestione del form di importazione partite
+      document.getElementById('submitImportMatches').addEventListener('click', importMatches);
+      
+      // Gestione del form di creazione squadra
+      if (document.getElementById('submitCreateTeam')) {
+        document.getElementById('submitCreateTeam').addEventListener('click', createTeam);
+      }
+      
+      // Gestione del form di importazione calciatori
+      if (document.getElementById('submitImportPlayers')) {
+        document.getElementById('submitImportPlayers').addEventListener('click', importPlayers);
+      }
+    });
+  </script>
+</body>
+</html>
