@@ -1,0 +1,143 @@
+body {
+    background-color: #f8f9fa;
+    padding: 20px 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.auth-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.content-container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.match-card {
+    margin-bottom: 15px;
+    transition: transform 0.2s;
+}
+
+.match-card:hover {
+    transform: translateY(-3px);
+}
+
+.team-logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    margin-right: 8px;
+}
+
+.standing-table th, .standing-table td {
+    text-align: center;
+}
+
+.standing-table th:first-child, .standing-table td:first-child {
+    text-align: left;
+}
+
+.prediction-badge {
+    font-weight: bold;
+}
+
+.prediction-correct {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.prediction-incorrect {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.prediction-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.league-card {
+    margin-bottom: 15px;
+    transition: all 0.2s;
+}
+
+.league-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.player-item {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.player-position {
+    font-weight: bold;
+    width: 30px;
+    display: inline-block;
+    text-align: center;
+}
+
+.position-P {
+    color: #6610f2;
+}
+
+.position-D {
+    color: #20c997;
+}
+
+.position-C {
+    color: #fd7e14;
+}
+
+.position-A {
+    color: #dc3545;
+}
+
+.match-day-header {
+    background-color: #e9ecef;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin: 20px 0 15px;
+}
+
+.scorers-container {
+    margin-bottom: 10px;
+}
+
+#goal-scorers-container {
+    margin-top: 15px;
+}
+
+.remove-scorer-btn {
+    cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .auth-container {
+        margin: 20px auto;
+        padding: 20px;
+    }
+    
+    .content-container {
+        padding: 15px;
+    }
+}
