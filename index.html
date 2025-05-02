@@ -1,345 +1,699 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-  <base target="_top">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <style>
-    body {
-      background-color: #f8f9fa;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .container {
-      max-width: 1200px;
-    }
-    .hero-section {
-      background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-      color: white;
-      border-radius: 10px;
-      padding: 3rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .card {
-      transition: transform 0.3s;
-      margin-bottom: 1.5rem;
-      border: none;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
-    .card-header {
-      background-color: #0d6efd;
-      color: white;
-      border-radius: 8px 8px 0 0 !important;
-      font-weight: bold;
-    }
-    .btn-primary {
-      background-color: #0d6efd;
-      border-color: #0d6efd;
-    }
-    .btn-primary:hover {
-      background-color: #0b5ed7;
-      border-color: #0a58ca;
-    }
-    .feature-icon {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #0d6efd;
-    }
-    #loginForm, #registerForm {
-      padding: 2rem;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-    .nav-tabs .nav-link {
-      border: none;
-      color: #495057;
-      font-weight: 500;
-    }
-    .nav-tabs .nav-link.active {
-      color: #0d6efd;
-      background-color: transparent;
-      border-bottom: 3px solid #0d6efd;
-    }
-    .alert {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantapronostici</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container py-5">
-    <!-- Hero Section -->
-    <div class="hero-section text-center">
-      <h1 class="display-4 fw-bold">Sistema Torneo Previsioni Calcio</h1>
-      <p class="lead">Metti alla prova le tue abilità di pronostico e sfida i tuoi amici!</p>
-    </div>
-    
-    <!-- Features Section -->
-    <div class="row mb-5">
-      <div class="col-md-4 text-center">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="feature-icon">
-              <i class="fas fa-futbol"></i>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-futbol me-2"></i>
+                Fantapronostici
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="nav-home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="nav-leghe">Le mie leghe</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="nav-previsioni">Previsioni</a>
+                    </li>
+                    <li class="nav-item" id="admin-menu" style="display: none;">
+                        <a class="nav-link" href="#" id="nav-admin">Amministrazione</a>
+                    </li>
+                    <li class="nav-item" id="logged-in" style="display: none;">
+                        <a class="nav-link" href="#" id="nav-logout">Logout</a>
+                    </li>
+                    <li class="nav-item" id="logged-out">
+                        <a class="nav-link" href="#" id="nav-login">Accedi</a>
+                    </li>
+                </ul>
             </div>
-            <h3>Previsioni Partite</h3>
-            <p>Prevedi risultati esatti, segni e marcatori per guadagnare punti e salire in classifica.</p>
-          </div>
         </div>
-      </div>
-      <div class="col-md-4 text-center">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="feature-icon">
-              <i class="fas fa-trophy"></i>
+    </nav>
+
+    <!-- Contenitore principale -->
+    <div class="container mt-4">
+        <!-- Sezione Home -->
+        <div id="home-section" class="section active">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <h2 class="card-title">Benvenuto su Fantapronostici!</h2>
+                            <p class="card-text">La piattaforma per i pronostici calcistici con gli amici.</p>
+                            <p>Iscriviti a una lega e inizia a fare i tuoi pronostici!</p>
+                            <div id="home-cta">
+                                <a href="#" class="btn btn-primary" id="home-register-btn">Registrati</a>
+                                <a href="#" class="btn btn-outline-primary" id="home-login-btn">Accedi</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h3 class="card-title">Come funziona</h3>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center mb-3">
+                                        <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                                        <h5>1. Registrati</h5>
+                                        <p class="small">Crea il tuo account e unisciti a una lega</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center mb-3">
+                                        <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                                        <h5>2. Fai i tuoi pronostici</h5>
+                                        <p class="small">Prevedi il risultato e i marcatori delle partite</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center mb-3">
+                                        <i class="fas fa-trophy fa-3x text-primary mb-3"></i>
+                                        <h5>3. Guadagna punti</h5>
+                                        <p class="small">Accumula punti e scala la classifica della tua lega</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">Prossime partite</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="upcoming-matches">
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Caricamento...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h3>Leghe Multiple</h3>
-            <p>Partecipa a più leghe contemporaneamente per sfidare diversi gruppi di amici o colleghi.</p>
-          </div>
         </div>
-      </div>
-      <div class="col-md-4 text-center">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="feature-icon">
-              <i class="fas fa-chart-line"></i>
+
+        <!-- Sezione Login -->
+        <div id="login-section" class="section">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="card-title mb-0">Accedi</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="login-form">
+                                <div class="mb-3">
+                                    <label for="login-email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="login-email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="login-password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="login-password" required>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">Accedi</button>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <p>Non hai un account? <a href="#" id="goto-register">Registrati</a></p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h3>Classifiche in Tempo Reale</h3>
-            <p>Segui l'andamento dei tuoi pronostici e la tua posizione nelle classifiche settimanali e generali.</p>
-          </div>
         </div>
-      </div>
-    </div>
-    
-    <!-- Auth Section -->
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header text-center py-3">
-            <ul class="nav nav-tabs card-header-tabs justify-content-center" id="authTabs" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">Accedi</button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab" aria-controls="register" aria-selected="false">Registrati</button>
-              </li>
+
+        <!-- Sezione Registrazione -->
+        <div id="register-section" class="section">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="card-title mb-0">Registrati</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="register-form">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="register-nome" class="form-label">Nome</label>
+                                        <input type="text" class="form-control" id="register-nome" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="register-cognome" class="form-label">Cognome</label>
+                                        <input type="text" class="form-control" id="register-cognome" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="register-email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="register-email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="register-password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="register-password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="register-confirm-password" class="form-label">Conferma Password</label>
+                                    <input type="password" class="form-control" id="register-confirm-password" required>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">Registrati</button>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <p>Hai già un account? <a href="#" id="goto-login">Accedi</a></p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sezione Le mie leghe -->
+        <div id="leghe-section" class="section">
+            <div class="row mb-4">
+                <div class="col">
+                    <h2>Le mie leghe</h2>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary" id="join-league-btn">
+                        <i class="fas fa-plus me-1"></i> Iscriviti a una lega
+                    </button>
+                </div>
+            </div>
+
+            <div id="my-leagues-list" class="row">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Caricamento...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sezione Previsioni -->
+        <div id="previsioni-section" class="section">
+            <div class="row mb-4">
+                <div class="col">
+                    <h2>Previsioni</h2>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">Seleziona lega e giornata</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="pred-league-select" class="form-label">Lega</label>
+                                <select class="form-select" id="pred-league-select"></select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="pred-round-select" class="form-label">Giornata</label>
+                                <select class="form-select" id="pred-round-select"></select>
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-primary" id="load-matches-btn">Carica partite</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div id="predictions-container">
+                        <div class="alert alert-info">
+                            Seleziona una lega e una giornata per vedere le partite disponibili
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sezione Amministrazione -->
+        <div id="admin-section" class="section">
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <a class="nav-link active" id="tab-manage-leagues" href="#">Gestione Leghe</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-manage-rounds" href="#">Gestione Giornate</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-manage-teams" href="#">Gestione Squadre</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-manage-results" href="#">Gestione Risultati</a>
+                </li>
             </ul>
-          </div>
-          <div class="card-body">
-            <div class="tab-content" id="authTabsContent">
-              <!-- Login Form -->
-              <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
-                <div class="alert alert-danger" id="loginAlert" role="alert"></div>
-                <form id="loginForm">
-                  <div class="mb-3">
-                    <label for="loginEmail" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="loginEmail" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="loginPassword" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="loginPassword" required>
-                  </div>
-                  <button type="submit" class="btn btn-primary w-100">Accedi</button>
-                </form>
-              </div>
-              
-              <!-- Register Form -->
-              <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
-                <div class="alert alert-danger" id="registerAlert" role="alert"></div>
-                <form id="registerForm">
-                  <div class="row">
-                    <div class="col-md-6 mb-3">
-                      <label for="registerNome" class="form-label">Nome</label>
-                      <input type="text" class="form-control" id="registerNome" required>
+
+            <!-- Gestione Leghe -->
+            <div id="manage-leagues-section" class="admin-tab active">
+                <div class="row mb-4">
+                    <div class="col">
+                        <h3>Gestione Leghe</h3>
                     </div>
-                    <div class="col-md-6 mb-3">
-                      <label for="registerCognome" class="form-label">Cognome</label>
-                      <input type="text" class="form-control" id="registerCognome" required>
+                    <div class="col-auto">
+                        <button class="btn btn-primary" id="add-league-btn">
+                            <i class="fas fa-plus me-1"></i> Nuova Lega
+                        </button>
                     </div>
-                  </div>
-                  <div class="mb-3">
-                    <label for="registerEmail" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="registerEmail" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="registerPassword" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="registerPassword" required minlength="6">
-                  </div>
-                  <div class="mb-3">
-                    <label for="registerPasswordConfirm" class="form-label">Conferma Password</label>
-                    <input type="password" class="form-control" id="registerPasswordConfirm" required minlength="6">
-                  </div>
-                  <button type="submit" class="btn btn-primary w-100">Registrati</button>
-                </form>
-              </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div id="leagues-table">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Caricamento...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">Richieste in attesa</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="pending-requests">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Caricamento...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
+
+            <!-- Gestione Giornate -->
+            <div id="manage-rounds-section" class="admin-tab">
+                <div class="row mb-4">
+                    <div class="col">
+                        <h3>Gestione Giornate</h3>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-primary" id="add-round-btn">
+                            <i class="fas fa-plus me-1"></i> Nuova Giornata
+                        </button>
+                        <button class="btn btn-success" id="import-round-btn">
+                            <i class="fas fa-file-import me-1"></i> Importa da CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div id="rounds-table">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Caricamento...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestione Squadre -->
+            <div id="manage-teams-section" class="admin-tab">
+                <div class="row mb-4">
+                    <div class="col">
+                        <h3>Gestione Squadre</h3>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-primary" id="add-team-btn">
+                            <i class="fas fa-plus me-1"></i> Nuova Squadra
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div id="teams-table">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Caricamento...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">Importa Rosa</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="import-roster-form">
+                                    <div class="mb-3">
+                                        <label for="roster-team-select" class="form-label">Squadra</label>
+                                        <select class="form-select" id="roster-team-select"></select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="roster-csv" class="form-label">File CSV</label>
+                                        <input type="file" class="form-control" id="roster-csv" accept=".csv">
+                                        <div class="form-text">
+                                            Formato: Nome,Cognome,Ruolo,URLFoto
+                                        </div>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">Importa</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestione Risultati -->
+            <div id="manage-results-section" class="admin-tab">
+                <div class="row mb-4">
+                    <div class="col">
+                        <h3>Gestione Risultati</h3>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">Seleziona giornata</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="results-round-select" class="form-label">Giornata</label>
+                                    <select class="form-select" id="results-round-select"></select>
+                                </div>
+                                <div class="d-grid">
+                                    <button class="btn btn-primary" id="load-results-btn">Carica partite</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div id="results-container">
+                            <div class="alert alert-info">
+                                Seleziona una giornata per vedere le partite disponibili
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // Controlla se l'utente è già loggato
-    function checkAuth() {
-      const token = localStorage.getItem('torneo_token');
-      if (token) {
-        // Verifica il token
-        fetch('<?= ScriptApp.getService().getUrl() ?>', {
-          method: 'POST',
-          contentType: 'application/json',
-          payload: JSON.stringify({
-            action: 'verifySession',
-            token: token
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Salva i dati utente
-            localStorage.setItem('torneo_user', JSON.stringify(data.data));
-            // Reindirizza alla dashboard
-            window.location.href = '<?= ScriptApp.getService().getUrl() ?>?v=dashboard';
-          } else {
-            // Token non valido, rimuovilo
-            localStorage.removeItem('torneo_token');
-            localStorage.removeItem('torneo_user');
-          }
-        })
-        .catch(error => {
-          console.error('Errore durante la verifica del token:', error);
-        });
-      }
-    }
+    <!-- Modali -->
+    <!-- Modale Join League -->
+    <div class="modal fade" id="join-league-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Iscriviti a una lega</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="available-leagues">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Caricamento...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // Al caricamento della pagina
-    document.addEventListener('DOMContentLoaded', function() {
-      // Controlla l'autenticazione
-      checkAuth();
-      
-      // Gestione del form di login
-      document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        
-        // Nascondi eventuali alert precedenti
-        document.getElementById('loginAlert').style.display = 'none';
-        
-        // Invia richiesta di login
-        google.script.run
-          .withSuccessHandler(function(result) {
-            if (result.success) {
-              // Memorizza il token e i dati utente
-              localStorage.setItem('torneo_token', result.token);
-              localStorage.setItem('torneo_user', JSON.stringify(result.user));
-              
-              // Reindirizza alla dashboard
-              window.location.href = '<?= ScriptApp.getService().getUrl() ?>?v=dashboard';
-            } else {
-              // Mostra messaggio di errore
-              const alert = document.getElementById('loginAlert');
-              alert.textContent = result.message;
-              alert.style.display = 'block';
-            }
-          })
-          .withFailureHandler(function(error) {
-            const alert = document.getElementById('loginAlert');
-            alert.textContent = 'Errore durante il login: ' + error.message;
-            alert.style.display = 'block';
-          })
-          .doPost({
-            postData: {
-              contents: JSON.stringify({
-                action: 'login',
-                email: email,
-                password: password
-              })
-            }
-          });
-      });
-      
-      // Gestione del form di registrazione
-      document.getElementById('registerForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const nome = document.getElementById('registerNome').value;
-        const cognome = document.getElementById('registerCognome').value;
-        const email = document.getElementById('registerEmail').value;
-        const password = document.getElementById('registerPassword').value;
-        const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
-        
-        // Nascondi eventuali alert precedenti
-        document.getElementById('registerAlert').style.display = 'none';
-        
-        // Verifica che le password coincidano
-        if (password !== passwordConfirm) {
-          const alert = document.getElementById('registerAlert');
-          alert.textContent = 'Le password non coincidono';
-          alert.style.display = 'block';
-          return;
-        }
-        
-        // Invia richiesta di registrazione
-        google.script.run
-          .withSuccessHandler(function(result) {
-            if (result.success) {
-              // Autologin
-              google.script.run
-                .withSuccessHandler(function(loginResult) {
-                  if (loginResult.success) {
-                    // Memorizza il token e i dati utente
-                    localStorage.setItem('torneo_token', loginResult.token);
-                    localStorage.setItem('torneo_user', JSON.stringify(loginResult.user));
-                    
-                    // Reindirizza alla dashboard
-                    window.location.href = '<?= ScriptApp.getService().getUrl() ?>?v=dashboard';
-                  } else {
-                    // Reindirizza alla tab di login
-                    document.getElementById('login-tab').click();
-                  }
-                })
-                .doPost({
-                  postData: {
-                    contents: JSON.stringify({
-                      action: 'login',
-                      email: email,
-                      password: password
-                    })
-                  }
-                });
-            } else {
-              // Mostra messaggio di errore
-              const alert = document.getElementById('registerAlert');
-              alert.textContent = result.message;
-              alert.style.display = 'block';
-            }
-          })
-          .withFailureHandler(function(error) {
-            const alert = document.getElementById('registerAlert');
-            alert.textContent = 'Errore durante la registrazione: ' + error.message;
-            alert.style.display = 'block';
-          })
-          .doPost({
-            postData: {
-              contents: JSON.stringify({
-                action: 'register',
-                nome: nome,
-                cognome: cognome,
-                email: email,
-                password: password
-              })
-            }
-          });
-      });
-    });
-  </script>
+    <!-- Modale Nuova Lega -->
+    <div class="modal fade" id="new-league-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crea nuova lega</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-league-form">
+                        <div class="mb-3">
+                            <label for="league-name" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="league-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="league-description" class="form-label">Descrizione</label>
+                            <textarea class="form-control" id="league-description" rows="3"></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Crea Lega</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Nuova Giornata -->
+    <div class="modal fade" id="new-round-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crea nuova giornata</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-round-form">
+                        <div class="mb-3">
+                            <label for="round-number" class="form-label">Numero giornata</label>
+                            <input type="number" class="form-control" id="round-number" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="round-start-date" class="form-label">Data inizio</label>
+                            <input type="date" class="form-control" id="round-start-date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="round-end-date" class="form-label">Data fine</label>
+                            <input type="date" class="form-control" id="round-end-date" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Crea Giornata</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Importa Giornata -->
+    <div class="modal fade" id="import-round-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Importa giornata da CSV</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="import-round-form">
+                        <div class="mb-3">
+                            <label for="round-csv" class="form-label">File CSV</label>
+                            <input type="file" class="form-control" id="round-csv" accept=".csv">
+                            <div class="form-text">
+                                Prima riga: NumeroGiornata,DataInizio,DataFine<br>
+                                Righe successive: SquadraCasa,SquadraTrasferta,DataPartita
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Importa</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Nuova Squadra -->
+    <div class="modal fade" id="new-team-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crea nuova squadra</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-team-form">
+                        <div class="mb-3">
+                            <label for="team-name" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="team-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="team-logo" class="form-label">URL Logo</label>
+                            <input type="url" class="form-control" id="team-logo">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Crea Squadra</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Previsione -->
+    <div class="modal fade" id="prediction-modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Fai la tua previsione</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="prediction-form">
+                        <input type="hidden" id="prediction-match-id">
+                        <input type="hidden" id="prediction-league-id">
+                        
+                        <div class="row align-items-center mb-4">
+                            <div class="col-md-5 text-center">
+                                <h5 id="pred-home-team"></h5>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <h5>VS</h5>
+                            </div>
+                            <div class="col-md-5 text-center">
+                                <h5 id="pred-away-team"></h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label">Risultato</label>
+                                <div class="d-flex justify-content-center">
+                                    <input type="number" class="form-control text-center mx-2" id="pred-home-score" min="0" style="width: 80px;" required>
+                                    <span class="align-self-center">-</span>
+                                    <input type="number" class="form-control text-center mx-2" id="pred-away-score" min="0" style="width: 80px;" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="scorers-section">
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Marcatori</label>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="mb-3" id="home-scorers-title"></h6>
+                                    <div id="home-players-list" class="mb-3"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="mb-3" id="away-scorers-title"></h6>
+                                    <div id="away-players-list" class="mb-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Salva Previsione</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Aggiungi Risultato -->
+    <div class="modal fade" id="add-result-modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Inserisci risultato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="result-form">
+                        <input type="hidden" id="result-match-id">
+                        
+                        <div class="row align-items-center mb-4">
+                            <div class="col-md-5 text-center">
+                                <h5 id="result-home-team"></h5>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <h5>VS</h5>
+                            </div>
+                            <div class="col-md-5 text-center">
+                                <h5 id="result-away-team"></h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label">Risultato Finale</label>
+                                <div class="d-flex justify-content-center">
+                                    <input type="number" class="form-control text-center mx-2" id="result-home-score" min="0" style="width: 80px;" required>
+                                    <span class="align-self-center">-</span>
+                                    <input type="number" class="form-control text-center mx-2" id="result-away-score" min="0" style="width: 80px;" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="result-scorers-section">
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Marcatori</label>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="mb-3" id="result-home-scorers-title"></h6>
+                                    <div id="result-home-players-list" class="mb-3"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="mb-3" id="result-away-scorers-title"></h6>
+                                    <div id="result-away-players-list" class="mb-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Salva Risultato</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
