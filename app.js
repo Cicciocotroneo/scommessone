@@ -1,5 +1,5 @@
 // Configurazioni e variabili globali
-const API_URL = 'URL_DEL_TUO_GOOGLE_APPS_SCRIPT'; // Sostituisci con l'URL pubblicato del tuo Apps Script
+const API_URL = 'https://script.google.com/macros/s/AKfycbyGDTflJjvgEIYRUoNDIcugwwO8mzKXdZvSBPuecBsUoLwIMNTx2Y7ParIaudhzahz-Gw/exec'; // Sostituisci con l'URL pubblicato del tuo Apps Script
 let currentUser = null;
 
 // Utility per le chiamate API
