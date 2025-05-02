@@ -1,0 +1,226 @@
+/* Stile generale */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header e navbar */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.4rem;
+}
+
+/* Sezioni */
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+/* Panelli admin */
+.admin-tab {
+    display: none;
+}
+
+.admin-tab.active {
+    display: block;
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+/* Tabelle */
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+    vertical-align: middle;
+}
+
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+/* Partite */
+.match-card {
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.match-card:hover {
+    transform: translateY(-5px);
+}
+
+.team-logo {
+    max-width: 40px;
+    max-height: 40px;
+}
+
+.match-date {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.match-status {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.match-status.open {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.match-status.closed {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.match-status.completed {
+    background-color: #cff4fc;
+    color: #055160;
+}
+
+/* Badge di stato */
+.status-badge {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.status-badge.pending {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+.status-badge.approved {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-badge.rejected {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+/* Previsioni */
+.prediction-score {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.prediction-points {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.scorer-checkbox {
+    margin-right: 0.5rem;
+}
+
+/* Classifiche */
+.ranking-table .position {
+    width: 50px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.ranking-table .player {
+    font-weight: 500;
+}
+
+.ranking-table .points {
+    width: 80px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.ranking-podium {
+    position: relative;
+    height: 200px;
+    margin-bottom: 2rem;
+}
+
+.podium-item {
+    position: absolute;
+    bottom: 0;
+    border-radius: 4px 4px 0 0;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 10px;
+}
+
+.podium-first {
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100%;
+    width: 30%;
+    background-color: #ffc107;
+    z-index: 3;
+}
+
+.podium-second {
+    left: 15%;
+    height: 70%;
+    width: 30%;
+    background-color: #6c757d;
+    z-index: 2;
+}
+
+.podium-third {
+    right: 15%;
+    height: 50%;
+    width: 30%;
+    background-color: #cd7f32;
+    z-index: 1;
+}
+
+/* Animazioni */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Forms */
+.form-label {
+    font-weight: 500;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .podium-item {
+        width: 30%;
+    }
+
+    .podium-first {
+        left: 35%;
+    }
+
+    .podium-second {
+        left: 5%;
+    }
+
+    .podium-third {
+        right: 5%;
+    }
+}
