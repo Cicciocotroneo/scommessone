@@ -531,86 +531,27 @@
     const { createApp, ref, computed, onMounted } = Vue;
 
     // === CHIAVI DI ACCESSO DI SUPABASE ===
-    // Incolla qui le tue chiavi reali ottenute dalla tua dashboard di Supabase
-    const SUPABASE_URL = "https://jhqkemvowcrjywogqsoc.supabase.co/rest/v1/";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpocWtlbXZvd2Nyanl3b2dxc29jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDIyOTcsImV4cCI6MjA5NjcxODI5N30.0WS1YIUpvxFMHyJqX5iWXgqYZ2pF0-44tB2153rDUSQ";
+    // Puoi incollarle direttamente qui dentro tra le virgolette, oppure usare l'interfaccia grafica
+    const SUPABASE_URL = "https://jhqkemvowcrjywogqsoc.supabase.co/rest/v1/"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpocWtlbXZvd2Nyanl3b2dxc29jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDIyOTcsImV4cCI6MjA5NjcxODI5N30.0WS1YIUpvxFMHyJqX5iWXgqYZ2pF0-44tB2153rDUSQ"; 
 
-    // Elenco Convocati Ufficiali 48 Nazionali (Corrispondenza esatta con il file)
-    const ROSTERS_DATA = {
-      "Algeria": ["Benbot", "Mastil", "Ramdane", "Zidane", "Abada", "Ait-Nouri", "Belaid", "Belghali", "Bensebaini", "Chergui", "Hadjam", "Mandi", "Tougai", "Aouar", "Bentaleb", "Boudaoui", "Chaibi", "Maza", "Titraoui", "Zerrouki", "Amoura", "Benbouali", "Boulbina", "Ghedjemis", "Gouiri", "Mahrez", "Moussa Hadji"],
-      "Arabia Saudita": ["Ahmed Alkassar", "Mohammed Alowais", "Nawaf Alaqidi", "Saud Abdulhamid", "Jehad Thikri", "Abdulelah Alamri", "Hassan Altambakti", "Ali Lajami", "Hassan Kadish", "Moteb Alharbi", "Ali Majrashi", "Mohammed Abu Alshamat", "Ziyad Aljohani", "Nasser Al Dawsari", "Mohammed Kanno", "Abdullah Alkhaibari", "Nawaf Buwashi", "Abdul Ahlamddan", "Khalid Alghannam", "Ala Alhajji", "Musab Aljuwyr", "Sultan Mandash", "Aiman Yahya", "Salem Al Dawsari", "Feras Albrikan", "Saleh Alshehri"],
-      "Argentina": ["Musso", "Rulli", "E. Martinez", "Balerdi", "Tagliafico", "Montiel", "Lisandro Martinez", "Romero", "Otamendi", "Medina", "Molina", "Paredes", "De Paul", "Barco", "Lo Celso", "Palacios", "Mac Allister", "Fernandez", "Alvarez", "Messi", "Nico Gonzalez", "Thiago Almada", "Giuliano Simeone", "Nico Paz", "Lopez", "Lautaro Martinez"],
-      "Australia": ["Beach", "Izzo", "Ryan", "Behich", "Bos", "Burgess", "Circati", "Degenek", "Geria", "Herrington", "Italiano", "Souttar", "Trewin", "Devlin", "Hrustic", "Irvine", "Metcalfe", "Okon-Engstler", "O'Neill", "Irankunda", "Leckie", "Mabil", "Toure", "Velupillay", "Volpato", "Yengi"],
-      "Austria": ["Pentz", "Schlager", "Wiegele", "Affengruber", "Alaba", "Danso", "Friedl", "Lienhart", "Mwene", "Posch", "Prass", "Svoboda", "Baumgartner", "Chukwuemeka", "Grillitsch", "Laimer", "Sabitzer", "Schlager", "Schmid", "Schöpf", "Seewald", "Wanner", "Wimmer", "Arnautovic", "Gregoritsch", "Kalajdzic"],
-      "Belgio": ["Courtois", "Lammens", "Penders", "Castagne", "Debast", "De Cuyper", "De Winter", "Mechele", "Meunier", "Ngoy", "Seys", "Theate", "De Bruyne", "Onana", "Raskin", "Tielemans", "Vanaken", "Witsel", "De Ketelaere", "Doku", "Fernandez Pardo", "Lukaku", "Lukebakio", "Moreira", "Saelemaekers", "Trossard"],
-      "Bosnia ed Erzegovina": ["Vasilj", "Zlomislic", "Hadzikic", "Dedic", "Katic", "Radeljic", "Celik", "Mujakic", "Muharemovic", "Kolasinac", "Hadzikadunic", "Hadziahmetovic", "Sunjic", "Tahirovic", "Burnic", "Gigovic", "Mahmic", "Basic", "Memic", "Alajbegovic", "Bajraktarevic", "Bazdar", "Lukic", "Tabakovic", "Demirovic", "Dzeko"],
-      "Brasile": ["Alisson", "Ederson", "Weverton", "Alex Sandro", "Bremer", "Danilo", "Douglas Santos", "Gabriel Magalhaes", "Ibanez", "Leo Pereira", "Marquinhos", "Wesley", "Bruno Guimaraes", "Casemiro", "Danilo", "Fabinho", "Paquetà", "Endrick", "Gabriel Martinelli", "Igor Thiago", "Luis Henrique", "Matheus Cunha", "Neymar", "Raphinha", "Rayan", "Vinicius"],
-      "Canada": ["Crepeau", "Goodman", "St. Clair", "Bombito", "Cornelius", "Davies", "De Fougerolles", "Johnston", "Jones", "Laryea", "Sigur", "Waterman", "Ahmed", "Buchanan", "Choiniere", "Eustaquio", "Flores", "Koné", "Millar", "Osorio", "Saliba", "Shaggelburg", "J. David", "P. David", "Larin", "Oluwaseyi"],
-      "Capo Verde": ["Vozinha", "Da Rosa", "Carlos Santos", "Moreira", "W. Pina", "Fernandes", "Cabral", "Costa", "Pico", "Pires", "Stopira", "Diney", "Monteiro", "Arcanjo", "Y. Semedo", "L. Duarte", "D. Duarte", "K. Pina", "Mendes", "W. Semedo", "Rodrigues", "J. Cabral", "N. Da Costa", "Livramento", "Benchimol", "Varela"],
-      "Colombia": ["Montero", "Ospina", "Vargas", "S. Arias", "Ditta", "Lucumì", "Machado", "Mina", "Mojica", "Munoz", "Sanchez", "J. Arias", "Carrascal", "Campaz", "Castano", "Lerma", "Portilla", "Puerta", "Quintero", "Rios", "James Rodriguez", "Cordoba", "Luis Diaz", "Gomez", "Hernandez", "Suarez"],
-      "Corea del Sud": ["Kim Seunggyu", "Song Bumkeun", "Jo Hyeonwood", "Kim Moohwan", "Kim Minjae", "Kim Taehyeon", "Park Jinseob", "Seol Youngwoo", "Jens Castrop", "Lee Kihyuk", "Lee Taeseok", "Lee Hanbeom", "Cho Yumin", "Kim Jingyu", "Bae Junho", "Paik Seungho", "Yang Hyunjun", "Eom Jisung", "Lee Kangin", "Lee Doonggyeong", "Lee Jaesung", "Hwang Inbeom", "Hwang Heechan", "Son Heugmin", "Oh Hyeongyu", "Cho Guesung"],
-      "Costa d'Avorio": ["Fofana", "Lafont", "Koné", "Konan", "Akpa", "Singo", "Doué", "Ndicka", "Agbadou", "Ousmane Diomandé", "Kossounou", "Kessié", "Fofana", "Sangaré", "Oulai", "Guiagon", "Seri", "Adingra", "Diallo", "Pépé", "Guessand", "Yan Diomandè", "Wahi", "DIakité", "Touré", "Bonny"],
-      "Curaçao": ["Bodak", "Doornbusch", "Room", "Bazoer", "Brenet", "Van Eijma", "Floranus", "Fonville", "Gaari", "Obispo", "Sambo", "J. Bacuna", "L. Bacuna", "Comenencia", "Felida", "Martha", "Noslin", "Roemeratoe", "Antonisse", "Chong", "Gorré", "Hansen", "Kastaneer", "Kuwas", "Locadia", "Margaritha"],
-      "Croazia": ["Livaković", "Kotarski", "Pandur", "Gvardiol", "Ćaleta-Car", "Šutalo", "Stanišić", "Pongračić", "Erlić", "Vušković", "Modrić", "Kovačić", "Pašalić", "Vlašić", "Sučić", "Baturina", "Jakić", "Moro", "Fruk", "Perišić", "Kramarić", "Budimir", "Musa", "Matanović"],
-      "Ecuador": ["Galíndez", "Ramirez", "Valle", "Pacho", "Hincapié", "Ordonez", "Porozo", "Estupinan", "Medina", "Preciado", "Caicedo", "Alcivar", "Castillo", "Franco", "Vite", "Minda", "Paez", "Angulo", "Plata", "A. Yeboah", "Valencia", "Arevalo", "E. Valencia", "Rodriguez"],
-      "Egitto": ["M. Alaa", "El Shenawy", "Shobeir", "Suleiman", "Abdelmaguid", "Abdelmoneim", "T. Alaa", "Fathy", "Fatouh", "Hafez", "Hany", "Ibrahim", "Rabia", "Adel", "Ashour", "Ateya", "Emad", "Hassan", "Lashin", "Saber", "Trezeguet", "Ziko", "Zizo", "Abdelkarim", "Marmoush", "Salah"],
-      "Francia": ["Maignan", "Samba", "Risser", "Digne", "Malo Gusto", "Lucas Hernandez", "Theo Hernandez", "Konaté", "Koundé", "Lacroix", "Saliba", "Upamecano", "Kantè", "Koné", "Rabiot", "Tchouameni", "Zaïre-Emery", "Akliouche", "Barcola", "Cherki", "Dembelé", "Doué", "Mateta", "Mbappé", "Olise", "Marcus Thuram"],
-      "Germania": ["Neuer", "Baumann", "Nübel", "Anton", "Brown", "Kimmich", "Raum", "Rüdiger", "Thiaw", "Schlotterbeck", "Tah", "Goretzka", "Groß", "Nmecha", "Stiller", "Leweling", "Karl", "Pavlović", "Musiala", "Amiri", "Havertz", "Sané", "Undav", "Beier", "Woltemade", "Wirtz"],
-      "Ghana": ["Asare", "Ati-Zigi", "Anang", "Baba Abdul Rahman", "Mensah", "Senaya", "Seidu", "Mumin", "Opoku", "Adjetey", "Oppong Peprah", "Luckassen", "Owusu", "Thomas Partey", "Sibo", "Boakye", "Yirenkyi", "Fatawu Issahaku", "K. Sulemana", "Bonsu Baah", "Nuamah", "Semenyo", "Thomas-Asante", "Adu", "Inaki Williams", "Jordan Ayew"],
-      "Giappone": ["Z. Suzuki", "Osako", "Hayakawa", "Nagatomo", "Taniguchi", "Itakura", "Watanabe", "Tomiyasu", "H. Ito", "Seko", "Sugawara", "J. Suzuki", "Endo", "J. Ito", "Kamada", "Doan", "Tanaka", "Nakamura", "Sano", "Kubo", "Y. Suzuki", "Ogawa", "Maeda", "Ueda", "Shiogai", "Goto"],
-      "Giordania": ["Abulaila", "Bani Attiah", "Al-Fakhouri", "Al-Arab", "Nasin", "Al-Rosan", "Abu Dahba", "Abualnadi", "Obaid", "Abu Hasheesh", "Abu-Taha", "Haddad", "Badawi", "Al-Rahsdan", "Jamous", "Al-Rawabdeh", "Saadeh", "Ayed", "Al-Dawoud", "Al-Mardi", "Fakhouri", "Al-Tamari", "Shararh", "Azaizeh", "Olwan", "Sabra"],
-      "Haiti": ["Placide", "A. Pierre", "Duverger", "Arcus", "Paugain", "Experience", "Duverne", "Lacroix", "Adé", "Thermoncy", "Delcroix", "Bellegarde", "Jean-Jacques", "Dominique", "Sainté", "L. Pierre", "Casimir", "W. Pierre", "Nazon", "Pierrot", "Joseph", "Deedson", "Louicius", "Fortuné", "Providence", "Isidor"],
-      "Inghilterra": ["Pickford", "D. Henderson", "Trafford", "James", "Livramento", "Guehi", "Konsa", "Stones", "Quansah", "O'Reilly", "Burn", "Spence", "Rice", "Anderson", "Bellingham", "J. Henderson", "Rogers", "Mainoo", "Eze", "Kane", "Toney", "Watkins", "Saka", "Madueke", "Rashford", "Gordon"],
-      "Iran": ["Beyranvand", "Hoseini", "Niazmand", "Khalilzadeh", "Kanaani", "Nemati", "Eiri", "Hajisafi", "Mohammadi", "Hardani", "Rezaeiyan", "Ghodoos", "Ezatollahi", "Cheshmi", "Razagh Niya", "Ghorbani", "Ghayedi", "Yousefi", "Jahanbakhsh", "Torabi", "Mohebbi", "Taremi", "Hosseinzadeh", "Dargahi", "Alipour", "Moghanloo"],
-      "Iraq": ["Talib", "Hassan", "Basil", "H. Ali", "Younis", "Tahseen", "Sulaka", "Hashem", "Doski", "Yahya", "Ismail", "Putros", "Saadoon", "Al-Ammari", "Yakob", "Iqbal", "Sher", "Bayesh", "Qasem", "Amyn", "Farji", "Jassim Ali Al-Hamadi", "Youssef", "Hussein", "M. Ali"],
-      "Marocco": ["Bounou", "El Kajoui", "Tagnaouti", "Hakimi", "Mazraoui", "Salah-Eddine", "Belammari", "Diop", "Riad", "El Ouahdi", "Halhal", "Aguero", "El Ayanoui", "El Khannouss", "Ounahi", "Bouaddi", "Saibari", "Amrabat", "El Mourabet", "Diaz", "Aboe", "Amaimouni", "Rahimi", "Talbi", "Yassine", "El Kaabi"],
-      "Messico": ["Rangel", "Ochoa", "Acevedo", "Reyes", "Gallardo", "Sanchez", "Montes", "Vasquez", "M. Chavez", "Lira", "Romo", "Vargas", "Gutierrez", "Pineda", "Alvarez", "Mora", "Huerta", "Fidalgo", "L. Chavez", "Alvarado", "Vega", "Quinones", "Gimenez", "Martinez", "Gonzalez", "Jimenez"],
-      "Norvegia": ["Nyland", "Selvik", "Tangvik", "Ajer", "Bjorkan", "Falchener", "Heggem", "Langas", "Ostigard", "Pedersen", "Ryerson", "Wolfe", "Aasgaard", "Aursnes", "Berg", "Berge", "Odegaard", "Thorsby", "Thosrtvedt", "Bobb", "Haaland", "Hauge", "Nusa", "Schjelderup", "Sorloth", "Strand Larsen"],
-      "Nuova Zelanda": ["Crocombe", "Paulsen", "Woud", "Bindon", "Boxall", "Cacace", "De Vries", "Elliot", "Payne", "Pijnaker", "Smith", "Surman", "Bayliss", "Bell", "Rufer", "Stamenic", "Thomas", "Barbarouses", "Garbett", "Just", "McCowatt", "Old", "Randall", "Singh", "Waine", "Wood"],
-      "Olanda": ["Flekken", "Roefs", "Verbruggen", "Aké", "Ato", "Dumfries", "Timber", "Van Dijk", "Van De Ven", "Van Hecke", "De Jong", "De Roon", "Gravenberch", "Koopmeiners", "Reijnders", "Til", "Timber", "Wieffer", "Brobbey", "Depay", "Gakpo", "Kluivert", "Lang", "Malen", "Summerville", "Weghorst"],
-      "Panama": ["Mosquera", "Mejia", "Samudio", "Blackman", "Gutierrez", "Murillo", "Escobar", "Andrade", "Farina", "Cordoba", "Davis", "Ramos", "Miller", "Godoy", "Carrasquilla", "Harvey", "Martinez", "J.Rodriguez", "Yanis", "Barcenas", "Quintero", "Londono", "Diaz", "Waterman", "Fajardo", "T.Rodriguez"],
-      "Paraguay": ["Fernandez", "Gill", "Olveira", "Velazquez", "Caceres", "Gustavo Gomez", "Alderete", "Balbuena", "Canale", "Alonso", "Maidana", "Diego Gomez", "Cubas", "Bobadilla", "Galarza", "Ojeda", "Magalhaes", "Romero Gamarra", "Caballero", "Almiron", "Enciso", "Sosa", "Sanabria", "Arce", "Avalos", "Pitta"],
-      "Portogallo": ["Diogo Costa", "José Sà", "Rui Silva", "Ricardo Velho", "Dalot", "Matheus Nunes", "Semedo", "Cancelo", "Nuno Mendes", "Gonçalo Inacio", "Veiga", "Ruben Dias", "Araujo", "Ruben Neves", "Samuel Costa", "Joao Neves", "Vitinha", "Bruno Fernandes", "Bernardo Silva", "Joao Felix", "Trincao", "Conceicao", "Pedro Neto", "Leao", "Guedes", "Gonçalo Ramos", "Cristiano Ronaldo"],
-      "Qatar": ["Abunada", "Barshan", "Zakaria", "Al Alawi", "Khoukhi", "Al Amin", "Mendes", "Laye", "Miguel", "Al Brake", "Al Hussain", "Madibo", "Katem", "Fathy", "Boudiaf", "Gaber", "Mannai", "Al Janewi", "Alaa", "Afif", "Al Moez Ali", "Junior", "Al Haydos", "Muntari", "Mohammed", "Youssef"],
-      "Repubblica Ceca": ["Hornicek", "Kovar", "Stanek", "Coufal", "Doudera", "Holes", "Hranac", "Chaloupek", "Jurasek", "Krejci", "Zeleny", "Zima", "Bucha", "Cerv", "Darida", "Ladra", "Provod", "Sadilek", "Sochurek", "Sojka", "Soucek", "Sulc", "Visinsky", "Hlozek", "Chory", "Chytil", "Kabongo", "Kuchta", "Schick"],
-      "DR Congo": ["Fayulu", "Mpasi", "Epolo", "Wan-Bissaka", "Kalulu", "Mbemba", "Kapuadi", "Tuanzebe", "Batubinsika", "Bushiri", "Masuaku", "J. Kayembe", "Moutoussamy", "Mukau", "Kakuta", "Pickel", "Sadiki", "E. Kayembe", "Bongonda", "Mbuku", "Bakambu", "Banza", "Mayele", "Cipenga", "Wissa", "Elia"],
-      "Scozia": ["Gordon", "Gunn", "Kelly", "Hanley", "Hendry", "Hickey", "Hyam", "McKenna", "Patterson", "Ralston", "Robertson", "Souttar", "Tierney", "Christie", "Curtis", "Ferguson", "Fletcher", "Gannon-Doak", "McGinn", "McLean", "McTominay", "Adams", "Dykes", "Hirst", "Shankland", "Stewart"],
-      "Senegal": ["Edouard Mendy", "Diaw", "Diouf", "Koulibaly", "Niakhate", "M. Sarr", "Seck", "Diatta", "Mendy", "Jakobs", "Diouf", "Idrissa Gana Gueye", "Papa Gueye", "Lamine Camara", "Diarra", "Ciss", "Pape Matar Sarr", "Bara Sapoko Ndiaye", "Mané", "Ismaila Sarr", "Ilman Ndiaye", "Diao", "Mbaye", "Jackson", "Dieng", "Cherif Ndiaye"],
-      "Spagna": ["Unai Simon", "Raya", "Joan Garcia", "Llorente", "Porro", "Cubarsì", "Pubill", "Laporte", "Eric Garcia", "Cucurella", "Grimaldo", "Pedri", "Dani Olmo", "Rodri", "Zubimendi", "Fabian Ruiz", "Gavi", "Mikel Merino", "Yamal", "Yeremy Pino", "Oyarzabal", "Ferran", "Borja Iglesias", "Nico Williams", "Victor Munoz", "Baena"],
-      "Stati Uniti": ["Brady", "Freese", "Turner", "Arfsten", "Dest", "Freeman", "McKenzie", "Ream", "Richards", "A.Robinson", "M.Robinson", "Scally", "Trusty", "Aaronson", "Adams", "Berhalter", "McKennie", "Reyna", "Roldan", "Tillman", "Weah", "Zendejas", "Balogun", "Pepi", "Pulisic", "Wright"],
-      "Sudafrica": ["Williams", "Goss", "Chaine", "Mudau", "Sibisi", "Okon", "Ndamane", "Modiba", "Kabini", "Matuludi", "Makhanya", "Sebelebele", "Cross", "Mbokazi", "Mokoena", "Mbatha", "Sitole", "Adams", "Appollis", "Rayners", "Moremi", "Mofokeng", "Makgopa", "Zwane", "Foster", "Maseko"],
-      "Svezia": ["Johansson", "Nordfeldt", "Zetterstrom", "Ekdal", "Gudmundsson", "Hien", "Johansson", "Lagerbielke", "Lindelof", "Smith", "Starfelt", "Stoud", "Svensson", "Ayari", "Bergvall", "Karlstrom", "Sema", "Svanberg", "Zeneli", "Ali", "Bernhardsson", "Elanga", "Gyokeres", "Isak", "Nilsson", "Nygren"],
-      "Svizzera": ["Keller", "Kobe", "Mvogo", "Akanji", "Amenda", "Comert", "Elvedi", "Jacquez", "Muehim", "Rodriguez", "Widmer", "Aebischer", "Amdouni", "Fassnacht", "Freuler", "Itten", "Jashari", "Manzanbi", "Rieder", "Xhaka", "Zakaria", "Embolo", "Ndoye", "Okafor", "Sow", "Vargas"],
-      "Tunisia": ["Dahmen", "Chamakh", "Ben Hassen", "Valery", "Neffati", "Bronn", "Talbi", "Rekik", "Raoud", "Chikaoui", "Ali Abdi", "Ben Hamida", "Shkiri", "Mahmoud", "Khedira", "Ben Slimane", "Ben Ouanes", "Garbi", "Hannibal", "Ayari", "Achouri", "Saad", "Chaouat", "Mastouri", "Elloumi", "Tounekti"],
-      "Turchia": ["Bayındır", "Günok", "Çakır", "Bardakcı", "Söyüncü", "Elmalı", "Kadıoğlu", "Demiral", "Müldür", "Kabak", "Akaydin", "Çelik", "Çalhanoğlu", "Yüksek", "Ayhan", "Kökçü", "Özcan", "Güler", "Uzun", "Yılmaz", "Gül", "Kahveci", "Yıldız", "Aktürkoğlu", "Aydın", "Akgün"],
-      "Uruguay": ["Mele", "Muslera", "Rochet", "R. Araujo", "Bueno", "S. Caceres", "Gimenez", "Olivera", "Piquerez", "Varela", "Vina", "M. Araujo", "Bentancur", "Canobbio", "De Arrascaeta", "De La Cruz", "Martinez", "Pellistri", "Rodriguez", "Sanabria", "Ugarte", "Valverde", "Zalazar", "Aguire", "Nunez", "Vinas"],
-      "Uzbekistan": ["Yusupov", "Nematov", "Ergashev", "Khusanov", "Alijonov", "Sayfiev", "Ashurmatov", "Nasrullaev", "Eshmurodov", "Abdullaev", "Karimov", "Ulmasaliev", "Urozov", "Mozgovoy", "Shukurov", "Iskanderov", "Hamrobekov", "Masharipov", "Urunov", "Khamdamov", "Ganiev", "Fayzullaev", "Esanov", "Shomurodov", "Amonov", "Sergeev"]
-    };
-
-    // Tabellone di base dei Mondiali 2026 (Partite ufficiali)
-    const SEED_MATCHES = [
-      { id: "m1", home: "Messico", away: "Sudafrica", match_date: "2026-06-11T19:00:00Z", giornata: 1 },
-      { id: "m2", home: "Corea del Sud", away: "Repubblica Ceca", match_date: "2026-06-12T04:00:00Z", giornata: 1 },
-      { id: "m3", home: "Canada", away: "Bosnia ed Erzegovina", match_date: "2026-06-12T21:00:00Z", giornata: 2 },
-      { id: "m4", home: "Stati Uniti", away: "Paraguay", match_date: "2026-06-13T03:00:00Z", giornata: 2 },
-      { id: "m5", home: "Qatar", away: "Svizzera", match_date: "2026-06-13T21:00:00Z", giornata: 3 },
-      { id: "m6", home: "Brasile", away: "Marocco", match_date: "2026-06-14T00:00:00Z", giornata: 3 },
-      { id: "m7", home: "Haiti", away: "Scozia", match_date: "2026-06-14T03:00:00Z", giornata: 4 },
-      { id: "m8", home: "Australia", away: "Turchia", match_date: "2026-06-14T06:00:00Z", giornata: 4 },
-      { id: "m9", home: "Germania", away: "Curaçao", match_date: "2026-06-14T19:00:00Z", giornata: 5 },
-      { id: "m10", home: "Olanda", away: "Giappone", match_date: "2026-06-14T22:00:00Z", giornata: 5 }
+    const defaultUsers = [
+      { username: 'Master', password: 'admin', avatar: '👑', role: 'master' },
+      { username: 'Bob', password: '123', avatar: '⚽', role: 'user' }
     ];
 
     createApp({
       setup() {
         const activeTab = ref('classifica');
-        const users = ref([]);
-        const matches = ref([]);
+        const users = ref([...defaultUsers]);
+        const matches = ref([...SEED_MATCHES]);
         const predictions = ref([]);
-        const settings = ref([]);
-        
         const selectedGiorno = ref(1);
         const giornateList = [1, 2, 3, 4, 5, 6, 7];
+        const settings = ref({ deadlines: {} });
+
+        const setupUrl = ref('');
+        const setupKey = ref('');
 
         const currentUser = ref(null);
         const loginName = ref('');
@@ -621,114 +562,81 @@
         const registerName = ref('');
         const registerPass = ref('');
         const registerAvatar = ref('⚽');
-        const avatars = ["⚽", "🏆", "👑", "🚀", "🎩", "🎮", "🎸", "🦖", "🦁", "🍕"];
+        const avatars = ["⚽", "🏆", "👑", "🚀", "🎩", "🎮", "🎸", "Rex", "🦁", "🍕"];
 
         const editingUser = ref(null);
         const tempBets = ref({});
         const toast = ref({ show: false, message: '', type: 'info' });
         const loading = ref(true);
+        const isCloudMode = ref(false);
 
-        const isConfigured = computed(() => {
-          return SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes("YOUR_SUPABASE_URL");
-        });
+        let supabase = null;
+
+        // Protezione contro i crash: controlla se le chiavi sono compilate e valide
+        const getDbCredentials = () => {
+          const u = localStorage.getItem('s_url') || SUPABASE_URL;
+          const k = localStorage.getItem('s_key') || SUPABASE_ANON_KEY;
+          if (u && k && u.trim().length > 10 && k.trim().length > 10 && !u.includes("YOUR_SUPABASE")) {
+            return { url: u.trim(), key: k.trim() };
+          }
+          return null;
+        };
+
+        const isConfigured = computed(() => getDbCredentials() !== null);
 
         const showToast = (message, type = 'info') => {
           toast.value = { show: true, message, type };
-          setTimeout(() => { toast.value.show = false; }, 3500);
+          setTimeout(() => { toast.value.show = false; }, 3000);
         };
 
         const formatDatetime = (dtStr) => {
-          if (!dtStr) return 'Scadenza non impostata';
+          if (!dtStr) return 'Chiusura non impostata';
           return new Date(dtStr).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' });
         };
 
-        const getGiornoDeadline = (giornata) => {
-          const found = settings.value.find(s => s.giornata === parseInt(giornata));
-          return found ? found.deadline : null;
-        };
-
+        const getGiornoDeadline = (giornata) => settings.value.deadlines[giornata] || null;
         const isBettingOpen = (giornata) => {
           const dl = getGiornoDeadline(giornata);
-          if (!dl) return true; // Se il master non ha messo una scadenza, è aperta
+          if (!dl) return true;
           return new Date() < new Date(dl);
         };
 
         const getPlayersList = (team) => ROSTERS_DATA[team] || [];
 
-        // --- SISTEMA DI CALCOLO PUNTEGGI DINAMICO ---
         const sortedUsers = computed(() => {
-          const computedUsers = users.value.map(user => {
-            let pts = 0;
-            let exact = 0;
-            let signs = 0;
-            let scorers = 0;
-
-            const userPreds = predictions.value.filter(p => p.username === user.username);
-            
-            userPreds.forEach(pred => {
+          return users.value.map(user => {
+            let pts = 0, exact = 0, signs = 0, scorers = 0;
+            const uPreds = predictions.value.filter(p => p.username === user.username);
+            uPreds.forEach(pred => {
               const match = matches.value.find(m => m.id === pred.match_id);
               if (!match || match.score_home === null || match.score_home === undefined) return;
-
-              const rH = parseInt(match.score_home);
-              const rA = parseInt(match.score_away);
-              const pH = parseInt(pred.score_home);
-              const pA = parseInt(pred.score_away);
-
-              const realSign = rH > rA ? '1' : (rH === rA ? 'X' : '2');
-              const predSign = pH > pA ? '1' : (pH === pA ? 'X' : '2');
-
-              if (realSign === predSign) {
-                // Almeno il segno è indovinato -> 1 Punto
-                pts += 1;
-                signs += 1;
-
+              const rH = match.score_home, rA = match.score_away, pH = pred.score_home, pA = pred.score_away;
+              const rS = rH > rA ? '1' : (rH === rA ? 'X':'2'), pS = pH > pA ? '1' : (pH === pA ? 'X':'2');
+              if (rS === pS) {
+                pts += 1; signs += 1;
                 if (rH === pH && rA === pA) {
-                  // Punteggio Esatto indovinato -> 3 Punti totali
-                  pts += 2; // aggiungiamo 2 per arrivare a 3
-                  signs -= 1;
-                  exact += 1;
-
-                  if (rH === 0 && rA === 0) {
-                    // Per lo 0-0 il tetto massimo è 3 punti
-                  } else {
-                    const matchScorerHome = match.scorer_home || "Nessuno";
-                    const matchScorerAway = match.scorer_away || "Nessuno";
-
-                    const homeMatch = (rH === 0) ? (pred.scorer_home === "Nessuno") : (pred.scorer_home === matchScorerHome);
-                    const awayMatch = (rA === 0) ? (pred.scorer_away === "Nessuno") : (pred.scorer_away === matchScorerAway);
-
-                    if (homeMatch && awayMatch) {
-                      // Risultato + Marcatori -> 5 Punti totali
-                      pts += 2; // aggiungiamo 2 per arrivare a 5
-                      exact -= 1;
-                      scorers += 1;
-                    }
+                  pts += 2; signs -= 1; exact += 1;
+                  if (!(rH === 0 && rA === 0)) {
+                    const hM = rH === 0 ? pred.scorer_home==='Nessuno' : pred.scorer_home===match.scorer_home;
+                    const aM = rA === 0 ? pred.scorer_away==='Nessuno' : pred.scorer_away===match.scorer_away;
+                    if (hM && aM) { pts += 2; exact -= 1; scorers += 1; }
                   }
                 }
               }
             });
-
-            return {
-              ...user,
-              points: pts,
-              details: { exact, signs, scorers }
-            };
-          });
-
-          return computedUsers.sort((a, b) => b.points - a.points);
+            return { ...user, points: pts, details: { exact, signs, scorers } };
+          }).sort((a, b) => b.points - a.points);
         });
 
-        const matchesForSelectedGiorno = computed(() => {
-          return matches.value.filter(m => m.giornata === selectedGiorno.value);
-        });
+        const matchesForSelectedGiorno = computed(() => matches.value.filter(m => m.giornata === selectedGiorno.value));
+        const hasSavedPrediction = (matchId) => currentUser.value && predictions.value.some(p => p.username === currentUser.value.username && p.match_id === matchId);
+        const getSavedPred = (matchId) => predictions.value.find(p => p.username === currentUser.value.username && p.match_id === matchId) || {};
 
-        const hasSavedPrediction = (matchId) => {
-          if (!currentUser.value) return false;
-          return predictions.value.some(p => p.username === currentUser.value.username && p.match_id === matchId);
-        };
-
-        const getSavedPred = (matchId) => {
-          return predictions.value.find(p => p.username === currentUser.value.username && p.match_id === matchId) || {};
+        const saveDatabaseConfig = () => {
+          if (!setupUrl.value || !setupKey.value) return;
+          localStorage.setItem('s_url', setupUrl.value.trim());
+          localStorage.setItem('s_key', setupKey.value.trim());
+          window.location.reload();
         };
 
         const initTempBets = () => {
@@ -745,363 +653,166 @@
           });
         };
 
-        // --- INTEGRAZIONE RETE CONDIVISA (SUPABASE API) ---
-        let supabase = null;
-
         const syncData = async () => {
-          if (!isConfigured.value) {
-            loading.value = false;
-            return;
-          }
-
+          if (!isCloudMode.value) return;
           try {
-            // Ottieni gli utenti
-            const { data: userData, error: e1 } = await supabase.from('users').select('*');
-            if (e1) throw e1;
-            users.value = userData;
-
-            // Ottieni le partite
-            const { data: matchData, error: e2 } = await supabase.from('matches').select('*');
-            if (e2) throw e2;
-            matches.value = matchData.sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
-
-            // Ottieni scommesse
-            const { data: predData, error: e3 } = await supabase.from('predictions').select('*');
-            if (e3) throw e3;
-            predictions.value = predData;
-
-            // Ottieni scadenze
-            const { data: setDocs, error: e4 } = await supabase.from('giornate_settings').select('*');
-            if (e4) throw e4;
-            settings.value = setDocs;
-
-            // Inizializza input
+            const { data: u } = await supabase.from('users').select('*'); if (u) users.value = u;
+            const { data: m } = await supabase.from('matches').select('*'); if (m) matches.value = m;
+            const { data: p } = await supabase.from('predictions').select('*'); if (p) predictions.value = p;
+            const { data: s } = await supabase.from('giornate_settings').select('*');
+            if (s) { s.forEach(x => { settings.value.deadlines[x.giornata] = x.deadline; }); }
             initTempBets();
-
-          } catch (e) {
-            console.error("Errore sincronizzazione Supabase:", e);
-            showToast("Errore di sincronizzazione dal server cloud.", "error");
-          } finally {
-            loading.value = false;
-          }
+          } catch (e) { console.error(e); }
         };
 
         onMounted(() => {
-          if (isConfigured.value) {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            syncData();
-            // Polling automatico per tenere tutto il gruppo allineato ogni 15 secondi
-            setInterval(() => {
+          const creds = getDbCredentials();
+          if (creds) {
+            try {
+              supabase = window.supabase.createClient(creds.url, creds.key);
+              isCloudMode.value = true;
               syncData();
-            }, 15000);
+              setInterval(syncData, 12000);
+            } catch (err) {
+              console.error("Inizializzazione Supabase fallita:", err);
+              isCloudMode.value = false;
+            }
           } else {
-            // Backup locale se non configurato per test offline
-            const localUsers = localStorage.getItem('zimbelli_users');
-            if (localUsers) users.value = JSON.parse(localUsers);
-            else {
-              users.value = [...defaultUsers];
-              localStorage.setItem('zimbelli_users', JSON.stringify(defaultUsers));
-            }
-
-            const localMatches = localStorage.getItem('zimbelli_matches');
-            if (localMatches) matches.value = JSON.parse(localMatches);
-            else {
-              matches.value = [...SEED_MATCHES];
-              localStorage.setItem('zimbelli_matches', JSON.stringify(SEED_MATCHES));
-            }
-
-            const localPreds = localStorage.getItem('zimbelli_preds');
-            if (localPreds) predictions.value = JSON.parse(localPreds);
-
-            const localSettings = localStorage.getItem('zimbelli_settings');
-            if (localSettings) settings.value = JSON.parse(localSettings);
-
-            initTempBets();
-            loading.value = false;
+            // Backup locale Sandbox se disconnesso
+            isCloudMode.value = false;
+            users.value = JSON.parse(localStorage.getItem('l_u')) || [...defaultUsers];
+            matches.value = JSON.parse(localStorage.getItem('l_m')) || SEED_MATCHES;
+            predictions.value = JSON.parse(localStorage.getItem('l_p')) || [];
+            settings.value.deadlines = JSON.parse(localStorage.getItem('l_d')) || {};
           }
+          initTempBets();
+          loading.value = false;
         });
 
-        // --- AUTENTICAZIONE CONCORRENTI ---
         const login = () => {
-          const user = users.value.find(u => u.username.toLowerCase() === loginName.value.trim().toLowerCase() && u.password === loginPass.value);
-          if (user) {
-            currentUser.value = user;
-            loginName.value = '';
-            loginPass.value = '';
-            loginError.value = '';
-            initTempBets();
-            showToast(`Benvenuto nel torneo, ${user.username}!`, "success");
-          } else {
-            loginError.value = "Username o Password errati.";
+          const u = users.value.find(x => x.username.toLowerCase() === loginName.value.trim().toLowerCase() && x.password === loginPass.value);
+          if (u) { 
+            currentUser.value = u; 
+            loginName.value = ''; 
+            loginPass.value = ''; 
+            initTempBets(); 
+            showToast(`Entrato come ${u.username}`, "success"); 
+          } else { 
+            loginError.value = "Credenziali non corrette."; 
           }
         };
 
-        const logout = () => {
-          currentUser.value = null;
-          showToast("Uscito correttamente.", "info");
-        };
+        const logout = () => { currentUser.value = null; };
 
-        // Iscrizione Libera da remoto
         const registerUser = async () => {
-          const nameTrimmed = registerName.value.trim();
-          if (!nameTrimmed || !registerPass.value) return;
-
-          if (users.value.some(u => u.username.toLowerCase() === nameTrimmed.toLowerCase())) {
-            showToast("Questo Nome Utente è già occupato!", "error");
-            return;
-          }
-
-          const newUser = {
-            username: nameTrimmed,
-            password: registerPass.value,
-            avatar: registerAvatar.value,
-            role: 'user'
-          };
-
-          if (isConfigured.value) {
-            const { error } = await supabase.from('users').insert([newUser]);
-            if (error) {
-              showToast("Errore di registrazione nel server cloud.", "error");
-              return;
-            }
-          } else {
-            users.value.push(newUser);
-            localStorage.setItem('zimbelli_users', JSON.stringify(users.value));
-          }
-
-          showToast("Iscrizione completata con successo! Ora puoi accedere.", "success");
-          showRegisterModal.value = false;
-          registerName.value = '';
-          registerPass.value = '';
-          syncData();
-        };
-
-        // --- SALVATAGGIO SCOMMESSA ---
-        const savePrediction = async (matchId, giornata) => {
-          if (!currentUser.value) return;
-          if (!isBettingOpen(giornata)) {
-            showToast("Le scommesse per questa giornata sono chiuse!", "error");
-            return;
-          }
-
-          const bet = tempBets.value[matchId];
-          if (bet.scoreHome === "" || bet.scoreAway === "" || bet.scoreHome === null || bet.scoreAway === null) {
-            showToast("Fornisci il pronostico dei gol!", "error");
-            return;
-          }
-
-          const pId = `${currentUser.value.username}_${matchId}`;
-          const newPrediction = {
-            id: pId,
-            username: currentUser.value.username,
-            match_id: String(matchId),
-            score_home: parseInt(bet.scoreHome),
-            score_away: parseInt(bet.scoreAway),
-            scorer_home: bet.scorerHome || "Nessuno",
-            scorer_away: bet.scorerAway || "Nessuno"
-          };
-
-          if (isConfigured.value) {
-            const { error } = await supabase.from('predictions').upsert([newPrediction]);
-            if (error) {
-              showToast("Impossibile salvare la scommessa in cloud.", "error");
-              return;
-            }
-          } else {
-            const idx = predictions.value.findIndex(p => p.id === pId);
-            if (idx !== -1) predictions.value[idx] = newPrediction;
-            else predictions.value.push(newPrediction);
-            localStorage.setItem('zimbelli_preds', JSON.stringify(predictions.value));
-          }
-
-          showToast("Scommessa salvata in remoto!", "success");
-          syncData();
-        };
-
-        // --- SEZIONE ADMIN (MASTER) ---
-        const startEditing = (user) => {
-          editingUser.value = { ...user };
-        };
-
-        const updateUser = async () => {
-          if (!editingUser.value) return;
+          const name = registerName.value.trim();
+          if (users.value.some(x => x.username.toLowerCase() === name.toLowerCase())) { showToast("Nome occupato!", "error"); return; }
+          const nU = { username: name, password: registerPass.value, avatar: registerAvatar.value, role: 'user' };
           
-          if (isConfigured.value) {
-            const { error } = await supabase.from('users').update({
-              password: editingUser.value.password,
-              avatar: editingUser.value.avatar
-            }).eq('username', editingUser.value.username);
-            
-            if (error) {
-              showToast("Errore di aggiornamento in cloud.", "error");
-              return;
-            }
-          } else {
-            const idx = users.value.findIndex(u => u.username === editingUser.value.username);
-            if (idx !== -1) users.value[idx] = editingUser.value;
-            localStorage.setItem('zimbelli_users', JSON.stringify(users.value));
+          if (isCloudMode.value) { 
+            await supabase.from('users').insert([nU]); 
+            await syncData(); 
+          } else { 
+            users.value.push(nU); 
+            localStorage.setItem('l_u', JSON.stringify(users.value)); 
           }
-
-          showToast("Profilo modificato!", "success");
-          editingUser.value = null;
-          syncData();
+          showToast("Iscrizione completata! Effettua il login.", "success"); 
+          showRegisterModal.value = false; 
+          registerName.value = ''; 
+          registerPass.value = '';
         };
 
-        const deleteUser = async (username) => {
-          if (!confirm(`Vuoi eliminare definitivamente l'utente ${username}?`)) return;
-
-          if (isConfigured.value) {
-            const { error } = await supabase.from('users').delete().eq('username', username);
-            if (error) {
-              showToast("Errore durante l'eliminazione.", "error");
-              return;
-            }
-          } else {
-            users.value = users.value.filter(u => u.username !== username);
-            localStorage.setItem('zimbelli_users', JSON.stringify(users.value));
+        const savePrediction = async (mId, g) => {
+          if (!isBettingOpen(g)) { showToast("Tempo scaduto!", "error"); return; }
+          const b = tempBets.value[mId];
+          if (b.scoreHome === '' || b.scoreAway === '') return;
+          const pId = `${currentUser.value.username}_${mId}`;
+          const nP = { id: pId, username: currentUser.value.username, match_id: String(mId), score_home: parseInt(b.scoreHome), score_away: parseInt(b.scoreAway), scorer_home: b.scorerHome, scorer_away: b.scorerAway };
+          
+          if (isCloudMode.value) { 
+            await supabase.from('predictions').upsert([nP]); 
+            await syncData(); 
+          } else { 
+            predictions.value = predictions.value.filter(x => x.id !== pId); 
+            predictions.value.push(nP); 
+            localStorage.setItem('l_p', JSON.stringify(predictions.value)); 
           }
-
-          showToast("Giocatore eliminato.", "success");
-          syncData();
+          showToast("Pronostico salvato!", "success");
         };
 
-        const saveDeadline = async (giornata) => {
-          const val = document.getElementById('dl-' + giornata).value;
-          if (!val) {
-            showToast("Specifica data e ora valide!", "error");
-            return;
+        const startEditing = (u) => { editingUser.value = { ...u }; };
+        const updateUser = async () => {
+          if (isCloudMode.value) { 
+            await supabase.from('users').update({ password: editingUser.value.password, avatar: editingUser.value.avatar }).eq('username', editingUser.value.username); 
+            await syncData(); 
+          } else { 
+            users.value = users.value.map(x => x.username === editingUser.value.username ? editingUser.value : x); 
+            localStorage.setItem('l_u', JSON.stringify(users.value)); 
           }
+          editingUser.value = null; 
+          showToast("Utente modificato!", "success");
+        };
 
-          if (isConfigured.value) {
-            const { error } = await supabase.from('giornate_settings').upsert([{
-              giornata: parseInt(giornata),
-              deadline: new Date(val).toISOString()
-            }]);
-            if (error) {
-              showToast("Impossibile salvare la scadenza sul cloud.", "error");
-              return;
-            }
-          } else {
-            const index = settings.value.findIndex(s => s.giornata === parseInt(giornata));
-            const newObj = { giornata: parseInt(giornata), deadline: val };
-            if (index !== -1) settings.value[index] = newObj;
-            else settings.value.push(newObj);
-            localStorage.setItem('zimbelli_settings', JSON.stringify(settings.value));
+        const deleteUser = async (name) => {
+          if (!confirm("Eliminare?")) return;
+          if (isCloudMode.value) { 
+            await supabase.from('users').delete().eq('username', name); 
+            await syncData(); 
+          } else { 
+            users.value = users.value.filter(x => x.username !== name); 
+            localStorage.setItem('l_u', JSON.stringify(users.value)); 
           }
+          showToast("Eliminato!", "success");
+        };
 
-          showToast(`Scadenza Giorno ${giornata} salvata!`, "success");
-          syncData();
+        const saveDeadline = async (g) => {
+          const v = document.getElementById('dl-' + g).value; if (!v) return;
+          if (isCloudMode.value) { 
+            await supabase.from('giornate_settings').upsert([{ giornata: parseInt(g), deadline: new Date(v).toISOString() }]); 
+            await syncData(); 
+          } else { 
+            settings.value.deadlines[g] = v; 
+            localStorage.setItem('l_d', JSON.stringify(settings.value.deadlines)); 
+          }
+          showToast("Scadenza salvata!", "success");
         };
 
         const toggleMatchActive = async (id) => {
-          const matchToUpdate = matches.value.find(m => m.id === id);
-          if (!matchToUpdate) return;
-
-          // Se il match è già assegnato a questo giorno, lo togliamo. Altrimenti lo inseriamo (massimo 2 per giornata)
-          const currentCount = matches.value.filter(m => m.giornata === selectedGiorno.value).length;
-          let nextGiornata = matchToUpdate.giornata === selectedGiorno.value ? null : selectedGiorno.value;
-
-          if (nextGiornata && currentCount >= 2) {
-            showToast("Puoi associare un massimo di 2 partite a ciascun Giorno di Gioco!", "error");
-            return;
+          const match = matches.value.find(x => x.id === id); if (!match) return;
+          const count = matches.value.filter(x => x.giornata === selectedGiorno.value).length;
+          let nextG = match.giornata === selectedGiorno.value ? null : selectedGiorno.value;
+          if (nextG && count >= 2) { showToast("Massimo 2 partite al giorno!", "error"); return; }
+          
+          if (isCloudMode.value) { 
+            await supabase.from('matches').update({ giornata: nextG }).eq('id', id); 
+            await syncData(); 
+          } else { 
+            match.giornata = nextG; 
+            localStorage.setItem('l_m', JSON.stringify(matches.value)); 
           }
-
-          if (isConfigured.value) {
-            const { error } = await supabase.from('matches').update({
-              giornata: nextGiornata
-            }).eq('id', id);
-            
-            if (error) {
-              showToast("Errore di aggiornamento sul server.", "error");
-              return;
-            }
-          } else {
-            matchToUpdate.giornata = nextGiornata;
-            localStorage.setItem('zimbelli_matches', JSON.stringify(matches.value));
-          }
-
-          showToast("Match giornata modificato!", "success");
-          syncData();
+          showToast("Assegnazione aggiornata!", "success");
         };
 
         const saveMatchResult = async (id) => {
-          const scoreHomeVal = document.getElementById('h-score-' + id).value;
-          const scoreAwayVal = document.getElementById('a-score-' + id).value;
-          const scorerHomeVal = document.getElementById('h-scorer-' + id).value;
-          const scorerAwayVal = document.getElementById('a-scorer-' + id).value;
-
-          if (scoreHomeVal === "" || scoreAwayVal === "") {
-            showToast("Punteggio finale mancante!", "error");
-            return;
+          const sH = document.getElementById('h-score-' + id).value, sA = document.getElementById('a-score-' + id).value;
+          const scH = document.getElementById('h-scorer-' + id).value, scA = document.getElementById('a-scorer-' + id).value;
+          if (sH === "" || sA === "") return;
+          const upd = { score_home: parseInt(sH), score_away: parseInt(sA), scorer_home: scH, scorer_away: scA };
+          
+          if (isCloudMode.value) { 
+            await supabase.from('matches').update(upd).eq('id', id); 
+            await syncData(); 
+          } else { 
+            matches.value = matches.value.map(x => x.id === id ? { ...x, ...upd } : x); 
+            localStorage.setItem('l_m', JSON.stringify(matches.value)); 
           }
-
-          const matchUpdate = {
-            score_home: parseInt(scoreHomeVal),
-            score_away: parseInt(scoreAwayVal),
-            scorer_home: scorerHomeVal,
-            scorer_away: scorerAwayVal
-          };
-
-          if (isConfigured.value) {
-            const { error } = await supabase.from('matches').update(matchUpdate).eq('id', id);
-            if (error) {
-              showToast("Errore di salvataggio dei risultati in cloud.", "error");
-              return;
-            }
-          } else {
-            const idx = matches.value.findIndex(m => m.id === id);
-            if (idx !== -1) matches.value[idx] = { ...matches.value[idx], ...matchUpdate };
-            localStorage.setItem('zimbelli_matches', JSON.stringify(matches.value));
-          }
-
-          showToast("Risultato registrato! Classifiche aggiornate in tempo reale.", "success");
-          syncData();
+          showToast("Risultato salvato!", "success");
         };
 
-        return {
-          activeTab,
-          users,
-          matches,
-          predictions,
-          settings,
-          selectedGiorno,
-          giornateList,
-          currentUser,
-          loginName,
-          loginPass,
-          loginError,
-          showRegisterModal,
-          registerName,
-          registerPass,
-          registerAvatar,
-          avatars,
-          editingUser,
-          tempBets,
-          toast,
-          loading,
-          isConfigured,
-          formatDatetime,
-          getGiornoDeadline,
-          isBettingOpen,
-          getPlayersList,
-          sortedUsers,
-          matchesForSelectedGiorno,
-          hasSavedPrediction,
-          getSavedPred,
-          login,
-          logout,
-          registerUser,
-          savePrediction,
-          startEditing,
-          updateUser,
-          deleteUser,
-          saveDeadline,
-          toggleMatchActive,
-          saveMatchResult,
-          syncData
-        };
+        return { activeTab, users, matches, predictions, settings, selectedGiorno, giornateList, currentUser, loginName, loginPass, loginError, showRegisterModal, registerName, registerPass, registerAvatar, avatars, editingUser, tempBets, toast, loading, isCloudMode, setupUrl, setupKey, isConfigured, saveDatabaseConfig, formatDatetime, getGiornoDeadline, isBettingOpen, getPlayersList, sortedUsers, matchesForSelectedGiorno, hasSavedPrediction, getSavedPred, login, logout, registerUser, savePrediction, startEditing, updateUser, deleteUser, saveDeadline, toggleMatchActive, saveMatchResult };
       }
     }).mount('#app');
+
   </script>
 </body>
 </html>
