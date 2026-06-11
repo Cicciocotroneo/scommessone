@@ -1,1 +1,719 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scommessone 2026 - Gli Zimbelli</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <style>
+    body { background-color: #020617; color: #f1f5f9; }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    [v-cloak] { display: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+
+  <div id="app" class="flex-grow flex flex-col" v-cloak>
+    
+    <div v-if="!isCloudMode" class="bg-amber-500/10 border-b border-amber-500/30 text-amber-200 text-xs py-2.5 px-4 text-center">
+      <span class="font-bold">⚡ Modalità Sandbox Locale attiva:</span> I dati vengono salvati temporaneamente sul tuo browser. Incolla i parametri Supabase in fondo alla scheda "Regolamento & Cloud" per giocare in remoto con i tuoi amici.
+    </div>
+
+    <div v-if="toast.show" class="fixed bottom-5 right-5 z-50 max-w-sm">
+      <div :class="['p-4 rounded-2xl border shadow-2xl flex items-center gap-3', 
+        toast.type === 'success' ? 'bg-emerald-950 border-emerald-500 text-emerald-200' : 'bg-red-955 border-red-800 text-red-200']">
+        <span class="text-xs font-bold">{{ toast.message }}</span>
+        <button @click="toast.show = false" class="ml-auto text-slate-400">✕</button>
+      </div>
+    </div>
+
+    <header class="border-b border-slate-800 bg-slate-900/90 sticky top-0 z-40 px-4 py-3 shadow-md">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        
+        <div class="text-center sm:text-left">
+          <div class="flex items-center justify-center sm:justify-start gap-2">
+            <span class="text-2xl">🏆</span>
+            <h1 class="text-2xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-yellow-200 to-emerald-400 bg-clip-text text-transparent">
+              SCOMMESSONE 2026
+            </h1>
+          </div>
+          <div class="text-[10px] mt-1 flex items-center justify-center sm:justify-start gap-1 font-bold text-slate-400">
+            <span>RITORNO ALLE ORIGINI</span>
+            <span>•</span>
+            <span class="bg-gradient-to-r from-amber-500 to-yellow-300 bg-clip-text text-transparent uppercase tracking-wider">
+              powered by Gli Zimbelli ⚡
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div v-if="currentUser" class="flex items-center gap-3 bg-slate-800 p-2 rounded-xl border border-slate-700">
+            <span class="text-2xl">{{ currentUser.avatar }}</span>
+            <div class="text-left">
+              <div class="text-[11px] font-bold text-slate-300">
+                {{ currentUser.username }} <span v-if="currentUser.role === 'master'">👑</span>
+              </div>
+              <div class="text-xs font-black text-amber-400">{{ currentUser.points || 0 }} Punti</div>
+            </div>
+            <button @click="logout" class="text-[10px] bg-red-950 text-red-200 py-1 px-2.5 rounded-lg uppercase font-bold">Esci</button>
+          </div>
+
+          <div v-for="u in []" :key="u"></div>
+
+          <div v-if="!currentUser" class="flex items-center gap-2">
+            <form @submit.prevent="login" class="flex flex-wrap items-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-800">
+              <input type="text" placeholder="Utente" v-model="loginName" required class="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-2 py-1.5 w-24 focus:outline-none">
+              <input type="password" placeholder="Password" v-model="loginPass" required class="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-2 py-1.5 w-24 focus:outline-none">
+              <button type="submit" class="bg-amber-500 text-slate-950 text-xs font-black py-1.5 px-3 rounded-lg uppercase">Entra</button>
+            </form>
+            <button @click="showRegisterModal = true" class="text-xs border border-slate-700 hover:border-slate-500 px-3 py-2 rounded-xl text-slate-300 font-semibold transition">Iscriviti</button>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <nav class="bg-slate-900 border-b border-slate-800 overflow-x-auto scrollbar-none">
+      <div class="max-w-7xl mx-auto flex px-4">
+        <button @click="activeTab = 'classifica'" :class="['py-4 px-4 text-xs font-bold uppercase tracking-wider border-b-2 shrink-0 transition-all', activeTab === 'classifica' ? 'border-amber-500 text-amber-400' : 'border-transparent text-slate-400']">Classifica Live</button>
+        <button @click="activeTab = 'scommesse'" :class="['py-4 px-4 text-xs font-bold uppercase tracking-wider border-b-2 shrink-0 transition-all', activeTab === 'scommesse' ? 'border-amber-500 text-amber-400' : 'border-transparent text-slate-400']">Schedina</button>
+        <button @click="activeTab = 'regolamento'" :class="['py-4 px-4 text-xs font-bold uppercase tracking-wider border-b-2 shrink-0 transition-all', activeTab === 'regolamento' ? 'border-amber-500 text-amber-400' : 'border-transparent text-slate-400']">Regolamento & Cloud</button>
+        <button v-if="currentUser && currentUser.role === 'master'" @click="activeTab = 'master'" :class="['py-4 px-4 text-xs font-black uppercase tracking-wider border-b-2 shrink-0 text-rose-400 transition-all', activeTab === 'master' ? 'border-rose-500' : 'border-transparent']">Master Panel 👑</button>
+      </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6">
+      
+      <section v-if="activeTab === 'classifica'" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4">
+            <span class="text-3xl">🥇</span>
+            <div>
+              <h3 class="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">Leader Attuale</h3>
+              <p class="text-lg font-black text-slate-100 mt-0.5">{{ users[0] ? users[0].username : 'Nessuno' }} {{ users[0] ? users[0].avatar : '' }}</p>
+            </div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4">
+            <span class="text-3xl">⏰</span>
+            <div>
+              <h3 class="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">Deadline Giorno {{ selectedGiorno }}</h3>
+              <p class="text-xs font-bold text-slate-100 mt-0.5">{{ formatDatetime(getGiornoDeadline(selectedGiorno)) }}</p>
+              <span class="text-[9px] font-mono mt-1 block" :class="isBettingOpen(selectedGiorno) ? 'text-emerald-400' : 'text-red-400'">
+                ● {{ isBettingOpen(selectedGiorno) ? 'SCOMMESSE APERTE' : 'TEMPO SCADUTO' }}
+              </span>
+            </div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4">
+            <span class="text-3xl">📡</span>
+            <div>
+              <h3 class="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">In Condivisione</h3>
+              <p class="text-xs font-bold text-slate-100 mt-0.5">{{ isCloudMode ? 'Database Cloud Attivo' : 'Sandbox Locale (Offline)' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 bg-slate-900 p-3 rounded-xl border border-slate-800">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Visualizza Dettagli Turno:</span>
+          <select v-model="selectedGiorno" class="bg-slate-950 border border-slate-800 text-xs rounded-lg px-3 py-1.5 focus:outline-none text-slate-200">
+            <option v-for="g in giornateList" :key="g" :value="g">Giorno {{ g }}</option>
+          </select>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="px-6 py-5 border-b border-slate-800 flex justify-between items-center">
+            <h2 class="text-base font-black text-slate-100 uppercase tracking-wide">Classifica Generale Gruppo</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-950/50 text-slate-400 text-[10px] font-mono uppercase tracking-wider border-b border-slate-800">
+                  <th class="py-4 px-6 text-center w-16">Pos</th>
+                  <th class="py-4 px-4">Giocatore</th>
+                  <th class="py-4 px-4 text-center">Esatti (+3)</th>
+                  <th class="py-4 px-4 text-center">Segni (+1)</th>
+                  <th class="py-4 px-4 text-center">Marcatori (+5)</th>
+                  <th class="py-4 px-6 text-right font-black text-amber-400 w-28">Punti Totali</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/40">
+                <tr v-for="(user, idx) in sortedUsers" :key="user.username" class="hover:bg-slate-800/10 transition-colors">
+                  <td class="py-4 px-6 text-center">
+                    <span :class="['inline-flex items-center justify-center w-7 h-7 rounded-lg font-bold text-xs', 
+                      idx === 0 ? 'bg-amber-500 text-slate-950 font-black' : idx === 1 ? 'bg-slate-300 text-slate-950' : 'bg-slate-800 text-slate-300']">
+                      {{ idx + 1 }}
+                    </span>
+                  </td>
+                  <td class="py-4 px-4 font-semibold text-slate-100 flex items-center gap-3">
+                    <span class="text-2xl bg-slate-950 p-1.5 rounded-xl border border-slate-800">{{ user.avatar }}</span>
+                    <span class="text-sm font-bold">{{ user.username }} <span v-if="user.role === 'master'">👑</span></span>
+                  </td>
+                  <td class="py-4 px-4 text-center text-slate-300 font-mono text-xs">{{ user.details?.exact || 0 }}</td>
+                  <td class="py-4 px-4 text-center text-slate-300 font-mono text-xs">{{ user.details?.signs || 0 }}</td>
+                  <td class="py-4 px-4 text-center text-slate-300 font-mono text-xs">{{ user.details?.scorers || 0 }}</td>
+                  <td class="py-4 px-6 text-right font-black text-amber-400 text-base font-mono">{{ user.points || 0 }} pts</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section v-if="activeTab === 'scommesse'" class="space-y-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900 p-4 rounded-xl border border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pronostici Giorno:</span>
+            <select v-model="selectedGiorno" class="bg-slate-950 border border-slate-800 text-xs rounded-lg px-3 py-1.5 focus:outline-none text-slate-200">
+              <option v-for="g in giornateList" :key="g" :value="g">Giorno {{ g }}</option>
+            </select>
+          </div>
+          <div class="text-right text-[11px] font-mono">
+            <span class="text-slate-400">Scadenza Turno:</span>
+            <span class="text-amber-400 font-bold block">{{ formatDatetime(getGiornoDeadline(selectedGiorno)) }}</span>
+          </div>
+        </div>
+
+        <div v-if="!currentUser" class="bg-slate-900 border border-slate-800 p-8 rounded-2xl text-center max-w-md mx-auto space-y-4">
+          <span class="text-4xl block">🔑</span>
+          <h3 class="text-md font-black text-slate-100 uppercase tracking-wider">Accesso Richiesto</h3>
+          <p class="text-xs text-slate-400">Registrati o accedi con il tuo account in alto per inserire la tua schedina online.</p>
+        </div>
+
+        <div v-else class="space-y-4">
+          <div v-if="matchesForSelectedGiorno.length === 0" class="bg-slate-900 border border-slate-800 p-12 rounded-2xl text-center text-slate-400 text-xs">
+            Nessun match programmato dal Master per il Giorno {{ selectedGiorno }}.
+          </div>
+
+          <div v-else v-for="match in matchesForSelectedGiorno" :key="match.id" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 relative">
+            <div v-if="hasSavedPrediction(match.id)" class="absolute top-0 right-0 bg-emerald-500/10 border-l border-b border-emerald-500/30 text-emerald-400 font-mono text-[9px] px-3 py-1 rounded-bl-xl font-bold">
+              ✓ PRONOSTICO MEMORIZZATO
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+              <div class="lg:col-span-4">
+                <span class="text-[9px] font-mono text-amber-400 block mb-1">Inizio: {{ formatDatetime(match.match_date) }}</span>
+                <div class="text-base font-black text-slate-100 uppercase tracking-tight">{{ match.home }} vs {{ match.away }}</div>
+              </div>
+
+              <div class="lg:col-span-6 grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div class="bg-slate-950 p-2 rounded-xl flex items-center justify-center gap-2 border border-slate-850">
+                  <div class="text-center">
+                    <span class="text-[8px] text-slate-500 font-bold block uppercase">{{ match.home }}</span>
+                    <input type="number" min="0" :disabled="!isBettingOpen(selectedGiorno)" v-model="tempBets[match.id].scoreHome" class="bg-slate-900 text-center text-slate-100 font-bold w-10 rounded border border-slate-800 focus:outline-none py-1">
+                  </div>
+                  <span class="mt-3 text-slate-600 font-black">-</span>
+                  <div class="text-center">
+                    <span class="text-[8px] text-slate-500 font-bold block uppercase">{{ match.away }}</span>
+                    <input type="number" min="0" :disabled="!isBettingOpen(selectedGiorno)" v-model="tempBets[match.id].scoreAway" class="bg-slate-900 text-center text-slate-100 font-bold w-10 rounded border border-slate-800 focus:outline-none py-1">
+                  </div>
+                </div>
+
+                <div>
+                  <label class="text-[8px] text-slate-450 block font-bold uppercase mb-1">Marcatore {{ match.home }}</label>
+                  <select :disabled="!isBettingOpen(selectedGiorno)" v-model="tempBets[match.id].scorerHome" class="bg-slate-950 border border-slate-800 text-slate-100 text-xs rounded-xl px-2 py-2 w-full focus:outline-none">
+                    <option value="Nessuno">-- Nessuno --</option>
+                    <option v-for="p in getPlayersList(match.home)" :key="p" :value="p">{{ p }}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="text-[8px] text-slate-450 block font-bold uppercase mb-1">Marcatore {{ match.away }}</label>
+                  <select :disabled="!isBettingOpen(selectedGiorno)" v-model="tempBets[match.id].scorerAway" class="bg-slate-950 border border-slate-800 text-slate-100 text-xs rounded-xl px-2 py-2 w-full focus:outline-none">
+                    <option value="Nessuno">-- Nessuno --</option>
+                    <option v-for="p in getPlayersList(match.away)" :key="p" :value="p">{{ p }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="lg:col-span-2">
+                <button v-if="isBettingOpen(selectedGiorno)" @click="savePrediction(match.id, selectedGiorno)" class="bg-amber-500 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs w-full uppercase tracking-wider transition">Invia</button>
+                <button v-else disabled class="bg-slate-855 text-slate-500 font-bold py-2.5 px-4 rounded-xl text-xs w-full cursor-not-allowed">🔒 Chiuso</button>
+              </div>
+            </div>
+
+            <div v-if="hasSavedPrediction(match.id)" class="mt-4 pt-4 border-t border-slate-800 text-xs flex flex-wrap gap-4 text-slate-400 font-mono">
+              <div>Punteggio scommesso: <span class="text-slate-100 font-bold">{{ getSavedPred(match.id).score_home }} - {{ getSavedPred(match.id).score_away }}</span></div>
+              <div>Marcatore {{ match.home }}: <span class="text-amber-400 font-bold">{{ getSavedPred(match.id).scorer_home }}</span></div>
+              <div>Marcatore {{ match.away }}: <span class="text-amber-400 font-bold">{{ getSavedPred(match.id).scorer_away }}</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section v-if="activeTab === 'regolamento'" class="max-w-2xl mx-auto space-y-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-xs text-slate-400 space-y-4">
+          <h3 class="font-bold text-slate-100 text-sm">Regole d'Assegnazione Punti</h3>
+          <p>● <strong>1 punto:</strong> Segno 1X2 indovinato al 90esimo.<br>● <strong>3 punti:</strong> Segno + Risultato esatto indovinato.<br>● <strong>5 punti:</strong> Segno + Risultato esatto + Marcatori corretti di entrambe le squadre.<br>● <strong>Regola 0-0:</strong> Il tetto massimo ottenibile è bloccato a 3 punti.</p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <h3 class="font-bold text-blue-400 text-sm uppercase font-mono">📡 Attivazione Connessione Supabase Cloud</h3>
+          <p class="text-xs text-slate-400">Incolla qui i parametri trovati su Supabase (Project Settings -> API) per connettere istantaneamente tutti i telefoni dei tuoi amici.</p>
+          <div class="space-y-3">
+            <input type="text" placeholder="Supabase Project URL (es. https://xyz.supabase.co)" v-model="setupUrl" class="bg-slate-950 border border-slate-800 p-2.5 w-full rounded-xl text-xs text-slate-100 focus:outline-none">
+            <input type="text" placeholder="Supabase Anon public Key" v-model="setupKey" class="bg-slate-950 border border-slate-800 p-2.5 w-full rounded-xl text-xs text-slate-100 focus:outline-none">
+            <button @click="saveDatabaseConfig" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-2 px-4 rounded-xl uppercase">Collega Database Remoto</button>
+          </div>
+        </div>
+      </section>
+
+      <section v-if="activeTab === 'master' && currentUser?.role === 'master'" class="space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+            <h3 class="text-xs font-bold uppercase text-slate-300 font-mono">👥 Gestione Concorrenti Registrati</h3>
+            
+            <div v-if="editingUser" class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+              <span class="text-[10px] font-bold text-amber-400 uppercase block">Modifica profilo per {{ editingUser.username }}</span>
+              <input type="text" v-model="editingUser.password" placeholder="Nuova Password" class="bg-slate-900 p-2 rounded text-xs w-full text-slate-100 focus:outline-none">
+              <div class="flex gap-1 flex-wrap">
+                <button type="button" v-for="e in avatars" :key="e" @click="editingUser.avatar = e" :class="['p-1 border rounded text-sm', editingUser.avatar === e ? 'border-amber-500 bg-slate-900':'border-slate-800']">{{e}}</button>
+              </div>
+              <button @click="updateUser" class="w-full bg-emerald-600 text-white font-bold text-xs py-1.5 rounded uppercase">Salva Modifiche</button>
+            </div>
+
+            <div class="max-h-56 overflow-y-auto space-y-2 pr-1">
+              <div v-for="u in users" :key="u.username" class="bg-slate-950 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between text-xs">
+                <div>
+                  <span class="text-xl mr-2">{{ u.avatar }}</span>
+                  <span class="font-bold">{{ u.username }}</span>
+                  <span class="text-[9px] text-slate-500 block font-mono">Password: {{ u.password }}</span>
+                </div>
+                <div class="flex gap-1.5">
+                  <button @click="startEditing(u)" class="text-amber-500 text-[10px] font-bold bg-slate-900 px-2 py-1 rounded">Modifica</button>
+                  <button v-if="u.role !== 'master'" @click="deleteUser(u.username)" class="text-red-500 text-[10px] font-bold bg-slate-900 px-2 py-1 rounded">Elimina</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+            <h3 class="text-xs font-bold uppercase text-slate-300 font-mono">⏰ Scadenze per Giorno di Gioco</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div v-for="g in giornateList" :key="g" class="bg-slate-950 p-3 rounded-xl border border-slate-850 space-y-2">
+                <span class="text-[10px] font-bold text-amber-400 block font-mono">GIORNO {{ g }}</span>
+                <input type="datetime-local" :value="settings.deadlines ? settings.deadlines[g] : ''" :id="'dl-' + g" class="bg-slate-900 p-1.5 rounded text-[11px] w-full text-slate-200 border border-slate-800 focus:outline-none">
+                <button @click="saveDeadline(g)" class="w-full bg-slate-800 text-[10px] py-1 rounded font-bold text-slate-300 hover:bg-slate-700 transition">Salva Scadenza</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+            <h3 class="text-xs font-bold uppercase text-slate-300 font-mono">⚽ Associa Partite al Turno (Max 2 per Giorno)</h3>
+            <div class="flex items-center gap-1">
+              <span class="text-[11px] text-slate-400">Giorno corrente:</span>
+              <select v-model="selectedGiorno" class="bg-slate-950 border border-slate-850 text-xs p-1 rounded">
+                <option v-for="g in giornateList" :key="g" :value="g">Giorno {{ g }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div v-for="match in matches" :key="match.id" @click="toggleMatchActive(match.id)" 
+              :class="['p-3 rounded-xl border cursor-pointer text-xs flex justify-between items-center transition', match.giornata === selectedGiorno ? 'border-amber-500 bg-amber-950/20 text-slate-100':'border-slate-800 text-slate-500']">
+              <div>
+                <span class="text-[9px] font-mono block text-slate-500">{{ formatDatetime(match.match_date) }}</span>
+                <strong>{{ match.home }} - {{ match.away }}</strong>
+              </div>
+              <span class="text-[10px] font-bold">{{ match.giornata === selectedGiorno ? 'GIORNO ' + selectedGiorno : (match.giornata ? 'GIORNO ' + match.giornata : '○ Libera') }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+          <h3 class="text-xs font-bold uppercase text-slate-300 font-mono border-b border-slate-800 pb-2">📝 Risultati Ufficiali Turno (Giorno {{ selectedGiorno }})</h3>
+          <div class="space-y-4">
+            <div v-for="match in matchesForSelectedGiorno" :key="match.id" class="flex flex-wrap gap-3 items-center bg-slate-950 p-4 rounded-xl border border-slate-850 text-xs justify-between">
+              <span class="font-bold uppercase w-36">{{ match.home }} - {{ match.away }}</span>
+              <div class="flex items-center gap-1">
+                <input type="number" :id="'h-score-' + match.id" :value="match.score_home" class="bg-slate-900 text-center border border-slate-800 p-1 w-12 rounded-lg text-slate-100">
+                <span class="text-slate-600 font-bold">-</span>
+                <input type="number" :id="'a-score-' + match.id" :value="match.score_away" class="bg-slate-900 text-center border border-slate-800 p-1 w-12 rounded-lg text-slate-100">
+              </div>
+              <div class="flex gap-2">
+                <select :id="'h-scorer-' + match.id" :value="match.scorer_home || 'Nessuno'" class="bg-slate-900 border border-slate-800 p-1.5 rounded-lg text-[10px] w-28 text-slate-200">
+                  <option value="Nessuno">Nessuno</option>
+                  <option v-for="p in getPlayersList(match.home)" :value="p">{{ p }}</option>
+                </select>
+                <select :id="'a-scorer-' + match.id" :value="match.scorer_away || 'Nessuno'" class="bg-slate-900 border border-slate-800 p-1.5 rounded-lg text-[10px] w-28 text-slate-200">
+                  <option value="Nessuno">Nessuno</option>
+                  <option v-for="p in getPlayersList(match.away)" :value="p">{{ p }}</option>
+                </select>
+              </div>
+              <button @click="saveMatchResult(match.id)" class="bg-rose-700 text-white font-bold px-4 py-1.5 rounded-xl text-[10px] uppercase">Salva</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <div v-if="showRegisterModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-base font-black text-slate-200 uppercase tracking-tight">📝 Iscrizione Giocatore</h3>
+          <button @click="showRegisterModal = false" class="text-slate-400">✕</button>
+        </div>
+        <form @submit.prevent="registerUser" class="space-y-4">
+          <input type="text" placeholder="Nome Concorrente" v-model="registerName" required class="bg-slate-950 border border-slate-800 p-2.5 w-full rounded-lg text-xs focus:outline-none text-slate-100">
+          <input type="password" placeholder="Password" v-model="registerPass" required class="bg-slate-950 border border-slate-800 p-2.5 w-full rounded-lg text-xs focus:outline-none text-slate-100">
+          <div class="flex flex-wrap gap-1">
+            <button type="button" v-for="emoji in avatars" :key="emoji" @click="registerAvatar = emoji" :class="['text-lg p-1.5 rounded-lg border', registerAvatar === emoji ? 'border-amber-500 bg-slate-950' : 'border-slate-800 bg-slate-900']">{{ emoji }}</button>
+          </div>
+          <button type="submit" class="w-full bg-amber-500 text-slate-950 font-black py-2 rounded-xl text-xs uppercase tracking-wider">Registrati Ora</button>
+        </form>
+      </div>
+    </div>
+
+    <footer class="border-t border-slate-850 bg-slate-950 py-5 text-center text-xs text-slate-500">
+      <span class="font-bold">Scommessone 2026</span> • <span class="text-amber-400 font-black uppercase tracking-wider"> powered by Gli Zimbelli ⚡</span>
+    </footer>
+
+  </div>
+
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    // Tabellone di base iniziale dei Mondiali 2026 (Partite ufficiali tratte dal file)
+    const SEED_MATCHES = [
+      { id: "m1", home: "Messico", away: "Sudafrica", match_date: "2026-06-11T19:00:00Z", giornata: 1 },
+      { id: "m2", home: "Corea del Sud", away: "Repubblica Ceca", match_date: "2026-06-12T04:00:00Z", giornata: 1 },
+      { id: "m3", home: "Canada", away: "Bosnia ed Erzegovina", match_date: "2026-06-12T21:00:00Z", giornata: 2 },
+      { id: "m4", home: "Stati Uniti", away: "Paraguay", match_date: "2026-06-13T03:00:00Z", giornata: 2 },
+      { id: "m5", home: "Qatar", away: "Svizzera", match_date: "2026-06-13T21:00:00Z", giornata: 3 },
+      { id: "m6", home: "Brasile", away: "Marocco", match_date: "2026-06-14T00:00:00Z", giornata: 3 },
+      { id: "m7", home: "Haiti", away: "Scozia", match_date: "2026-06-14T03:00:00Z", giornata: 4 },
+      { id: "m8", home: "Australia", away: "Turchia", match_date: "2026-06-14T06:00:00Z", giornata: 4 },
+      { id: "m9", home: "Germania", away: "Curaçao", match_date: "2026-06-14T19:00:00Z", giornata: 5 },
+      { id: "m10", home: "Olanda", away: "Giappone", match_date: "2026-06-14T22:00:00Z", giornata: 5 }
+    ];
+
+    // Elenco Convocati Ufficiali 48 Nazionali (Corrispondenza esatta con le squadre)
+    const ROSTERS_DATA = {
+      "Algeria": ["Benbot", "Mastil", "Ramdane", "Zidane", "Abada", "Ait-Nouri", "Belaid", "Belghali", "Bensebaini", "Chergui", "Hadjam", "Mandi", "Tougai", "Aouar", "Bentaleb", "Boudaoui", "Chaibi", "Maza", "Titraoui", "Zerrouki", "Amoura", "Benbouali", "Boulbina", "Ghedjemis", "Gouiri", "Mahrez", "Moussa Hadji"],
+      "Arabia Saudita": ["Ahmed Alkassar", "Mohammed Alowais", "Nawaf Alaqidi", "Saud Abdulhamid", "Jehad Thikri", "Abdulelah Alamri", "Hassan Altambakti", "Ali Lajami", "Hassan Kadish", "Moteb Alharbi", "Ali Majrashi", "Mohammed Abu Alshamat", "Ziyad Aljohani", "Nasser Al Dawsari", "Mohammed Kanno", "Abdullah Alkhaibari", "Nawaf Buwashi", "Abdul Ahlamddan", "Khalid Alghannam", "Ala Alhajji", "Musab Aljuwyr", "Sultan Mandash", "Aiman Yahya", "Salem Al Dawsari", "Feras Albrikan", "Saleh Alshehri"],
+      "Argentina": ["Musso", "Rulli", "E. Martinez", "Balerdi", "Tagliafico", "Montiel", "Lisandro Martinez", "Romero", "Otamendi", "Medina", "Molina", "Paredes", "De Paul", "Barco", "Lo Celso", "Palacios", "Mac Allister", "Fernandez", "Alvarez", "Messi", "Nico Gonzalez", "Thiago Almada", "Giuliano Simeone", "Nico Paz", "Lopez", "Lautaro Martinez"],
+      "Australia": ["Beach", "Izzo", "Ryan", "Behich", "Bos", "Burgess", "Circati", "Degenek", "Geria", "Herrington", "Italiano", "Souttar", "Trewin", "Devlin", "Hrustic", "Irvine", "Metcalfe", "Okon-Engstler", "O'Neill", "Irankunda", "Leckie", "Mabil", "Toure", "Velupillay", "Volpato", "Yengi"],
+      "Austria": ["Pentz", "Schlager", "Wiegele", "Affengruber", "Alaba", "Danso", "Friedl", "Lienhart", "Mwene", "Posch", "Prass", "Svoboda", "Baumgartner", "Chukwuemeka", "Grillitsch", "Laimer", "Sabitzer", "Schlager", "Schmid", "Schöpf", "Seewald", "Wanner", "Wimmer", "Arnautovic", "Gregoritsch", "Kalajdzic"],
+      "Belgio": ["Courtois", "Lammens", "Penders", "Castagne", "Debast", "De Cuyper", "De Winter", "Mechele", "Meunier", "Ngoy", "Seys", "Theate", "De Bruyne", "Onana", "Raskin", "Tielemans", "Vanaken", "Witsel", "De Ketelaere", "Doku", "Fernandez Pardo", "Lukaku", "Lukebakio", "Moreira", "Saelemaekers", "Trossard"],
+      "Bosnia ed Erzegovina": ["Vasilj", "Zlomislic", "Hadzikic", "Dedic", "Katic", "Radeljic", "Celik", "Mujakic", "Muharemovic", "Kolasinac", "Hadzikadunic", "Hadziahmetovic", "Sunjic", "Tahirovic", "Burnic", "Gigovic", "Mahmic", "Basic", "Memic", "Alajbegovic", "Bajraktarevic", "Bazdar", "Lukic", "Tabakovic", "Demirovic", "Dzeko"],
+      "Brasile": ["Alisson", "Ederson", "Weverton", "Alex Sandro", "Bremer", "Danilo", "Douglas Santos", "Gabriel Magalhaes", "Ibanez", "Leo Pereira", "Marquinhos", "Wesley", "Bruno Guimaraes", "Casemiro", "Danilo", "Fabinho", "Paquetà", "Endrick", "Gabriel Martinelli", "Igor Thiago", "Luis Henrique", "Matheus Cunha", "Neymar", "Raphinha", "Rayan", "Vinicius"],
+      "Canada": ["Crepeau", "Goodman", "St. Clair", "Bombito", "Cornelius", "Davies", "De Fougerolles", "Johnston", "Jones", "Laryea", "Sigur", "Waterman", "Ahmed", "Buchanan", "Choiniere", "Eustaquio", "Flores", "Koné", "Millar", "Osorio", "Saliba", "Shaggelburg", "J. David", "P. David", "Larin", "Oluwaseyi"],
+      "Capo Verde": ["Vozinha", "Da Rosa", "Carlos Santos", "Moreira", "W. Pina", "Fernandes", "Cabral", "Costa", "Pico", "Pires", "Stopira", "Diney", "Monteiro", "Arcanjo", "Y. Semedo", "L. Duarte", "D. Duarte", "K. Pina", "Mendes", "W. Semedo", "Rodrigues", "J. Cabral", "N. Da Costa", "Livramento", "Benchimol", "Varela"],
+      "Colombia": ["Montero", "Ospina", "Vargas", "S. Arias", "Ditta", "Lucumì", "Machado", "Mina", "Mojica", "Munoz", "Sanchez", "J. Arias", "Carrascal", "Campaz", "Castano", "Lerma", "Portilla", "Puerta", "Quintero", "Rios", "James Rodriguez", "Cordoba", "Luis Diaz", "Gomez", "Hernandez", "Suarez"],
+      "Corea del Sud": ["Kim Seunggyu", "Song Bumkeun", "Jo Hyeonwood", "Kim Moohwan", "Kim Minjae", "Kim Taehyeon", "Park Jinseob", "Seol Youngwoo", "Jens Castrop", "Lee Kihyuk", "Lee Taeseok", "Lee Hanbeom", "Cho Yumin", "Kim Jingyu", "Bae Junho", "Paik Seungho", "Yang Hyunjun", "Eom Jisung", "Lee Kangin", "Lee Doonggyeong", "Lee Jaesung", "Hwang Inbeom", "Hwang Heechan", "Son Heugmin", "Oh Hyeongyu", "Cho Guesung"],
+      "Costa d'Avorio": ["Fofana", "Lafont", "Koné", "Konan", "Akpa", "Singo", "Doué", "Ndicka", "Agbadou", "Ousmane Diomandé", "Kossounou", "Kessié", "Fofana", "Sangaré", "Oulai", "Guiagon", "Seri", "Adingra", "Diallo", "Pépé", "Guessand", "Yan Diomandè", "Wahi", "DIakité", "Touré", "Bonny"],
+      "Curaçao": ["Bodak", "Doornbusch", "Room", "Bazoer", "Brenet", "Van Eijma", "Floranus", "Fonville", "Gaari", "Obispo", "Sambo", "J. Bacuna", "L. Bacuna", "Comenencia", "Felida", "Martha", "Noslin", "Roemeratoe", "Antonisse", "Chong", "Gorré", "Hansen", "Kastaneer", "Kuwas", "Locadia", "Margaritha"],
+      "Croazia": ["Livaković", "Kotarski", "Pandur", "Gvardiol", "Ćaleta-Car", "Šutalo", "Stanišić", "Pongračić", "Erlić", "Vušković", "Modrić", "Kovačić", "Pašalić", "Vlašić", "Sučić", "Baturina", "Jakić", "Moro", "Fruk", "Perišić", "Kramarić", "Budimir", "Musa", "Matanović"],
+      "Ecuador": ["Galíndez", "Ramirez", "Valle", "Pacho", "Hincapié", "Ordonez", "Porozo", "Estupinan", "Medina", "Preciado", "Caicedo", "Alcivar", "Castillo", "Franco", "Vite", "Minda", "Paez", "Angulo", "Plata", "A. Yeboah", "Valencia", "Arevalo", "E. Valencia", "Rodriguez"],
+      "Egitto": ["M. Alaa", "El Shenawy", "Shobeir", "Suleiman", "Abdelmaguid", "Abdelmoneim", "T. Alaa", "Fathy", "Fatouh", "Hafez", "Hany", "Ibrahim", "Rabia", "Adel", "Ashour", "Ateya", "Emad", "Hassan", "Lashin", "Saber", "Trezeguet", "Ziko", "Zizo", "Abdelkarim", "Marmoush", "Salah"],
+      "Francia": ["Maignan", "Samba", "Risser", "Digne", "Malo Gusto", "Lucas Hernandez", "Theo Hernandez", "Konaté", "Koundé", "Lacroix", "Saliba", "Upamecano", "Kantè", "Koné", "Rabiot", "Tchouameni", "Zaïre-Emery", "Akliouche", "Barcola", "Cherki", "Dembelé", "Doué", "Mateta", "Mbappé", "Olise", "Marcus Thuram"],
+      "Germania": ["Neuer", "Baumann", "Nübel", "Anton", "Brown", "Kimmich", "Raum", "Rüdiger", "Thiaw", "Schlotletbeck", "Tah", "Goretzka", "Groß", "Nmecha", "Stiller", "Leweling", "Karl", "Pavlović", "Musiala", "Amiri", "Havertz", "Sané", "Undav", "Beier", "Woltemade", "Wirtz"],
+      "Ghana": ["Asare", "Ati-Zigi", "Anang", "Baba Abdul Rahman", "Mensah", "Senaya", "Seidu", "Mumin", "Opoku", "Adjetey", "Oppong Peprah", "Luckassen", "Owusu", "Thomas Partey", "Sibo", "Boakye", "Yirenkyi", "Fatawu Issahaku", "K. Sulemana", "Bonsu Baah", "Nuamah", "Semenyo", "Thomas-Asante", "Adu", "Inaki Williams", "Jordan Ayew"],
+      "Giappone": ["Z. Suzuki", "Osako", "Hayakawa", "Nagatomo", "Taniguchi", "Itakura", "Watanabe", "Tomiyasu", "H. Ito", "Seko", "Sugawara", "J. Suzuki", "Endo", "J. Ito", "Kamada", "Doan", "Tanaka", "Nakamura", "Sano", "Kubo", "Y. Suzuki", "Ogawa", "Maeda", "Ueda", "Shiogai", "Goto"],
+      "Giordania": ["Abulaila", "Bani Attiah", "Al-Fakhouri", "Al-Arab", "Nasin", "Al-Rosan", "Abu Dahba", "Abualnadi", "Obaid", "Abu Hasheesh", "Abu-Taha", "Haddad", "Badawi", "Al-Rahsdan", "Jamous", "Al-Rawabdeh", "Saadeh", "Ayed", "Al-Dawoud", "Al-Mardi", "Fakhouri", "Al-Tamari", "Shararh", "Azaizeh", "Olwan", "Sabra"],
+      "Haiti": ["Placide", "A. Pierre", "Duverger", "Arcus", "Paugain", "Experience", "Duverne", "Lacroix", "Adé", "Thermoncy", "Delcroix", "Bellegarde", "Jean-Jacques", "Dominique", "Sainté", "L. Pierre", "Casimir", "W. Pierre", "Nazon", "Pierrot", "Joseph", "Deedson", "Louicius", "Fortuné", "Providence", "Isidor"],
+      "Inghilterra": ["Pickford", "D. Henderson", "Trafford", "James", "Livramento", "Guehi", "Konsa", "Stones", "Quansah", "O'Reilly", "Burn", "Spence", "Rice", "Anderson", "Bellingham", "J. Henderson", "Rogers", "Mainoo", "Eze", "Kane", "Toney", "Watkins", "Saka", "Madueke", "Rashford", "Gordon"],
+      "Iran": ["Beyranvand", "Hoseini", "Niazmand", "Khalilzadeh", "Kanaani", "Nemati", "Eiri", "Hajisafi", "Mohammadi", "Hardani", "Rezaeiyan", "Ghodoos", "Ezatollahi", "Cheshmi", "Razagh Niya", "Ghorbani", "Ghayedi", "Yousefi", "Jahanbakhsh", "Torabi", "Mohebbi", "Taremi", "Hosseinzadeh", "Dargahi", "Alipour", "Moghanloo"],
+      "Iraq": ["Talib", "Hassan", "Basil", "H. Ali", "Younis", "Tahseen", "Sulaka", "Hashem", "Doski", "Yahya", "Ismail", "Putros", "Saadoon", "Al-Ammari", "Yakob", "Iqbal", "Sher", "Bayesh", "Qasem", "Amyn", "Farji", "Jassim Ali Al-Hamadi", "Youssef", "Hussein", "M. Ali"],
+      "Marocco": ["Bounou", "El Kajoui", "Tagnaouti", "Hakimi", "Mazraoui", "Salah-Eddine", "Belammari", "Diop", "Riad", "El Ouahdi", "Halhal", "Aguero", "El Ayanoui", "El Khannouss", "Ounahi", "Bouaddi", "Saibari", "Amrabat", "El Mourabet", "Diaz", "Aboe", "Amaimouni", "Rahimi", "Talbi", "Yassine", "El Kaabi"],
+      "Messico": ["Rangel", "Ochoa", "Acevedo", "Reyes", "Gallardo", "Sanchez", "Montes", "Vasquez", "M. Chavez", "Lira", "Romo", "Vargas", "Gutierrez", "Pineda", "Alvarez", "Mora", "Huerta", "Fidalgo", "L. Chavez", "Alvarado", "Vega", "Quinones", "Gimenez", "Martinez", "Gonzalez", "Jimenez"],
+      "Norvegia": ["Nyland", "Selvik", "Tangvik", "Ajer", "Bjorkan", "Falchener", "Heggem", "Langas", "Ostigard", "Pedersen", "Ryerson", "Wolfe", "Aasgaard", "Aursnes", "Berg", "Berge", "Odegaard", "Thorsby", "Thosrtvedt", "Bobb", "Haaland", "Hauge", "Nusa", "Schjelderup", "Sorloth", "Strand Larsen"],
+      "Nuova Zelanda": ["Crocombe", "Paulsen", "Woud", "Bindon", "Boxall", "Cacace", "De Vries", "Elliot", "Payne", "Pijnaker", "Smith", "Surman", "Bayliss", "Bell", "Rufer", "Stamenic", "Thomas", "Barbarouses", "Garbett", "Just", "McCowatt", "Old", "Randall", "Singh", "Waine", "Wood"],
+      "Olanda": ["Flekken", "Roefs", "Verbruggen", "Aké", "Ato", "Dumfries", "Timber", "Van Dijk", "Van De Ven", "Van Hecke", "De Jong", "De Roon", "Gravenberch", "Koopmeiners", "Reijnders", "Til", "Timber", "Wieffer", "Brobbey", "Depay", "Gakpo", "Kluivert", "Lang", "Malen", "Summerville", "Weghorst"],
+      "Panama": ["Mosquera", "Mejia", "Samudio", "Blackman", "Gutierrez", "Murillo", "Escobar", "Andrade", "Farina", "Cordoba", "Davis", "Ramos", "Miller", "Godoy", "Carrasquilla", "Harvey", "Martinez", "J.Rodriguez", "Yanis", "Barcenas", "Quintero", "Londono", "Diaz", "Waterman", "Fajardo", "T.Rodriguez"],
+      "Paraguay": ["Fernandez", "Gill", "Olveira", "Velazquez", "Caceres", "Gustavo Gomez", "Alderete", "Balbuena", "Canale", "Alonso", "Maidana", "Diego Gomez", "Cubas", "Bobadilla", "Galarza", "Ojeda", "Magalhaes", "Romero Gamarra", "Caballero", "Almiron", "Enciso", "Sosa", "Sanabria", "Arce", "Avalos", "Pitta"],
+      "Portogallo": ["Diogo Costa", "José Sà", "Rui Silva", "Ricardo Velho", "Dalot", "Matheus Nunes", "Semedo", "Cancelo", "Nuno Mendes", "Gonçalo Inacio", "Veiga", "Ruben Dias", "Araujo", "Ruben Neves", "Samuel Costa", "Joao Neves", "Vitinha", "Bruno Fernandes", "Bernardo Silva", "Joao Felix", "Trincao", "Conceicao", "Pedro Neto", "Leao", "Guedes", "Gonçalo Ramos", "Cristiano Ronaldo"],
+      "Qatar": ["Abunada", "Barshan", "Zakaria", "Al Alawi", "Khoukhi", "Al Amin", "Mendes", "Laye", "Miguel", "Al Brake", "Al Hussain", "Madibo", "Katem", "Fathy", "Boudiaf", "Gaber", "Mannai", "Al Janewi", "Alaa", "Afif", "Al Moez Ali", "Junior", "Al Haydos", "Muntari", "Mohammed", "Youssef"],
+      "Repubblica Ceca": ["Hornicek", "Kovar", "Stanek", "Coufal", "Doudera", "Holes", "Hranac", "Chaloupek", "Jurasek", "Krejci", "Zeleny", "Zima", "Bucha", "Cerv", "Darida", "Ladra", "Provod", "Sadilek", "Sochurek", "Sojka", "Soucek", "Sulc", "Visinsky", "Hlozek", "Chory", "Chytil", "Kabongo", "Kuchta", "Schick"],
+      "DR Congo": ["Fayulu", "Mpasi", "Epolo", "Wan-Bissaka", "Kalulu", "Mbemba", "Kapuadi", "Tuanzebe", "Batubinsika", "Bushiri", "Masuaku", "J. Kayembe", "Moutoussamy", "Mukau", "Kakuta", "Pickel", "Sadiki", "E. Kayembe", "Bongonda", "Mbuku", "Bakambu", "Banza", "Mayele", "Cipenga", "Wissa", "Elia"],
+      "Scozia": ["Gordon", "Gunn", "Kelly", "Hanley", "Hendry", "Hickey", "Hyam", "McKenna", "Patterson", "Ralston", "Robertson", "Souttar", "Tierney", "Christie", "Curtis", "Ferguson", "Fletcher", "Gannon-Doak", "McGinn", "McLean", "McTominay", "Adams", "Dykes", "Hirst", "Shankland", "Stewart"],
+      "Senegal": ["Edouard Mendy", "Diaw", "Diouf", "Koulibaly", "Niakhate", "M. Sarr", "Seck", "Diatta", "Mendy", "Jakobs", "Diouf", "Idrissa Gana Gueye", "Papa Gueye", "Lamine Camara", "Diarra", "Ciss", "Pape Matar Sarr", "Bara Sapoko Ndiaye", "Mané", "Ismaila Sarr", "Ilman Ndiaye", "Diao", "Mbaye", "Jackson", "Dieng", "Cherif Ndiaye"],
+      "Spagna": ["Unai Simon", "Raya", "Joan Garcia", "Llorente", "Porro", "Cubarsì", "Pubill", "Laporte", "Eric Garcia", "Cucurella", "Grimaldo", "Pedri", "Dani Olmo", "Rodri", "Zubimendi", "Fabian Ruiz", "Gavi", "Mikel Merino", "Yamal", "Yeremy Pino", "Oyarzabal", "Ferran", "Borja Iglesias", "Nico Williams", "Victor Munoz", "Baena"],
+      "Stati Uniti": ["Brady", "Freese", "Turner", "Arfsten", "Dest", "Freeman", "McKenzie", "Ream", "Richards", "A.Robinson", "M.Robinson", "Scally", "Trusty", "Aaronson", "Adams", "Berhalter", "McKennie", "Reyna", "Roldan", "Tillman", "Weah", "Zendejas", "Balogun", "Pepi", "Pulisic", "Wright"],
+      "Sudafrica": ["Williams", "Goss", "Chaine", "Mudau", "Sibisi", "Okon", "Ndamane", "Modiba", "Kabini", "Matuludi", "Makhanya", "Sebelebele", "Cross", "Mbokazi", "Mokoena", "Mbatha", "Sitole", "Adams", "Appollis", "Rayners", "Moremi", "Mofokeng", "Makgopa", "Zwane", "Foster", "Maseko"],
+      "Svezia": ["Johansson", "Nordfeldt", "Zetterstrom", "Ekdal", "Gudmundsson", "Hien", "Johansson", "Lagerbielke", "Lindelof", "Smith", "Starfelt", "Stoud", "Svensson", "Ayari", "Bergvall", "Karlstrom", "Sema", "Svanberg", "Zeneli", "Ali", "Bernhardsson", "Elanga", "Gyokeres", "Isak", "Nilsson", "Nygren"],
+      "Svizzera": ["Keller", "Kobe", "Mvogo", "Akanji", "Amenda", "Comert", "Elvedi", "Jacquez", "Muehim", "Rodriguez", "Widmer", "Aebischer", "Amdouni", "Fassnacht", "Freuler", "Itten", "Jashari", "Manzanbi", "Rieder", "Xhaka", "Zakaria", "Embolo", "Ndoye", "Okafor", "Sow", "Vargas"],
+      "Tunisia": ["Dahmen", "Chamakh", "Ben Hassen", "Valery", "Neffati", "Bronn", "Talbi", "Rekik", "Raoud", "Chikaoui", "Ali Abdi", "Ben Hamida", "Shkiri", "Mahmoud", "Khedira", "Ben Slimane", "Ben Ouanes", "Garbi", "Hannibal", "Ayari", "Achouri", "Saad", "Chaouat", "Mastouri", "Elloumi", "Tounekti"],
+      "Turchia": ["Bayındır", "Günok", "Çakır", "Bardakcı", "Söyüncü", "Elmalı", "Kadıoğlu", "Demiral", "Müldür", "Kabak", "Akaydin", "Çelik", "Çalhanoğlu", "Yüksek", "Ayhan", "Kökçü", "Özcan", "Güler", "Uzun", "Yılmaz", "Gül", "Kahveci", "Yıldız", "Aktürkoğlu", "Aydın", "Akgün"],
+      "Uruguay": ["Mele", "Muslera", "Rochet", "R. Araujo", "Bueno", "S. Caceres", "Gimenez", "Olivera", "Piquerez", "Varela", "Vina", "M. Araujo", "Bentancur", "Canobbio", "De Arrascaeta", "De La Cruz", "Martinez", "Pellistri", "Rodriguez", "Sanabria", "Ugarte", "Valverde", "Zalazar", "Aguire", "Nunez", "Vinas"],
+      "Uzbekistan": ["Yusupov", "Nematov", "Ergashev", "Khusanov", "Alijonov", "Sayfiev", "Ashurmatov", "Nasrullaev", "Eshmurodov", "Abdullaev", "Karimov", "Ulmasaliev", "Urozov", "Mozgovoy", "Shukurov", "Iskanderov", "Hamrobekov", "Masharipov", "Urunov", "Khamdamov", "Ganiev", "Fayzullaev", "Esanov", "Shomurodov", "Amonov", "Sergeev"]
+    };
+
+    // Incolla qui le tue chiavi reali Supabase se vuoi inserirle nel file
+    const SUPABASE_URL = "";
+    const SUPABASE_ANON_KEY = "";
+
+    const defaultUsers = [
+      { username: 'Master', password: 'admin', avatar: '👑', role: 'master' },
+      { username: 'Bob', password: '123', avatar: '⚽', role: 'user' }
+    ];
+
+    createApp({
+      setup() {
+        const activeTab = ref('classifica');
+        const users = ref([]);
+        const matches = ref([]);
+        const predictions = ref([]);
+        const selectedGiorno = ref(1);
+        const giornateList = [1, 2, 3, 4, 5, 6, 7];
+        const settings = ref({ deadlines: {} });
+
+        const setupUrl = ref('');
+        const setupKey = ref('');
+
+        const currentUser = ref(null);
+        const loginName = ref('');
+        const loginPass = ref('');
+        const loginError = ref('');
+
+        const showRegisterModal = ref(false);
+        const registerName = ref('');
+        const registerPass = ref('');
+        const registerAvatar = ref('⚽');
+        const avatars = ["⚽", "🏆", "👑", "🚀", "🎩", "🎮", "🎸", "Rex", "🦁", "🍕"];
+
+        const editingUser = ref(null);
+        const tempBets = ref({});
+        const toast = ref({ show: false, message: '', type: 'info' });
+        const loading = ref(true);
+        const isCloudMode = ref(false);
+
+        let supabase = null;
+
+        const getDbCredentials = () => {
+          const u = localStorage.getItem('s_url') || SUPABASE_URL;
+          const k = localStorage.getItem('s_key') || SUPABASE_ANON_KEY;
+          if (u && k && u.trim().length > 10 && k.trim().length > 10 && !u.includes("YOUR_SUPABASE")) {
+            return { url: u.trim(), key: k.trim() };
+          }
+          return null;
+        };
+
+        const isConfigured = computed(() => getDbCredentials() !== null);
+
+        const showToast = (message, type = 'info') => {
+          toast.value = { show: true, message, type };
+          setTimeout(() => { toast.value.show = false; }, 3000);
+        };
+
+        const formatDatetime = (dtStr) => {
+          if (!dtStr) return 'Chiusura non impostata';
+          return new Date(dtStr).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' });
+        };
+
+        const getGiornoDeadline = (giornata) => settings.value.deadlines[giornata] || null;
+        const isBettingOpen = (giornata) => {
+          const dl = getGiornoDeadline(giornata);
+          if (!dl) return true;
+          return new Date() < new Date(dl);
+        };
+
+        const getPlayersList = (team) => ROSTERS_DATA[team] || [];
+
+        const sortedUsers = computed(() => {
+          return users.value.map(user => {
+            let pts = 0, exact = 0, signs = 0, scorers = 0;
+            const uPreds = predictions.value.filter(p => p.username === user.username);
+            uPreds.forEach(pred => {
+              const match = matches.value.find(m => m.id === pred.match_id);
+              if (!match || match.score_home === null || match.score_home === undefined) return;
+              const rH = match.score_home, rA = match.score_away, pH = pred.score_home, pA = pred.score_away;
+              const rS = rH > rA ? '1' : (rH === rA ? 'X':'2'), pS = pH > pA ? '1' : (pH === pA ? 'X':'2');
+              if (rS === pS) {
+                pts += 1; signs += 1;
+                if (rH === pH && rA === pA) {
+                  pts += 2; signs -= 1; exact += 1;
+                  if (!(rH === 0 && rA === 0)) {
+                    const hM = rH === 0 ? pred.scorer_home==='Nessuno' : pred.scorer_home===match.scorer_home;
+                    const aM = rA === 0 ? pred.scorer_away==='Nessuno' : pred.scorer_away===match.scorer_away;
+                    if (hM && aM) { pts += 2; exact -= 1; scorers += 1; }
+                  }
+                }
+              }
+            });
+            return { ...user, points: pts, details: { exact, signs, scorers } };
+          }).sort((a, b) => b.points - a.points);
+        });
+
+        const matchesForSelectedGiorno = computed(() => matches.value.filter(m => m.giornata === selectedGiorno.value));
+        const hasSavedPrediction = (matchId) => currentUser.value && predictions.value.some(p => p.username === currentUser.value.username && p.match_id === matchId);
+        const getSavedPred = (matchId) => predictions.value.find(p => p.username === currentUser.value.username && p.match_id === matchId) || {};
+
+        const saveDatabaseConfig = () => {
+          if (!setupUrl.value || !setupKey.value) return;
+          localStorage.setItem('s_url', setupUrl.value.trim());
+          localStorage.setItem('s_key', setupKey.value.trim());
+          window.location.reload();
+        };
+
+        const initTempBets = () => {
+          matches.value.forEach(m => {
+            if (!tempBets.value[m.id]) {
+              const saved = getSavedPred(m.id);
+              tempBets.value[m.id] = {
+                scoreHome: saved.score_home !== undefined ? saved.score_home : '',
+                scoreAway: saved.score_away !== undefined ? saved.score_away : '',
+                scorerHome: saved.scorer_home || 'Nessuno',
+                scorerAway: saved.scorer_away || 'Nessuno'
+              };
+            }
+          });
+        };
+
+        const syncData = async () => {
+          if (!isCloudMode.value) return;
+          try {
+            const { data: u } = await supabase.from('users').select('*'); if (u) users.value = u;
+            const { data: m } = await supabase.from('matches').select('*'); if (m) matches.value = m;
+            const { data: p } = await supabase.from('predictions').select('*'); if (p) predictions.value = p;
+            const { data: s } = await supabase.from('giornate_settings').select('*');
+            if (s) { s.forEach(x => { settings.value.deadlines[x.giornata] = x.deadline; }); }
+            initTempBets();
+          } catch (e) { console.error(e); }
+        };
+
+        onMounted(() => {
+          const creds = getDbCredentials();
+          if (creds) {
+            try {
+              supabase = window.supabase.createClient(creds.url, creds.key);
+              isCloudMode.value = true;
+              syncData();
+              setInterval(syncData, 12000);
+            } catch (err) {
+              isCloudMode.value = false;
+            }
+          }
+          
+          if (!isCloudMode.value) {
+            users.value = JSON.parse(localStorage.getItem('l_u')) || [...defaultUsers];
+            matches.value = JSON.parse(localStorage.getItem('l_m')) || SEED_MATCHES;
+            predictions.value = JSON.parse(localStorage.getItem('l_p')) || [];
+            settings.value.deadlines = JSON.parse(localStorage.getItem('l_d')) || {};
+          }
+          initTempBets();
+          loading.value = false;
+        });
+
+        const login = () => {
+          const u = users.value.find(x => x.username.toLowerCase() === loginName.value.trim().toLowerCase() && x.password === loginPass.value);
+          if (u) { currentUser.value = u; loginName.value = ''; loginPass.value = ''; initTempBets(); showToast(`Entrato come ${u.username}`, "success"); }
+          else { loginError.value = "Credenziali non corrette."; }
+        };
+
+        const logout = () => { currentUser.value = null; };
+
+        const registerUser = async () => {
+          const name = registerName.value.trim();
+          if (users.value.some(x => x.username.toLowerCase() === name.toLowerCase())) { showToast("Nome occupato!", "error"); return; }
+          const nU = { username: name, password: registerPass.value, avatar: registerAvatar.value, role: 'user' };
+          
+          if (isCloudMode.value) { 
+            await supabase.from('users').insert([nU]); 
+            await syncData(); 
+          } else { 
+            users.value.push(nU); 
+            localStorage.setItem('l_u', JSON.stringify(users.value)); 
+          }
+          showToast("Iscrizione completata!", "success"); showRegisterModal.value = false; registerName.value = ''; registerPass.value = '';
+        };
+
+        const savePrediction = async (mId, g) => {
+          if (!isBettingOpen(g)) { showToast("Tempo scaduto!", "error"); return; }
+          const b = tempBets.value[mId];
+          if (b.scoreHome === '' || b.scoreAway === '') return;
+          const pId = `${currentUser.value.username}_${mId}`;
+          const nP = { id: pId, username: currentUser.value.username, match_id: String(mId), score_home: parseInt(b.scoreHome), score_away: parseInt(b.scoreAway), scorer_home: b.scorerHome, scorer_away: b.scorerAway };
+          
+          if (isCloudMode.value) { 
+            await supabase.from('predictions').upsert([nP]); 
+            await syncData(); 
+          } else { 
+            predictions.value = predictions.value.filter(x => x.id !== pId); 
+            predictions.value.push(nP); 
+            localStorage.setItem('l_p', JSON.stringify(predictions.value)); 
+          }
+          showToast("Pronostico salvato!", "success");
+        };
+
+        const startEditing = (u) => { editingUser.value = { ...u }; };
+        const updateUser = async () => {
+          if (isCloudMode.value) { 
+            await supabase.from('users').update({ password: editingUser.value.password, avatar: editingUser.value.avatar }).eq('username', editingUser.value.username); 
+            await syncData(); 
+          } else { 
+            users.value = users.value.map(x => x.username === editingUser.value.username ? editingUser.value : x); 
+            localStorage.setItem('l_u', JSON.stringify(users.value)); 
+          }
+          editingUser.value = null; showToast("Utente modificato!", "success");
+        };
+
+        const deleteUser = async (name) => {
+          if (!confirm("Eliminare?")) return;
+          if (isCloudMode.value) { 
+            await supabase.from('users').delete().eq('username', name); 
+            await syncData(); 
+          } else { 
+            users.value = users.value.filter(x => x.username !== name); 
+            localStorage.setItem('l_u', JSON.stringify(users.value)); 
+          }
+          showToast("Eliminato!", "success");
+        };
+
+        const saveDeadline = async (g) => {
+          const v = document.getElementById('dl-' + g).value; if (!v) return;
+          if (isCloudMode.value) { 
+            await supabase.from('giornate_settings').upsert([{ giornata: parseInt(g), deadline: new Date(v).toISOString() }]); 
+            await syncData(); 
+          } else { 
+            settings.value.deadlines[g] = v; 
+            localStorage.setItem('l_d', JSON.stringify(settings.value.deadlines)); 
+          }
+          showToast("Scadenza salvata!", "success");
+        };
+
+        const toggleMatchActive = async (id) => {
+          const match = matches.value.find(x => x.id === id); if (!match) return;
+          const count = matches.value.filter(x => x.giornata === selectedGiorno.value).length;
+          let nextG = match.giornata === selectedGiorno.value ? null : selectedGiorno.value;
+          if (nextG && count >= 2) { showToast("Massimo 2 partite al giorno!", "error"); return; }
+          
+          if (isCloudMode.value) { 
+            await supabase.from('matches').update({ giornata: nextG }).eq('id', id); 
+            await syncData(); 
+          } else { 
+            match.giornata = nextG; 
+            localStorage.setItem('l_m', JSON.stringify(matches.value)); 
+          }
+          showToast("Assegnazione aggiornata!", "success");
+        };
+
+        const saveMatchResult = async (id) => {
+          const sH = document.getElementById('h-score-' + id).value, sA = document.getElementById('a-score-' + id).value;
+          const scH = document.getElementById('h-scorer-' + id).value, scA = document.getElementById('a-scorer-' + id).value;
+          if (sH === "" || sA === "") return;
+          const upd = { score_home: parseInt(sH), score_away: parseInt(sA), scorer_home: scH, scorer_away: scA };
+          
+          if (isCloudMode.value) { 
+            await supabase.from('matches').update(upd).eq('id', id); 
+            await syncData(); 
+          } else { 
+            matches.value = matches.value.map(x => x.id === id ? { ...x, ...upd } : x); 
+            localStorage.setItem('l_m', JSON.stringify(matches.value)); 
+          }
+          showToast("Risultato salvato!", "success");
+        };
+
+        return { activeTab, users, matches, predictions, settings, selectedGiorno, giornateList, currentUser, loginName, loginPass, loginError, showRegisterModal, registerName, registerPass, registerAvatar, avatars, editingUser, tempBets, toast, loading, isCloudMode, setupUrl, setupKey, isConfigured, saveDatabaseConfig, formatDatetime, getGiornoDeadline, isBettingOpen, getPlayersList, sortedUsers, matchesForSelectedGiorno, hasSavedPrediction, getSavedPred, login, logout, registerUser, savePrediction, startEditing, updateUser, deleteUser, saveDeadline, toggleMatchActive, saveMatchResult };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
