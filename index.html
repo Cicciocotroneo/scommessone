@@ -1,1 +1,299 @@
+```html
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scommessone 2026 - Gli Zimbelli</title>
+  
+  <!-- CSS Framework per la grafica mobile-first -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Vue.js 3 per la logica dell'interfaccia utente -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  
+  <!-- Client JavaScript ufficiale di Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <style>
+    body { background-color: #020617; color: #f1f5f9; }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    [v-cloak] { display: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+
+  <div id="app" class="flex-grow flex flex-col" v-cloak>
+    
+    <!-- BANNER MODALITÀ DI EMERGENZA LOCALE (Attivo solo se mancano le chiavi nel codice) -->
+    <div v-if="!isCloudMode" class="bg-amber-500/10 border-b border-amber-500/30 text-amber-200 text-xs py-2.5 px-4 text-center">
+      <span class="font-bold">⚡ Scommessone in modalità locale:</span> I dati vengono salvati temporaneamente su questo browser. Per giocare in remoto con i tuoi amici, apri questo file con il Blocco Note e inserisci le tue chiavi Supabase reali nello script in fondo.
+    </div>
+
+    <!-- NOTIFICHE TOAST INTEGRIATE (ALERT REPLACEMENT) -->
+    <div v-if="toast.show" class="fixed bottom-5 right-5 z-50 max-w-sm animate-bounce">
+      <div :class="['p-4 rounded-2xl border shadow-2xl flex items-center gap-3', 
+        toast.type === 'success' ? 'bg-emerald-950 border-emerald-500 text-emerald-200' : 'bg-red-955 border-red-800 text-red-200']">
+        <span class="text-xs font-bold">{{ toast.message }}</span>
+        <button @click="toast.show = false" class="ml-auto text-slate-400">✕</button>
+      </div>
+    </div>
+
+    <!-- HEADER DI GIOCO -->
+    <header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-40 px-4 py-3 shadow-md">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        
+        <!-- Logo e Sottotitolo -->
+        <div class="text-center sm:text-left">
+          <div class="flex items-center justify-center sm:justify-start gap-2">
+            <span class="text-2xl">🏆</span>
+            <h1 class="text-2xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-yellow-200 to-emerald-400 bg-clip-text text-transparent">
+              SCOMMESSONE 2026
+            </h1>
+          </div>
+          <div class="text-[10px] mt-1 flex items-center justify-center sm:justify-start gap-1 font-bold text-slate-400">
+            <span>RITORNO ALLE ORIGINI</span>
+            <span class="text-slate-600">•</span>
+            <span class="bg-gradient-to-r from-amber-500 to-yellow-300 bg-clip-text text-transparent uppercase tracking-wider">
+              powered by Gli Zimbelli ⚡
+            </span>
+          </div>
+        </div>
+
+        <!-- Sezione Profilo / Login / Registrazione Concorrente -->
+        <div class="flex items-center gap-3">
+          
+          <!-- Se loggato -->
+          <div v-if="currentUser" class="flex items-center gap-3 bg-slate-800 p-2 rounded-xl border border-slate-700">
+            <span class="text-2xl">{{ currentUser.avatar }}</span>
+            <div class="text-left">
+              <div class="text-[11px] font-bold text-slate-300">
+                {{ currentUser.username }} <span v-if="currentUser.role === 'master'">👑</span>
+              </div>
+              <div class="text-xs font-black text-amber-400">{{ currentUser.points || 0 }} Punti</div>
+            </div>
+            <button @click="logout" class="text-[10px] bg-red-950 text-red-200 py-1 px-2.5 rounded-lg uppercase font-bold">Esci</button>
+          </div>
+
+          <!-- Se nessun utente è connesso -->
+          <div v-else class="flex items-center gap-2">
+            <form @submit.prevent="login" class="flex flex-wrap items-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-800">
+              <input type="text" placeholder="Utente" v-model="loginName" required class="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-2 py-1.5 w-24 focus:outline-none">
+              <input type="password" placeholder="Password" v-model="loginPass" required class="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-2 py-1.5 w-24 focus:outline-none">
+              <button type="submit" class="bg-amber-500 text-slate-950 text-xs font-black py-1.5 px-3 rounded-lg uppercase">Entra</button>
+            </form>
+            <button @click="showRegisterModal = true" class="text-xs border border-slate-700 hover:border-slate-500 px-3 py-2 rounded-xl text-slate-300 font-semibold transition">Iscriviti</button>
+          </div>
+
+        </div>
+
+      </div>
+    </header>
+
+    <!-- NAVIGAZIONE TAB -->
+    <nav class="bg-slate-900 border-b border-slate-800 overflow-x-auto scrollbar-none">
+      <div class="max-w-7xl mx-auto flex px-4">
+        <button @click="activeTab = 'classifica'" :class="['py-4 px-4 text-xs font-bold uppercase tracking-wider border-b-2 shrink-0 transition-all', activeTab === 'classifica' ? 'border-amber-500 text-amber-400' : 'border-transparent text-slate-400']">Classifica Live</button>
+        <button @click="activeTab = 'scommesse'" :class="['py-4 px-4 text-xs font-bold uppercase tracking-wider border-b-2 shrink-0 transition-all', activeTab === 'scommesse' ? 'border-amber-500 text-amber-400' : 'border-transparent text-slate-400']">Schedina</button>
+        <button @click="activeTab = 'regolamento'" :class="['py-4 px-4 text-xs font-bold uppercase tracking-wider border-b-2 shrink-0 transition-all', activeTab === 'regolamento' ? 'border-amber-500 text-amber-400' : 'border-transparent text-slate-400']">Regolamento</button>
+        <button v-if="currentUser && currentUser.role === 'master'" @click="activeTab = 'master'" :class="['py-4 px-4 text-xs font-black uppercase tracking-wider border-b-2 shrink-0 text-rose-400 transition-all', activeTab === 'master' ? 'border-rose-500' : 'border-transparent']">Master Panel 👑</button>
+      </div>
+    </nav>
+
+    <!-- SCHERMATA DI LOADING -->
+    <div v-if="loading" class="flex-grow flex flex-col items-center justify-center space-y-2">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
+      <p class="text-xs text-slate-400 font-mono">Ricezione dati dal cloud degli Zimbelli...</p>
+    </div>
+
+    <!-- PRINCIPALE -->
+    <main v-else class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6">
+      
+      <!-- SCHEDA: CLASSIFICA LIVE -->
+      <section v-if="activeTab === 'classifica'" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4">
+            <span class="text-3xl">🥇</span>
+            <div>
+              <h3 class="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">Leader Attuale</h3>
+              <p class="text-lg font-black text-slate-100 mt-0.5">{{ users[0] ? users[0].username : 'Nessuno' }} {{ users[0] ? users[0].avatar : '' }}</p>
+            </div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4">
+            <span class="text-3xl">⏰</span>
+            <div>
+              <h3 class="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">Deadline Giorno {{ selectedGiorno }}</h3>
+              <p class="text-xs font-bold text-slate-100 mt-0.5">{{ formatDatetime(getGiornoDeadline(selectedGiorno)) }}</p>
+              <span class="text-[9px] font-mono mt-1 block" :class="isBettingOpen(selectedGiorno) ? 'text-emerald-400' : 'text-red-400'">
+                ● {{ isBettingOpen(selectedGiorno) ? 'SCOMMESSE APERTE' : 'TEMPO SCADUTO' }}
+              </span>
+            </div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4">
+            <span class="text-3xl">📡</span>
+            <div>
+              <h3 class="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">Sorgente Database</h3>
+              <p class="text-xs font-bold text-slate-100 mt-0.5">{{ isCloudMode ? 'Cloud Condiviso Supabase' : 'Database Locale Browser' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 bg-slate-900 p-3 rounded-xl border border-slate-800">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Seleziona Turno:</span>
+          <select v-model="selectedGiorno" class="bg-slate-950 border border-slate-800 text-xs rounded-lg px-3 py-1.5 focus:outline-none text-slate-200">
+            <option v-for="g in giornateList" :key="g" :value="g">Giorno {{ g }}</option>
+          </select>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="px-6 py-5 border-b border-slate-800 flex justify-between items-center">
+            <h2 class="text-base font-black text-slate-100 uppercase tracking-wide">Classifica Generale Gruppo</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-950/50 text-slate-400 text-[10px] font-mono uppercase tracking-wider border-b border-slate-800">
+                  <th class="py-4 px-6 text-center w-16">Pos</th>
+                  <th class="py-4 px-4">Giocatore</th>
+                  <th class="py-4 px-4 text-center">Esatti (+3)</th>
+                  <th class="py-4 px-4 text-center">Segni (+1)</th>
+                  <th class="py-4 px-4 text-center">Marcatori (+5)</th>
+                  <th class="py-4 px-6 text-right font-black text-amber-400 w-28">Punti Totali</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/40">
+                <tr v-for="(user, idx) in sortedUsers" :key="user.username" class="hover:bg-slate-800/10 transition-colors">
+                  <td class="py-4 px-6 text-center">
+                    <span :class="['inline-flex items-center justify-center w-7 h-7 rounded-lg font-bold text-xs', 
+                      idx === 0 ? 'bg-amber-500 text-slate-950 font-black' : idx === 1 ? 'bg-slate-300 text-slate-950' : 'bg-slate-800 text-slate-300']">
+                      {{ idx + 1 }}
+                    </span>
+                  </td>
+                  <td class="py-4 px-4 font-semibold text-slate-100 flex items-center gap-3">
+                    <span class="text-2xl bg-slate-950 p-1.5 rounded-xl border border-slate-800">{{ user.avatar }}</span>
+                    <span class="text-sm font-bold">{{ user.username }} <span v-if="user.role === 'master'">👑</span></span>
+                  </td>
+                  <td class="py-4 px-4 text-center text-slate-300 font-mono text-xs">{{ user.details?.exact || 0 }}</td>
+                  <td class="py-4 px-4 text-center text-slate-300 font-mono text-xs">{{ user.details?.signs || 0 }}</td>
+                  <td class="py-4 px-4 text-center text-slate-300 font-mono text-xs">{{ user.details?.scorers || 0 }}</td>
+                  <td class="py-4 px-6 text-right font-black text-amber-400 text-base font-mono">{{ user.points || 0 }} pts</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCHEDA 2: SCHEDINA GIORNALIERA -->
+      <section v-if="activeTab === 'scommesse'" class="space-y-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900 p-4 rounded-xl border border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pronostici Giorno:</span>
+            <select v-model="selectedGiorno" class="bg-slate-950 border border-slate-800 text-xs rounded-lg px-3 py-1.5 focus:outline-none text-slate-200">
+              <option v-for="g in giornateList" :key="g" :value="g">Giorno {{ g }}</option>
+            </select>
+          </div>
+          <div class="text-right text-[11px] font-mono">
+            <span class="text-slate-400">Scadenza Turno:</span>
+            <span class="text-amber-400 font-bold block">{{ formatDatetime(getGiornoDeadline(selectedGiorno)) }}</span>
+          </div>
+        </div>
+
+        <div v-if="!currentUser" class="bg-slate-900 border border-slate-800 p-8 rounded-2xl text-center max-w-md mx-auto space-y-4">
+          <span class="text-4xl block">🔑</span>
+          <h3 class="text-md font-black text-slate-100 uppercase tracking-wider">Accesso Richiesto</h3>
+          <p class="text-xs text-slate-400">Registrati o accedi con il tuo account in alto per inserire la tua schedina online.</p>
+        </div>
+
+        <div v-else class="space-y-4">
+          <div v-if="matchesForSelectedGiorno.length === 0" class="bg-slate-900 border border-slate-800 p-12 rounded-2xl text-center text-slate-400 text-xs">
+            Nessun match programmato dal Master per il Giorno {{ selectedGiorno }}.
+          </div>
+
+          <div v-else v-for="match in matchesForSelectedGiorno" :key="match.id" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 relative">
+            <div v-if="hasSavedPrediction(match.id)" class="absolute top-0 right-0 bg-emerald-500/10 border-l border-b border-emerald-500/30 text-emerald-400 font-mono text-[9px] px-3 py-1 rounded-bl-xl font-bold">
+              ✓ PRONOSTICO MEMORIZZATO
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+              <div class="lg:col-span-4">
+                <span class="text-[9px] font-mono text-amber-400 block mb-1">Inizio: {{ formatDatetime(match.match_date) }}</span>
+                <div class="text-base font-black text-slate-100 uppercase tracking-tight">{{ match.home }} vs {{ match.away }}</div>
+              </div>
+
+              <div class="lg:col-span-6 grid grid-cols-1 md:grid-cols-3 gap-2">
+                <!-- Punteggio -->
+                <div class="bg-slate-950 p-2 rounded-xl flex items-center justify-center gap-2 border border-slate-850">
+                  <div class="text-center">
+                    <span class="text-[8px] text-slate-500 font-bold block uppercase">{{ match.home }}</span>
+                    <input type="number" min="0" :disabled="!isBettingOpen(selectedGiorno)" v-model="tempBets[match.id].scoreHome" class="bg-slate-900 text-center text-slate-100 font-bold w-10 rounded border border-slate-800 focus:outline-none py-1">
+                  </div>
+                  <span class="mt-3 text-slate-655 font-black text-slate-600">-</span>
+                  <div class="text-center">
+                    <span class="text-[8px] text-slate-500 font-bold block uppercase">{{ match.away }}</span>
+                    <input type="number" min="0" :disabled="!isBettingOpen(selectedGiorno)" v-model="tempBets[match.id].scoreAway" class="bg-slate-900 text-center text-slate-100 font-bold w-10 rounded border border-slate-800 focus:outline-none py-1">
+                  </div>
+                </div>
+
+                <!-- Marcatore Casa -->
+                <div>
+                  <label class="text-[8px] text-slate-450 block font-bold uppercase mb-1">Marcatore {{ match.home }}</label>
+                  <select :disabled="!isBettingOpen(selectedGiorno)" v-model="tempBets[match.id].scorerHome" class="bg-slate-950 border border-slate-800 text-slate-100 text-xs rounded-xl px-2 py-2 w-full focus:outline-none">
+                    <option value="Nessuno">-- Nessuno (0 gol) --</option>
+                    <option v-for="p in getPlayersList(match.home)" :key="p" :value="p">{{ p }}</option>
+                  </select>
+                </div>
+
+                <!-- Marcatore Fuori -->
+                <div>
+                  <label class="text-[8px] text-slate-450 block font-bold uppercase mb-1">Marcatore {{ match.away }}</label>
+                  <select :disabled="!isBettingOpen(selectedGiorno)" v-model="tempBets[match.id].scorerAway" class="bg-slate-950 border border-slate-800 text-slate-100 text-xs rounded-xl px-2 py-2 w-full focus:outline-none">
+                    <option value="Nessuno">-- Nessuno (0 gol) --</option>
+                    <option v-for="p in getPlayersList(match.away)" :key="p" :value="p">{{ p }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="lg:col-span-2">
+                <button v-if="isBettingOpen(selectedGiorno)" @click="savePrediction(match.id, selectedGiorno)" class="bg-amber-500 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs w-full uppercase tracking-wider transition">Invia</button>
+                <button v-else disabled class="bg-slate-855 text-slate-500 font-bold py-2.5 px-4 rounded-xl text-xs w-full cursor-not-allowed">🔒 Chiuso</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCHEDA 3: REGOLAMENTO -->
+      <section v-if="activeTab === 'regolamento'" class="max-w-2xl mx-auto space-y-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-xs text-slate-400 space-y-4">
+          <h3 class="font-bold text-slate-100 text-sm">Criterio Assegnazione Punti</h3>
+          <p>● <strong>1 punto:</strong> Segno 1X2 indovinato al 90esimo.<br>● <strong>3 punti:</strong> Segno e Risultato esatto indovinato.<br>● <strong>5 punti:</strong> Segno + Risultato esatto + Entrambi i marcatori indovinati.<br>● <strong>Regola 0-0:</strong> Il punteggio massimo per un pareggio a reti bianche è bloccato a 3 punti.</p>
+        </div>
+      </section>
+
+      <!-- SCHEDA 4: MASTER PANEL (SOLO MASTER) -->
+      <section v-if="activeTab === 'master' && currentUser?.role === 'master'" class="space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Controllo Giocatori -->
+          <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+            <h3 class="text-xs font-bold uppercase text-slate-300 font-mono">👥 Gestione Concorrenti Registrati</h3>
+            
+            <div v-if="editingUser" class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+              <span class="text-[10px] font-bold text-amber-400 uppercase block">Modifica password per {{ editingUser.username }}</span>
+              <input type="text" v-model="editingUser.password" placeholder="Nuova Password" class="bg-slate-900 p-2 rounded text-xs w-full text-slate-100 focus:outline-none">
+              <div class="flex gap-1 flex-wrap">
+                <button type="button" v-for="e in avatars" :key="e" @click="editingUser.avatar = e" :class="['p-1 border rounded text-sm', editingUser.avatar === e ? 'border-amber-500 bg-slate-900':'border-slate-800']">{{e}}</button>
+              </div>
+              <button @click="updateUser" class="w-full bg-emerald-600 text-white font-bold text-xs py-1.5 rounded uppercase">Salva Modifiche</button>
+            </div>
+
+            <div class="max-h-56 overflow-y-auto space-y-2 pr-1">
+              <div v-for="u in users" :key="u.username" class="bg-slate-950 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between text-xs">
+                <div>
+                  <span class="text-xl mr-2">{{ u.avatar }}</span>
+                  <span class="font-bold">{{ u.username }}</span>
+                  <span class="text-[9px] text-slate-500 block font-mono">Password: {{ u.password }}</span>
+                </div>
+                <div class="flex gap-1.5">
+                  <button @click="startEditing(u)" class="text-amber-550 text-[10px] font-bold bg-slate-900 px-2 py-1 rounded"
