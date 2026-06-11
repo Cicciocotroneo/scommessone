@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -11,8 +12,10 @@
   <!-- Vue.js 3 per la logica dell'interfaccia utente -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   
-  <!-- Client JavaScript ufficiale di Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- SDK Firebase per la sincronizzazione cloud condivisa -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <style>
     body { background-color: #020617; color: #f1f5f9; }
@@ -24,45 +27,43 @@
 
   <div id="app" class="flex-grow flex flex-col" v-cloak>
     
-    <!-- BANNER MODALITÀ DI EMERGENZA LOCALE (Attivo solo se mancano le chiavi nel codice) -->
-    <div v-if="!isCloudMode" class="bg-amber-500/10 border-b border-amber-500/30 text-amber-200 text-xs py-2.5 px-4 text-center">
-      <span class="font-bold">⚡ Scommessone in modalità locale:</span> I dati vengono salvati temporaneamente su questo browser. Per giocare in remoto con i tuoi amici, apri questo file con il Blocco Note e inserisci le tue chiavi Supabase reali nello script in fondo.
+    <!-- BANNER STATO OFFLINE / CONFIGURAZIONE -->
+    <div v-if="!isCloudMode && !loading" class="bg-amber-500/10 border-b border-amber-500/30 text-amber-200 text-xs py-2.5 px-4 text-center">
+      <span class="font-bold">⚡ Scommessone in modalità locale:</span> Inserisci le tue credenziali Firebase reali all'inizio dello script nel file index.html per giocare in remoto con i tuoi amici.
     </div>
 
-    <!-- NOTIFICHE TOAST INTEGRIATE (ALERT REPLACEMENT) -->
+    <!-- NOTIFICHE POPUP (Toast) -->
     <div v-if="toast.show" class="fixed bottom-5 right-5 z-50 max-w-sm animate-bounce">
       <div :class="['p-4 rounded-2xl border shadow-2xl flex items-center gap-3', 
         toast.type === 'success' ? 'bg-emerald-950 border-emerald-500 text-emerald-200' : 'bg-red-955 border-red-800 text-red-200']">
         <span class="text-xs font-bold">{{ toast.message }}</span>
-        <button @click="toast.show = false" class="ml-auto text-slate-400">✕</button>
+        <button @click="toast.show = false" class="ml-auto text-slate-400 hover:text-slate-200">✕</button>
       </div>
     </div>
 
-    <!-- HEADER DI GIOCO -->
-    <header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-40 px-4 py-3 shadow-md">
+    <!-- INTESTAZIONE (HEADER) -->
+    <header class="border-b border-slate-800 bg-slate-900/90 sticky top-0 z-40 px-4 py-3 shadow-md">
       <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         
-        <!-- Logo e Sottotitolo -->
+        <!-- Titoli e Powered By -->
         <div class="text-center sm:text-left">
           <div class="flex items-center justify-center sm:justify-start gap-2">
-            <span class="text-2xl">🏆</span>
+            <span class="text-2xl animate-pulse">🏆</span>
             <h1 class="text-2xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-yellow-200 to-emerald-400 bg-clip-text text-transparent">
               SCOMMESSONE 2026
             </h1>
           </div>
           <div class="text-[10px] mt-1 flex items-center justify-center sm:justify-start gap-1 font-bold text-slate-400">
             <span>RITORNO ALLE ORIGINI</span>
-            <span class="text-slate-600">•</span>
+            <span class="text-slate-650">•</span>
             <span class="bg-gradient-to-r from-amber-500 to-yellow-300 bg-clip-text text-transparent uppercase tracking-wider">
               powered by Gli Zimbelli ⚡
             </span>
           </div>
         </div>
 
-        <!-- Sezione Profilo / Login / Registrazione Concorrente -->
+        <!-- Autenticazione e Profilo Utente -->
         <div class="flex items-center gap-3">
-          
-          <!-- Se loggato -->
           <div v-if="currentUser" class="flex items-center gap-3 bg-slate-800 p-2 rounded-xl border border-slate-700">
             <span class="text-2xl">{{ currentUser.avatar }}</span>
             <div class="text-left">
@@ -71,10 +72,9 @@
               </div>
               <div class="text-xs font-black text-amber-400">{{ currentUser.points || 0 }} Punti</div>
             </div>
-            <button @click="logout" class="text-[10px] bg-red-950 text-red-200 py-1 px-2.5 rounded-lg uppercase font-bold">Esci</button>
+            <button @click="logout" class="text-[10px] bg-red-955 bg-red-900 text-red-200 py-1 px-2.5 rounded-lg uppercase font-bold">Esci</button>
           </div>
 
-          <!-- Se nessun utente è connesso -->
           <div v-else class="flex items-center gap-2">
             <form @submit.prevent="login" class="flex flex-wrap items-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-800">
               <input type="text" placeholder="Utente" v-model="loginName" required class="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-2 py-1.5 w-24 focus:outline-none">
@@ -83,7 +83,6 @@
             </form>
             <button @click="showRegisterModal = true" class="text-xs border border-slate-700 hover:border-slate-500 px-3 py-2 rounded-xl text-slate-300 font-semibold transition">Iscriviti</button>
           </div>
-
         </div>
 
       </div>
@@ -99,18 +98,18 @@
       </div>
     </nav>
 
-    <!-- SCHERMATA DI LOADING -->
+    <!-- SCREEN DI CARICAMENTO -->
     <div v-if="loading" class="flex-grow flex flex-col items-center justify-center space-y-2">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
       <p class="text-xs text-slate-400 font-mono">Ricezione dati dal cloud degli Zimbelli...</p>
     </div>
 
-    <!-- PRINCIPALE -->
+    <!-- CONTENUTI -->
     <main v-else class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6">
       
-      <!-- SCHEDA: CLASSIFICA LIVE -->
+      <!-- SCHEDA 1: CLASSIFICA LIVE -->
       <section v-if="activeTab === 'classifica'" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fadeIn">
           <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4">
             <span class="text-3xl">🥇</span>
             <div>
@@ -123,7 +122,7 @@
             <div>
               <h3 class="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">Deadline Giorno {{ selectedGiorno }}</h3>
               <p class="text-xs font-bold text-slate-100 mt-0.5">{{ formatDatetime(getGiornoDeadline(selectedGiorno)) }}</p>
-              <span class="text-[9px] font-mono mt-1 block" :class="isBettingOpen(selectedGiorno) ? 'text-emerald-400' : 'text-red-400'">
+              <span class="text-[9px] font-mono mt-1 block" :class="isBettingOpen(selectedGiorno) ? 'text-emerald-450 text-emerald-400' : 'text-red-400'">
                 ● {{ isBettingOpen(selectedGiorno) ? 'SCOMMESSE APERTE' : 'TEMPO SCADUTO' }}
               </span>
             </div>
@@ -131,8 +130,8 @@
           <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4">
             <span class="text-3xl">📡</span>
             <div>
-              <h3 class="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">Sorgente Database</h3>
-              <p class="text-xs font-bold text-slate-100 mt-0.5">{{ isCloudMode ? 'Cloud Condiviso Supabase' : 'Database Locale Browser' }}</p>
+              <h3 class="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">Stato Database</h3>
+              <p class="text-xs font-bold text-slate-100 mt-0.5">{{ isCloudMode ? 'Cloud Condiviso Firebase' : 'Memoria Locale Sandbox' }}</p>
             </div>
           </div>
         </div>
@@ -221,7 +220,7 @@
               </div>
 
               <div class="lg:col-span-6 grid grid-cols-1 md:grid-cols-3 gap-2">
-                <!-- Punteggio -->
+                <!-- Risultato -->
                 <div class="bg-slate-950 p-2 rounded-xl flex items-center justify-center gap-2 border border-slate-850">
                   <div class="text-center">
                     <span class="text-[8px] text-slate-500 font-bold block uppercase">{{ match.home }}</span>
@@ -278,7 +277,7 @@
           <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
             <h3 class="text-xs font-bold uppercase text-slate-300 font-mono">👥 Gestione Concorrenti Registrati</h3>
             
-            <div v-if="editingUser" class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+            <div v-if="editingUser" class="bg-slate-955 bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
               <span class="text-[10px] font-bold text-amber-400 uppercase block">Modifica password per {{ editingUser.username }}</span>
               <input type="text" v-model="editingUser.password" placeholder="Nuova Password" class="bg-slate-900 p-2 rounded text-xs w-full text-slate-100 focus:outline-none">
               <div class="flex gap-1 flex-wrap">
@@ -288,14 +287,14 @@
             </div>
 
             <div class="max-h-56 overflow-y-auto space-y-2 pr-1">
-              <div v-for="u in users" :key="u.username" class="bg-slate-950 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between text-xs">
+              <div v-for="u in users" :key="u.username" class="bg-slate-955 bg-slate-950 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between text-xs">
                 <div>
                   <span class="text-xl mr-2">{{ u.avatar }}</span>
                   <span class="font-bold">{{ u.username }}</span>
                   <span class="text-[9px] text-slate-500 block font-mono">Password: {{ u.password }}</span>
                 </div>
                 <div class="flex gap-1.5">
-                  <button @click="startEditing(u)" class="text-amber-550 text-[10px] font-bold bg-slate-900 px-2 py-1 rounded">Modifica</button>
+                  <button @click="startEditing(u)" class="text-amber-500 text-[10px] font-bold bg-slate-900 px-2 py-1 rounded">Modifica</button>
                   <button v-if="u.role !== 'master'" @click="deleteUser(u.username)" class="text-red-500 text-[10px] font-bold bg-slate-900 px-2 py-1 rounded">Elimina</button>
                 </div>
               </div>
@@ -306,7 +305,7 @@
           <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
             <h3 class="text-xs font-bold uppercase text-slate-300 font-mono">⏰ Scadenze per Giorno di Gioco</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div v-for="g in giornateList" :key="g" class="bg-slate-950 p-3 rounded-xl border border-slate-855 space-y-2">
+              <div v-for="g in giornateList" :key="g" class="bg-slate-955 bg-slate-950 p-3 rounded-xl border border-slate-855 space-y-2">
                 <span class="text-[10px] font-bold text-amber-400 block font-mono">GIORNO {{ g }}</span>
                 <input type="datetime-local" :value="settings.deadlines ? settings.deadlines[g] : ''" :id="'dl-' + g" class="bg-slate-900 p-1.5 rounded text-[11px] w-full text-slate-200 border border-slate-800 focus:outline-none">
                 <button @click="saveDeadline(g)" class="w-full bg-slate-800 text-[10px] py-1 rounded font-bold text-slate-300 hover:bg-slate-700 transition">Salva Scadenza</button>
@@ -342,7 +341,7 @@
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
           <h3 class="text-xs font-bold uppercase text-slate-300 font-mono border-b border-slate-800 pb-2">📝 Risultati Ufficiali Turno (Giorno {{ selectedGiorno }})</h3>
           <div class="space-y-4">
-            <div v-for="match in matchesForSelectedGiorno" :key="match.id" class="flex flex-wrap gap-3 items-center bg-slate-950 p-4 rounded-xl border border-slate-850 text-xs justify-between">
+            <div v-for="match in matchesForSelectedGiorno" :key="match.id" class="flex flex-wrap gap-3 items-center bg-slate-955 bg-slate-950 p-4 rounded-xl border border-slate-850 text-xs justify-between">
               <span class="font-bold uppercase w-36">{{ match.home }} - {{ match.away }}</span>
               <div class="flex items-center gap-1">
                 <input type="number" :id="'h-score-' + match.id" :value="match.score_home" class="bg-slate-900 text-center border border-slate-800 p-1 w-12 rounded-lg text-slate-100">
@@ -396,32 +395,40 @@
     const { createApp, ref, computed, onMounted } = Vue;
 
     // ========================================================
-    // 📡 PARAMETRI DI SUPABASE (INSERISCILI DENTRO LE VIRGOLETTE)
+    // 📡 PARAMETRI DI FIREBASE (INSERISCILI DENTRO LE VIRGOLETTE)
     // ========================================================
-    const SUPABASE_URL = "https://jhqkemvowcrjywogqsoc.supabase.co/rest/v1/"; 
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpocWtlbXZvd2Nyanl3b2dxc29jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDIyOTcsImV4cCI6MjA5NjcxODI5N30.0WS1YIUpvxFMHyJqX5iWXgqYZ2pF0-44tB2153rDUSQ"; 
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
     // ========================================================
+
+    const appId = "scommessone-2026-zimbelli";
 
     const defaultUsers = [
       { username: 'Master', password: 'admin', avatar: '👑', role: 'master' },
       { username: 'Bob', password: '123', avatar: '⚽', role: 'user' }
     ];
 
-    // Tabellone di base iniziale dei Mondiali 2026 (Partite ufficiali tratte dal file)
+    // Tabellone dei Mondiali 2026 (Partite ufficiali)
     const SEED_MATCHES = [
-      { id: "m1", home: "Messico", away: "Sudafrica", match_date: "2026-06-11T19:00:00Z", giornata: 1 },
-      { id: "m2", home: "Corea del Sud", away: "Repubblica Ceca", match_date: "2026-06-12T04:00:00Z", giornata: 1 },
-      { id: "m3", home: "Canada", away: "Bosnia ed Erzegovina", match_date: "2026-06-12T21:00:00Z", giornata: 2 },
-      { id: "m4", home: "Stati Uniti", away: "Paraguay", match_date: "2026-06-13T03:00:00Z", giornata: 2 },
-      { id: "m5", home: "Qatar", away: "Svizzera", match_date: "2026-06-13T21:00:00Z", giornata: 3 },
-      { id: "m6", home: "Brasile", away: "Marocco", match_date: "2026-06-14T00:00:00Z", giornata: 3 },
-      { id: "m7", home: "Haiti", away: "Scozia", match_date: "2026-06-14T03:00:00Z", giornata: 4 },
-      { id: "m8", home: "Australia", away: "Turchia", match_date: "2026-06-14T06:00:00Z", giornata: 4 },
-      { id: "m9", home: "Germania", away: "Curaçao", match_date: "2026-06-14T19:00:00Z", giornata: 5 },
-      { id: "m10", home: "Olanda", away: "Giappone", match_date: "2026-06-14T22:00:00Z", giornata: 5 }
+      { id: "m1", home: "Mexico", away: "South Africa", match_date: "2026-06-11T19:00:00Z", giornata: 1 },
+      { id: "m2", home: "Korea Republic", away: "Czech Republic", match_date: "2026-06-12T04:00:00Z", giornata: 1 },
+      { id: "m3", home: "Canada", away: "Bosnia and Herzegovina", match_date: "2026-06-12T21:00:00Z", giornata: 2 },
+      { id: "m4", home: "United States", away: "Paraguay", match_date: "2026-06-13T03:00:00Z", giornata: 2 },
+      { id: "m5", home: "Qatar", away: "Switzerland", match_date: "2026-06-13T21:00:00Z", giornata: 3 },
+      { id: "m6", home: "Brazil", away: "Morocco", match_date: "2026-06-14T00:00:00Z", giornata: 3 },
+      { id: "m7", home: "Haiti", away: "Scotland", match_date: "2026-06-14T03:00:00Z", giornata: 4 },
+      { id: "m8", home: "Australia", away: "Turkey", match_date: "2026-06-14T06:00:00Z", giornata: 4 },
+      { id: "m9", home: "Germany", away: "Curaçao", match_date: "2026-06-14T19:00:00Z", giornata: 5 },
+      { id: "m10", home: "Netherlands", away: "Japan", match_date: "2026-06-14T22:00:00Z", giornata: 5 }
     ];
 
-    // Elenco Convocati Ufficiali 48 Nazionali (Corrispondenza esatta con le squadre)
+    // Convocati ufficiali
     const ROSTERS_DATA = {
       "Algeria": ["Benbot", "Mastil", "Ramdane", "Zidane", "Abada", "Ait-Nouri", "Belaid", "Belghali", "Bensebaini", "Chergui", "Hadjam", "Mandi", "Tougai", "Aouar", "Bentaleb", "Boudaoui", "Chaibi", "Maza", "Titraoui", "Zerrouki", "Amoura", "Benbouali", "Boulbina", "Ghedjemis", "Gouiri", "Mahrez", "Moussa Hadji"],
       "Arabia Saudita": ["Ahmed Alkassar", "Mohammed Alowais", "Nawaf Alaqidi", "Saud Abdulhamid", "Jehad Thikri", "Abdulelah Alamri", "Hassan Altambakti", "Ali Lajami", "Hassan Kadish", "Moteb Alharbi", "Ali Majrashi", "Mohammed Abu Alshamat", "Ziyad Aljohani", "Nasser Al Dawsari", "Mohammed Kanno", "Abdullah Alkhaibari", "Nawaf Buwashi", "Abdul Ahlamddan", "Khalid Alghannam", "Ala Alhajji", "Musab Aljuwyr", "Sultan Mandash", "Aiman Yahya", "Salem Al Dawsari", "Feras Albrikan", "Saleh Alshehri"],
@@ -429,19 +436,19 @@
       "Australia": ["Beach", "Izzo", "Ryan", "Behich", "Bos", "Burgess", "Circati", "Degenek", "Geria", "Herrington", "Italiano", "Souttar", "Trewin", "Devlin", "Hrustic", "Irvine", "Metcalfe", "Okon-Engstler", "O'Neill", "Irankunda", "Leckie", "Mabil", "Toure", "Velupillay", "Volpato", "Yengi"],
       "Austria": ["Pentz", "Schlager", "Wiegele", "Affengruber", "Alaba", "Danso", "Friedl", "Lienhart", "Mwene", "Posch", "Prass", "Svoboda", "Baumgartner", "Chukwuemeka", "Grillitsch", "Laimer", "Sabitzer", "Schlager", "Schmid", "Schöpf", "Seewald", "Wanner", "Wimmer", "Arnautovic", "Gregoritsch", "Kalajdzic"],
       "Belgio": ["Courtois", "Lammens", "Penders", "Castagne", "Debast", "De Cuyper", "De Winter", "Mechele", "Meunier", "Ngoy", "Seys", "Theate", "De Bruyne", "Onana", "Raskin", "Tielemans", "Vanaken", "Witsel", "De Ketelaere", "Doku", "Fernandez Pardo", "Lukaku", "Lukebakio", "Moreira", "Saelemaekers", "Trossard"],
-      "Bosnia ed Erzegovina": ["Vasilj", "Zlomislic", "Hadzikic", "Dedic", "Katic", "Radeljic", "Celik", "Mujakic", "Muharemovic", "Kolasinac", "Hadzikadunic", "Hadziahmetovic", "Sunjic", "Tahirovic", "Burnic", "Gigovic", "Mahmic", "Basic", "Memic", "Alajbegovic", "Bajraktarevic", "Bazdar", "Lukic", "Tabakovic", "Demirovic", "Dzeko"],
-      "Brasile": ["Alisson", "Ederson", "Weverton", "Alex Sandro", "Bremer", "Danilo", "Douglas Santos", "Gabriel Magalhaes", "Ibanez", "Leo Pereira", "Marquinhos", "Wesley", "Bruno Guimaraes", "Casemiro", "Danilo", "Fabinho", "Paquetà", "Endrick", "Gabriel Martinelli", "Igor Thiago", "Luis Henrique", "Matheus Cunha", "Neymar", "Raphinha", "Rayan", "Vinicius"],
+      "Bosnia and Herzegovina": ["Vasilj", "Zlomislic", "Hadzikic", "Dedic", "Katic", "Radeljic", "Celik", "Mujakic", "Muharemovic", "Kolasinac", "Hadzikadunic", "Hadziahmetovic", "Sunjic", "Tahirovic", "Burnic", "Gigovic", "Mahmic", "Basic", "Memic", "Alajbegovic", "Bajraktarevic", "Bazdar", "Lukic", "Tabakovic", "Demirovic", "Dzeko"],
+      "Brazil": ["Alisson", "Ederson", "Weverton", "Alex Sandro", "Bremer", "Danilo", "Douglas Santos", "Gabriel Magalhaes", "Ibanez", "Leo Pereira", "Marquinhos", "Wesley", "Bruno Guimaraes", "Casemiro", "Danilo", "Fabinho", "Paquetà", "Endrick", "Gabriel Martinelli", "Igor Thiago", "Luis Henrique", "Matheus Cunha", "Neymar", "Raphinha", "Rayan", "Vinicius"],
       "Canada": ["Crepeau", "Goodman", "St. Clair", "Bombito", "Cornelius", "Davies", "De Fougerolles", "Johnston", "Jones", "Laryea", "Sigur", "Waterman", "Ahmed", "Buchanan", "Choiniere", "Eustaquio", "Flores", "Koné", "Millar", "Osorio", "Saliba", "Shaggelburg", "J. David", "P. David", "Larin", "Oluwaseyi"],
       "Capo Verde": ["Vozinha", "Da Rosa", "Carlos Santos", "Moreira", "W. Pina", "Fernandes", "Cabral", "Costa", "Pico", "Pires", "Stopira", "Diney", "Monteiro", "Arcanjo", "Y. Semedo", "L. Duarte", "D. Duarte", "K. Pina", "Mendes", "W. Semedo", "Rodrigues", "J. Cabral", "N. Da Costa", "Livramento", "Benchimol", "Varela"],
       "Colombia": ["Montero", "Ospina", "Vargas", "S. Arias", "Ditta", "Lucumì", "Machado", "Mina", "Mojica", "Munoz", "Sanchez", "J. Arias", "Carrascal", "Campaz", "Castano", "Lerma", "Portilla", "Puerta", "Quintero", "Rios", "James Rodriguez", "Cordoba", "Luis Diaz", "Gomez", "Hernandez", "Suarez"],
-      "Corea del Sud": ["Kim Seunggyu", "Song Bumkeun", "Jo Hyeonwood", "Kim Moohwan", "Kim Minjae", "Kim Taehyeon", "Park Jinseob", "Seol Youngwoo", "Jens Castrop", "Lee Kihyuk", "Lee Taeseok", "Lee Hanbeom", "Cho Yumin", "Kim Jingyu", "Bae Junho", "Paik Seungho", "Yang Hyunjun", "Eom Jisung", "Lee Kangin", "Lee Doonggyeong", "Lee Jaesung", "Hwang Inbeom", "Hwang Heechan", "Son Heugmin", "Oh Hyeongyu", "Cho Guesung"],
-      "Costa d'Avorio": ["Fofana", "Lafont", "Koné", "Konan", "Akpa", "Singo", "Doué", "Ndicka", "Agbadou", "Ousmane Diomandé", "Kossounou", "Kessié", "Fofana", "Sangaré", "Oulai", "Guiagon", "Seri", "Adingra", "Diallo", "Pépé", "Guessand", "Yan Diomandè", "Wahi", "DIakité", "Touré", "Bonny"],
+      "Korea Republic": ["Kim Seunggyu", "Song Bumkeun", "Jo Hyeonwood", "Kim Moohwan", "Kim Minjae", "Kim Taehyeon", "Park Jinseob", "Seol Youngwoo", "Jens Castrop", "Lee Kihyuk", "Lee Taeseok", "Lee Hanbeom", "Cho Yumin", "Kim Jingyu", "Bae Junho", "Paik Seungho", "Yang Hyunjun", "Eom Jisung", "Lee Kangin", "Lee Doonggyeong", "Lee Jaesung", "Hwang Inbeom", "Hwang Heechan", "Son Heugmin", "Oh Hyeongyu", "Cho Guesung"],
+      "Ivory Coast": ["Fofana", "Lafont", "Koné", "Konan", "Akpa", "Singo", "Doué", "Ndicka", "Agbadou", "Ousmane Diomandé", "Kossounou", "Kessié", "Fofana", "Sangaré", "Oulai", "Guiagon", "Seri", "Adingra", "Diallo", "Pépé", "Guessand", "Yan Diomandè", "Wahi", "DIakité", "Touré", "Bonny"],
       "Curaçao": ["Bodak", "Doornbusch", "Room", "Bazoer", "Brenet", "Van Eijma", "Floranus", "Fonville", "Gaari", "Obispo", "Sambo", "J. Bacuna", "L. Bacuna", "Comenencia", "Felida", "Martha", "Noslin", "Roemeratoe", "Antonisse", "Chong", "Gorré", "Hansen", "Kastaneer", "Kuwas", "Locadia", "Margaritha"],
       "Croazia": ["Livaković", "Kotarski", "Pandur", "Gvardiol", "Ćaleta-Car", "Šutalo", "Stanišić", "Pongračić", "Erlić", "Vušković", "Modrić", "Kovačić", "Pašalić", "Vlašić", "Sučić", "Baturina", "Jakić", "Moro", "Fruk", "Perišić", "Kramarić", "Budimir", "Musa", "Matanović"],
       "Ecuador": ["Galíndez", "Ramirez", "Valle", "Pacho", "Hincapié", "Ordonez", "Porozo", "Estupinan", "Medina", "Preciado", "Caicedo", "Alcivar", "Castillo", "Franco", "Vite", "Minda", "Paez", "Angulo", "Plata", "A. Yeboah", "Valencia", "Arevalo", "E. Valencia", "Rodriguez"],
       "Egitto": ["M. Alaa", "El Shenawy", "Shobeir", "Suleiman", "Abdelmaguid", "Abdelmoneim", "T. Alaa", "Fathy", "Fatouh", "Hafez", "Hany", "Ibrahim", "Rabia", "Adel", "Ashour", "Ateya", "Emad", "Hassan", "Lashin", "Saber", "Trezeguet", "Ziko", "Zizo", "Abdelkarim", "Marmoush", "Salah"],
       "Francia": ["Maignan", "Samba", "Risser", "Digne", "Malo Gusto", "Lucas Hernandez", "Theo Hernandez", "Konaté", "Koundé", "Lacroix", "Saliba", "Upamecano", "Kantè", "Koné", "Rabiot", "Tchouameni", "Zaïre-Emery", "Akliouche", "Barcola", "Cherki", "Dembelé", "Doué", "Mateta", "Mbappé", "Olise", "Marcus Thuram"],
-      "Germania": ["Neuer", "Baumann", "Nübel", "Anton", "Brown", "Kimmich", "Raum", "Rüdiger", "Thiaw", "Schlotterbeck", "Tah", "Goretzka", "Groß", "Nmecha", "Stiller", "Leweling", "Karl", "Pavlović", "Musiala", "Amiri", "Havertz", "Sané", "Undav", "Beier", "Woltemade", "Wirtz"],
+      "Germany": ["Neuer", "Baumann", "Nübel", "Anton", "Brown", "Kimmich", "Raum", "Rüdiger", "Thiaw", "Schlotterbeck", "Tah", "Goretzka", "Groß", "Nmecha", "Stiller", "Leweling", "Karl", "Pavlović", "Musiala", "Amiri", "Havertz", "Sané", "Undav", "Beier", "Woltemade", "Wirtz"],
       "Ghana": ["Asare", "Ati-Zigi", "Anang", "Baba Abdul Rahman", "Mensah", "Senaya", "Seidu", "Mumin", "Opoku", "Adjetey", "Oppong Peprah", "Luckassen", "Owusu", "Thomas Partey", "Sibo", "Boakye", "Yirenkyi", "Fatawu Issahaku", "K. Sulemana", "Bonsu Baah", "Nuamah", "Semenyo", "Thomas-Asante", "Adu", "Inaki Williams", "Jordan Ayew"],
       "Giappone": ["Z. Suzuki", "Osako", "Hayakawa", "Nagatomo", "Taniguchi", "Itakura", "Watanabe", "Tomiyasu", "H. Ito", "Seko", "Sugawara", "J. Suzuki", "Endo", "J. Ito", "Kamada", "Doan", "Tanaka", "Nakamura", "Sano", "Kubo", "Y. Suzuki", "Ogawa", "Maeda", "Ueda", "Shiogai", "Goto"],
       "Giordania": ["Abulaila", "Bani Attiah", "Al-Fakhouri", "Al-Arab", "Nasin", "Al-Rosan", "Abu Dahba", "Abualnadi", "Obaid", "Abu Hasheesh", "Abu-Taha", "Haddad", "Badawi", "Al-Rahsdan", "Jamous", "Al-Rawabdeh", "Saadeh", "Ayed", "Al-Dawoud", "Al-Mardi", "Fakhouri", "Al-Tamari", "Shararh", "Azaizeh", "Olwan", "Sabra"],
@@ -449,11 +456,11 @@
       "Inghilterra": ["Pickford", "D. Henderson", "Trafford", "James", "Livramento", "Guehi", "Konsa", "Stones", "Quansah", "O'Reilly", "Burn", "Spence", "Rice", "Anderson", "Bellingham", "J. Henderson", "Rogers", "Mainoo", "Eze", "Kane", "Toney", "Watkins", "Saka", "Madueke", "Rashford", "Gordon"],
       "Iran": ["Beyranvand", "Hoseini", "Niazmand", "Khalilzadeh", "Kanaani", "Nemati", "Eiri", "Hajisafi", "Mohammadi", "Hardani", "Rezaeiyan", "Ghodoos", "Ezatollahi", "Cheshmi", "Razagh Niya", "Ghorbani", "Ghayedi", "Yousefi", "Jahanbakhsh", "Torabi", "Mohebbi", "Taremi", "Hosseinzadeh", "Dargahi", "Alipour", "Moghanloo"],
       "Iraq": ["Talib", "Hassan", "Basil", "H. Ali", "Younis", "Tahseen", "Sulaka", "Hashem", "Doski", "Yahya", "Ismail", "Putros", "Saadoon", "Al-Ammari", "Yakob", "Iqbal", "Sher", "Bayesh", "Qasem", "Amyn", "Farji", "Jassim Ali Al-Hamadi", "Youssef", "Hussein", "M. Ali"],
-      "Marocco": ["Bounou", "El Kajoui", "Tagnaouti", "Hakimi", "Mazraoui", "Salah-Eddine", "Belammari", "Diop", "Riad", "El Ouahdi", "Halhal", "Aguero", "El Ayanoui", "El Khannouss", "Ounahi", "Bouaddi", "Saibari", "Amrabat", "El Mourabet", "Diaz", "Aboe", "Amaimouni", "Rahimi", "Talbi", "Yassine", "El Kaabi"],
-      "Messico": ["Rangel", "Ochoa", "Acevedo", "Reyes", "Gallardo", "Sanchez", "Montes", "Vasquez", "M. Chavez", "Lira", "Romo", "Vargas", "Gutierrez", "Pineda", "Alvarez", "Mora", "Huerta", "Fidalgo", "L. Chavez", "Alvarado", "Vega", "Quinones", "Gimenez", "Martinez", "Gonzalez", "Jimenez"],
+      "Morocco": ["Bounou", "El Kajoui", "Tagnaouti", "Hakimi", "Mazraoui", "Salah-Eddine", "Belammari", "Diop", "Riad", "El Ouahdi", "Halhal", "Aguero", "El Ayanoui", "El Khannouss", "Ounahi", "Bouaddi", "Saibari", "Amrabat", "El Mourabet", "Diaz", "Aboe", "Amaimouni", "Rahimi", "Talbi", "Yassine", "El Kaabi"],
+      "Mexico": ["Rangel", "Ochoa", "Acevedo", "Reyes", "Gallardo", "Sanchez", "Montes", "Vasquez", "M. Chavez", "Lira", "Romo", "Vargas", "Gutierrez", "Pineda", "Alvarez", "Mora", "Huerta", "Fidalgo", "L. Chavez", "Alvarado", "Vega", "Quinones", "Gimenez", "Martinez", "Gonzalez", "Jimenez"],
       "Norvegia": ["Nyland", "Selvik", "Tangvik", "Ajer", "Bjorkan", "Falchener", "Heggem", "Langas", "Ostigard", "Pedersen", "Ryerson", "Wolfe", "Aasgaard", "Aursnes", "Berg", "Berge", "Odegaard", "Thorsby", "Thosrtvedt", "Bobb", "Haaland", "Hauge", "Nusa", "Schjelderup", "Sorloth", "Strand Larsen"],
       "Nuova Zelanda": ["Crocombe", "Paulsen", "Woud", "Bindon", "Boxall", "Cacace", "De Vries", "Elliot", "Payne", "Pijnaker", "Smith", "Surman", "Bayliss", "Bell", "Rufer", "Stamenic", "Thomas", "Barbarouses", "Garbett", "Just", "McCowatt", "Old", "Randall", "Singh", "Waine", "Wood"],
-      "Olanda": ["Flekken", "Roefs", "Verbruggen", "Aké", "Ato", "Dumfries", "Timber", "Van Dijk", "Van De Ven", "Van Hecke", "De Jong", "De Roon", "Gravenberch", "Koopmeiners", "Reijnders", "Til", "Timber", "Wieffer", "Brobbey", "Depay", "Gakpo", "Kluivert", "Lang", "Malen", "Summerville", "Weghorst"],
+      "Netherlands": ["Flekken", "Roefs", "Verbruggen", "Aké", "Ato", "Dumfries", "Timber", "Van Dijk", "Van De Ven", "Van Hecke", "De Jong", "De Roon", "Gravenberch", "Koopmeiners", "Reijnders", "Til", "Timber", "Wieffer", "Brobbey", "Depay", "Gakpo", "Kluivert", "Lang", "Malen", "Summerville", "Weghorst"],
       "Panama": ["Mosquera", "Mejia", "Samudio", "Blackman", "Gutierrez", "Murillo", "Escobar", "Andrade", "Farina", "Cordoba", "Davis", "Ramos", "Miller", "Godoy", "Carrasquilla", "Harvey", "Martinez", "J.Rodriguez", "Yanis", "Barcenas", "Quintero", "Londono", "Diaz", "Waterman", "Fajardo", "T.Rodriguez"],
       "Paraguay": ["Fernandez", "Gill", "Olveira", "Velazquez", "Caceres", "Gustavo Gomez", "Alderete", "Balbuena", "Canale", "Alonso", "Maidana", "Diego Gomez", "Cubas", "Bobadilla", "Galarza", "Ojeda", "Magalhaes", "Romero Gamarra", "Caballero", "Almiron", "Enciso", "Sosa", "Sanabria", "Arce", "Avalos", "Pitta"],
       "Portogallo": ["Diogo Costa", "José Sà", "Rui Silva", "Ricardo Velho", "Dalot", "Matheus Nunes", "Semedo", "Cancelo", "Nuno Mendes", "Gonçalo Inacio", "Veiga", "Ruben Dias", "Araujo", "Ruben Neves", "Samuel Costa", "Joao Neves", "Vitinha", "Bruno Fernandes", "Bernardo Silva", "Joao Felix", "Trincao", "Conceicao", "Pedro Neto", "Leao", "Guedes", "Gonçalo Ramos", "Cristiano Ronaldo"],
@@ -464,22 +471,13 @@
       "Senegal": ["Edouard Mendy", "Diaw", "Diouf", "Koulibaly", "Niakhate", "M. Sarr", "Seck", "Diatta", "Mendy", "Jakobs", "Diouf", "Idrissa Gana Gueye", "Papa Gueye", "Lamine Camara", "Diarra", "Ciss", "Pape Matar Sarr", "Bara Sapoko Ndiaye", "Mané", "Ismaila Sarr", "Ilman Ndiaye", "Diao", "Mbaye", "Jackson", "Dieng", "Cherif Ndiaye"],
       "Spagna": ["Unai Simon", "Raya", "Joan Garcia", "Llorente", "Porro", "Cubarsì", "Pubill", "Laporte", "Eric Garcia", "Cucurella", "Grimaldo", "Pedri", "Dani Olmo", "Rodri", "Zubimendi", "Fabian Ruiz", "Gavi", "Mikel Merino", "Yamal", "Yeremy Pino", "Oyarzabal", "Ferran", "Borja Iglesias", "Nico Williams", "Victor Munoz", "Baena"],
       "Stati Uniti": ["Brady", "Freese", "Turner", "Arfsten", "Dest", "Freeman", "McKenzie", "Ream", "Richards", "A.Robinson", "M.Robinson", "Scally", "Trusty", "Aaronson", "Adams", "Berhalter", "McKennie", "Reyna", "Roldan", "Tillman", "Weah", "Zendejas", "Balogun", "Pepi", "Pulisic", "Wright"],
-      "Sudafrica": ["Williams", "Goss", "Chaine", "Mudau", "Sibisi", "Okon", "Ndamane", "Modiba", "Kabini", "Matuludi", "Makhanya", "Sebelebele", "Cross", "Mbokazi", "Mokoena", "Mbatha", "Sitole", "Adams", "Appollis", "Rayners", "Moremi", "Mofokeng", "Makgopa", "Zwane", "Foster", "Maseko"],
+      "South Africa": ["Williams", "Goss", "Chaine", "Mudau", "Sibisi", "Okon", "Ndamane", "Modiba", "Kabini", "Matuludi", "Makhanya", "Sebelebele", "Cross", "Mbokazi", "Mokoena", "Mbatha", "Sitole", "Adams", "Appollis", "Rayners", "Moremi", "Mofokeng", "Makgopa", "Zwane", "Foster", "Maseko"],
       "Svezia": ["Johansson", "Nordfeldt", "Zetterstrom", "Ekdal", "Gudmundsson", "Hien", "Johansson", "Lagerbielke", "Lindelof", "Smith", "Starfelt", "Stoud", "Svensson", "Ayari", "Bergvall", "Karlstrom", "Sema", "Svanberg", "Zeneli", "Ali", "Bernhardsson", "Elanga", "Gyokeres", "Isak", "Nilsson", "Nygren"],
-      "Svizzera": ["Keller", "Kobe", "Mvogo", "Akanji", "Amenda", "Comert", "Elvedi", "Jacquez", "Muehim", "Rodriguez", "Widmer", "Aebischer", "Amdouni", "Fassnacht", "Freuler", "Itten", "Jashari", "Manzanbi", "Rieder", "Xhaka", "Zakaria", "Embolo", "Ndoye", "Okafor", "Sow", "Vargas"],
+      "Switzerland": ["Keller", "Kobe", "Mvogo", "Akanji", "Amenda", "Comert", "Elvedi", "Jacquez", "Muehim", "Rodriguez", "Widmer", "Aebischer", "Amdouni", "Fassnacht", "Freuler", "Itten", "Jashari", "Manzanbi", "Rieder", "Xhaka", "Zakaria", "Embolo", "Ndoye", "Okafor", "Sow", "Vargas"],
       "Tunisia": ["Dahmen", "Chamakh", "Ben Hassen", "Valery", "Neffati", "Bronn", "Talbi", "Rekik", "Raoud", "Chikaoui", "Ali Abdi", "Ben Hamida", "Shkiri", "Mahmoud", "Khedira", "Ben Slimane", "Ben Ouanes", "Garbi", "Hannibal", "Ayari", "Achouri", "Saad", "Chaouat", "Mastouri", "Elloumi", "Tounekti"],
-      "Turchia": ["Bayındır", "Günok", "Çakır", "Bardakcı", "Söyüncü", "Elmalı", "Kadıoğlu", "Demiral", "Müldür", "Kabak", "Akaydin", "Çelik", "Çalhanoğlu", "Yüksek", "Ayhan", "Kökçü", "Özcan", "Güler", "Uzun", "Yılmaz", "Gül", "Kahveci", "Yıldız", "Aktürkoğlu", "Aydın", "Akgün"],
+      "Turkey": ["Bayındır", "Günok", "Çakır", "Bardakcı", "Söyüncü", "Elmalı", "Kadıoğlu", "Demiral", "Müldür", "Kabak", "Akaydin", "Çelik", "Çalhanoğlu", "Yüksek", "Ayhan", "Kökçü", "Özcan", "Güler", "Uzun", "Yılmaz", "Gül", "Kahveci", "Yıldız", "Aktürkoğlu", "Aydın", "Akgün"],
       "Uruguay": ["Mele", "Muslera", "Rochet", "R. Araujo", "Bueno", "S. Caceres", "Gimenez", "Olivera", "Piquerez", "Varela", "Vina", "M. Araujo", "Bentancur", "Canobbio", "De Arrascaeta", "De La Cruz", "Martinez", "Pellistri", "Rodriguez", "Sanabria", "Ugarte", "Valverde", "Zalazar", "Aguire", "Nunez", "Vinas"],
       "Uzbekistan": ["Yusupov", "Nematov", "Ergashev", "Khusanov", "Alijonov", "Sayfiev", "Ashurmatov", "Nasrullaev", "Eshmurodov", "Abdullaev", "Karimov", "Ulmasaliev", "Urozov", "Mozgovoy", "Shukurov", "Iskanderov", "Hamrobekov", "Masharipov", "Urunov", "Khamdamov", "Ganiev", "Fayzullaev", "Esanov", "Shomurodov", "Amonov", "Sergeev"]
-    };
-
-    const getDbCredentials = () => {
-      const u = localStorage.getItem('s_url') || SUPABASE_URL;
-      const k = localStorage.getItem('s_key') || SUPABASE_ANON_KEY;
-      if (u && k && u.trim().length > 10 && k.trim().length > 10 && !u.includes("YOUR_SUPABASE")) {
-        return { url: u.trim(), key: k.trim() };
-      }
-      return null;
     };
 
     createApp({
@@ -490,10 +488,19 @@
         const predictions = ref([]);
         const selectedGiorno = ref(1);
         const giornateList = [1, 2, 3, 4, 5, 6, 7];
-        const settings = ref({ deadlines: {} });
-
-        const setupUrl = ref('');
-        const setupKey = ref('');
+        
+        // Struttura default per le scadenze del torneo
+        const settings = ref({
+          deadlines: {
+            1: "2026-06-11T18:30:00",
+            2: "2026-06-12T20:30:00",
+            3: "2026-06-13T23:30:00",
+            4: "2026-06-14T23:30:00",
+            5: "2026-06-15T23:30:00",
+            6: "2026-06-16T23:30:00",
+            7: "2026-06-17T23:30:00"
+          }
+        });
 
         const currentUser = ref(null);
         const loginName = ref('');
@@ -512,21 +519,22 @@
         const loading = ref(true);
         const isCloudMode = ref(false);
 
-        let supabase = null;
-
-        const isConfigured = computed(() => getDbCredentials() !== null);
+        let firestoreDb = null;
 
         const showToast = (message, type = 'info') => {
           toast.value = { show: true, message, type };
-          setTimeout(() => { toast.value.show = false; }, 3000);
+          setTimeout(() => { toast.value.show = false; }, 3500);
         };
 
         const formatDatetime = (dtStr) => {
-          if (!dtStr) return 'Chiusura non impostata';
+          if (!dtStr) return 'Scadenza non impostata';
           return new Date(dtStr).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' });
         };
 
-        const getGiornoDeadline = (giornata) => settings.value.deadlines[giornata] || null;
+        const getGiornoDeadline = (giornata) => {
+          return settings.value.deadlines[giornata] || null;
+        };
+
         const isBettingOpen = (giornata) => {
           const dl = getGiornoDeadline(giornata);
           if (!dl) return true;
@@ -535,41 +543,63 @@
 
         const getPlayersList = (team) => ROSTERS_DATA[team] || [];
 
+        // RICALCOLO PUNTEGGI AUTOMATICO LIVE (In-Memory per Rule 2)
         const sortedUsers = computed(() => {
-          return users.value.map(user => {
+          const calcUsers = users.value.map(user => {
             let pts = 0, exact = 0, signs = 0, scorers = 0;
             const uPreds = predictions.value.filter(p => p.username === user.username);
             uPreds.forEach(pred => {
               const match = matches.value.find(m => String(m.id) === String(pred.match_id));
               if (!match || match.score_home === null || match.score_home === undefined) return;
+              
               const rH = parseInt(match.score_home), rA = parseInt(match.score_away);
               const pH = parseInt(pred.score_home), pA = parseInt(pred.score_away);
-              const rS = rH > rA ? '1' : (rH === rA ? 'X':'2'), pS = pH > pA ? '1' : (pH === pA ? 'X':'2');
-              if (rS === pS) {
-                pts += 1; signs += 1;
+              
+              const realSign = rH > rA ? '1' : (rH === rA ? 'X' : '2');
+              const predSign = pH > pA ? '1' : (pH === pA ? 'X' : '2');
+
+              if (realSign === predSign) {
+                pts += 1;
+                signs += 1;
                 if (rH === pH && rA === pA) {
-                  pts += 2; signs -= 1; exact += 1;
+                  pts += 2; // Arriva a 3 punti (Esatto)
+                  signs -= 1;
+                  exact += 1;
+
                   if (!(rH === 0 && rA === 0)) {
-                    const hM = rH === 0 ? pred.scorer_home==='Nessuno' : pred.scorer_home===match.scorer_home;
-                    const aM = rA === 0 ? pred.scorer_away==='Nessuno' : pred.scorer_away===match.scorer_away;
-                    if (hM && aM) { pts += 2; exact -= 1; scorers += 1; }
+                    const matchScorerHome = match.scorer_home || "Nessuno";
+                    const matchScorerAway = match.scorer_away || "Nessuno";
+                    const predScorerHome = pred.scorer_home || "Nessuno";
+                    const predScorerAway = pred.scorer_away || "Nessuno";
+
+                    const homeMatch = rH === 0 ? predScorerHome === "Nessuno" : predScorerHome === matchScorerHome;
+                    const awayMatch = rA === 0 ? predScorerAway === "Nessuno" : predScorerAway === matchScorerAway;
+
+                    if (homeMatch && awayMatch) {
+                      pts += 2; // Arriva a 5 punti (Esatto + Marcatori)
+                      exact -= 1;
+                      scorers += 1;
+                    }
                   }
                 }
               }
             });
             return { ...user, points: pts, details: { exact, signs, scorers } };
-          }).sort((a, b) => b.points - a.points);
+          });
+          return calcUsers.sort((a, b) => b.points - a.points);
         });
 
-        const matchesForSelectedGiorno = computed(() => matches.value.filter(m => m.giornata === selectedGiorno.value));
-        const hasSavedPrediction = (matchId) => currentUser.value && predictions.value.some(p => p.username === currentUser.value.username && String(p.match_id) === String(matchId));
-        const getSavedPred = (matchId) => predictions.value.find(p => p.username === currentUser.value.username && String(p.match_id) === String(matchId)) || {};
+        const matchesForSelectedGiorno = computed(() => {
+          return matches.value.filter(m => m.giornata === selectedGiorno.value);
+        });
 
-        const saveDatabaseConfig = () => {
-          if (!setupUrl.value || !setupKey.value) return;
-          localStorage.setItem('s_url', setupUrl.value.trim());
-          localStorage.setItem('s_key', setupKey.value.trim());
-          window.location.reload();
+        const hasSavedPrediction = (matchId) => {
+          if (!currentUser.value) return false;
+          return predictions.value.some(p => p.username === currentUser.value.username && String(p.match_id) === String(matchId));
+        };
+
+        const getSavedPred = (matchId) => {
+          return predictions.value.find(p => p.username === currentUser.value.username && String(p.match_id) === String(matchId)) || {};
         };
 
         const initTempBets = () => {
@@ -586,126 +616,331 @@
           });
         };
 
-        const syncData = async () => {
-          if (!isCloudMode.value) return;
-          try {
-            const { data: u } = await supabase.from('users').select('*'); if (u) users.value = u;
-            const { data: m } = await supabase.from('matches').select('*'); if (m) matches.value = m;
-            const { data: p } = await supabase.from('predictions').select('*'); if (p) predictions.value = p;
-            const { data: s } = await supabase.from('giornate_settings').select('*');
-            if (s) { s.forEach(x => { settings.value.deadlines[x.giornata] = x.deadline; }); }
-            initTempBets();
-          } catch (e) { console.error(e); }
-        };
+        // --- SISTEMA INTELLIGENTE DI CONNESSONE CLOUD (Rule 1, Rule 2, Rule 3) ---
+        onMounted(async () => {
+          const isConfigured = firebaseConfig && 
+                               firebaseConfig.apiKey && 
+                               !firebaseConfig.apiKey.includes("YOUR_API_KEY");
 
-        onMounted(() => {
-          const creds = getDbCredentials();
-          if (creds) {
-            try {
-              supabase = window.supabase.createClient(creds.url, creds.key);
-              isCloudMode.value = true;
-              syncData();
-              setInterval(syncData, 12000);
-            } catch (err) {
-              isCloudMode.value = false;
+          if (!isConfigured) {
+            fallbackToLocal();
+            return;
+          }
+
+          // Timeout di sicurezza per prevenire blocchi eterni in caso di chiavi errate
+          const safetyTimeout = setTimeout(() => {
+            if (loading.value) {
+              console.warn("Connessione a Firebase fallita. Avvio in modalità locale di backup.");
+              fallbackToLocal();
+              showToast("Modalità locale attiva per mancato caricamento cloud.", "info");
             }
+          }, 3500);
+
+          try {
+            // Rule 3: Autenticazione anonima obbligatoria prima di qualsiasi operazione
+            await firebase.auth().signInAnonymously();
+            
+            firestoreDb = firebase.firestore();
+            isCloudMode.value = true;
+
+            // Sottoscrizione Settings (Strict Paths Rule 1)
+            firestoreDb.collection('artifacts').doc(appId).collection('public').doc('data').collection('settings').doc('global')
+              .onSnapshot(docSnap => {
+                if (docSnap.exists()) {
+                  settings.value = docSnap.data();
+                } else {
+                  firestoreDb.collection('artifacts').doc(appId).collection('public').doc('data').collection('settings').doc('global').set(settings.value);
+                }
+              });
+
+            // Sottoscrizione Matches (Rule 2: semplice query di collezione senza filtri complessi)
+            firestoreDb.collection('artifacts').doc(appId).collection('public').doc('data').collection('matches')
+              .onSnapshot(colSnap => {
+                const list = [];
+                colSnap.forEach(d => list.push({ id: d.id, ...d.data() }));
+                
+                if (list.length === 0) {
+                  // AUTO-SEEDING: Caricamento automatico iniziale del tabellone se il database è vuoto
+                  SEED_MATCHES.forEach(m => {
+                    firestoreDb.collection('artifacts').doc(appId).collection('public').doc('data').collection('matches').doc(m.id).set(m);
+                  });
+                  matches.value = [...SEED_MATCHES];
+                } else {
+                  matches.value = list.sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
+                }
+                initTempBets();
+                clearTimeout(safetyTimeout);
+                loading.value = false;
+              }, () => fallbackToLocal());
+
+            // Sottoscrizione Utenti
+            firestoreDb.collection('artifacts').doc(appId).collection('public').doc('data').collection('users')
+              .onSnapshot(colSnap => {
+                const list = [];
+                colSnap.forEach(d => list.push(d.data()));
+                
+                if (list.length === 0) {
+                  // AUTO-SEEDING: Generazione automatica dell'utente Master se il database è pulito
+                  defaultUsers.forEach(u => {
+                    firestoreDb.collection('artifacts').doc(appId).collection('public').doc('data').collection('users').doc(u.username).set(u);
+                  });
+                  users.value = [...defaultUsers];
+                } else {
+                  users.value = list;
+                }
+              });
+
+            // Sottoscrizione Scommesse
+            firestoreDb.collection('artifacts').doc(appId).collection('public').doc('data').collection('predictions')
+              .onSnapshot(colSnap => {
+                const list = [];
+                colSnap.forEach(d => list.push(d.data()));
+                predictions.value = list;
+              });
+
+          } catch (e) {
+            clearTimeout(safetyTimeout);
+            fallbackToLocal();
           }
-          
-          if (!isCloudMode.value) {
-            users.value = JSON.parse(localStorage.getItem('l_u')) || [...defaultUsers];
-            matches.value = JSON.parse(localStorage.getItem('l_m')) || SEED_MATCHES;
-            predictions.value = JSON.parse(localStorage.getItem('l_p')) || [];
-            settings.value.deadlines = JSON.parse(localStorage.getItem('l_d')) || {};
-          }
-          initTempBets();
-          loading.value = false;
         });
 
+        // Backup Locale Sandbox
+        const fallbackToLocal = () => {
+          isCloudMode.value = false;
+          
+          users.value = JSON.parse(localStorage.getItem('sz_users')) || [...defaultUsers];
+          matches.value = JSON.parse(localStorage.getItem('sz_matches')) || [...SEED_MATCHES];
+          predictions.value = JSON.parse(localStorage.getItem('sz_predictions')) || [];
+          
+          const localSet = localStorage.getItem('sz_settings');
+          if (localSet) settings.value = JSON.parse(localSet);
+
+          initTempBets();
+          loading.value = false;
+        };
+
+        // Scrittura Unificata Sicura (Dual-Mode)
+        const dbWrite = async (collectionName, docId, data, isUpdate = false) => {
+          if (isCloudMode.value && firebase.auth().currentUser) {
+            const docRef = firestoreDb.collection('artifacts').doc(appId).collection('public').doc('data').collection(collectionName).doc(docId);
+            if (isUpdate) await docRef.update(data);
+            else await docRef.set(data);
+          } else {
+            if (collectionName === 'users') {
+              const idx = users.value.findIndex(u => u.username === docId);
+              if (idx !== -1) users.value[idx] = data;
+              else users.value.push(data);
+              localStorage.setItem('sz_users', JSON.stringify(users.value));
+            } else if (collectionName === 'predictions') {
+              const idx = predictions.value.findIndex(p => p.id === docId);
+              if (idx !== -1) predictions.value[idx] = data;
+              else predictions.value.push(data);
+              localStorage.setItem('sz_predictions', JSON.stringify(predictions.value));
+            } else if (collectionName === 'matches') {
+              const idx = matches.value.findIndex(m => String(m.id) === String(docId));
+              if (idx !== -1) matches.value[idx] = { ...matches.value[idx], ...data };
+              localStorage.setItem('sz_matches', JSON.stringify(matches.value));
+            } else if (collectionName === 'settings') {
+              settings.value = { ...settings.value, ...data };
+              localStorage.setItem('sz_settings', JSON.stringify(settings.value));
+            }
+          }
+        };
+
+        const dbDelete = async (collectionName, docId) => {
+          if (isCloudMode.value && firebase.auth().currentUser) {
+            await firestoreDb.collection('artifacts').doc(appId).collection('public').doc('data').collection(collectionName).doc(docId).delete();
+          } else {
+            if (collectionName === 'users') {
+              users.value = users.value.filter(u => u.username !== docId);
+              localStorage.setItem('sz_users', JSON.stringify(users.value));
+            }
+          }
+        };
+
+        // --- GESTIONE ACCESSO ---
         const login = () => {
           const u = users.value.find(x => x.username.toLowerCase() === loginName.value.trim().toLowerCase() && x.password === loginPass.value);
-          if (u) { currentUser.value = u; loginName.value = ''; loginPass.value = ''; initTempBets(); showToast(`Entrato come ${u.username}`, "success"); }
-          else { loginError.value = "Credenziali non corrette."; }
+          if (u) {
+            currentUser.value = u;
+            loginName.value = '';
+            loginPass.value = '';
+            loginError.value = '';
+            initTempBets();
+            showToast(`Benvenuto nel torneo, ${u.username}!`, "success");
+          } else {
+            loginError.value = "Username o password errati.";
+          }
         };
 
-        const logout = () => { currentUser.value = null; };
+        const logout = () => {
+          currentUser.value = null;
+          showToast("Sessione chiusa.", "info");
+        };
 
         const registerUser = async () => {
-          const name = registerName.value.trim();
-          if (users.value.some(x => x.username.toLowerCase() === name.toLowerCase())) { showToast("Nome occupato!", "error"); return; }
-          const nU = { username: name, password: registerPass.value, avatar: registerAvatar.value, role: 'user' };
-          
-          if (isCloudMode.value) { 
-            await supabase.from('users').insert([nU]); 
-            await syncData(); 
-          } else { 
-            users.value.push(nU); 
-            localStorage.setItem('l_u', JSON.stringify(users.value)); 
+          const nameTrimmed = registerName.value.trim();
+          if (!nameTrimmed || !registerPass.value) return;
+
+          if (users.value.some(u => u.username.toLowerCase() === nameTrimmed.toLowerCase())) {
+            showToast("Questo Nome Utente è già occupato!", "error");
+            return;
           }
-          showToast("Iscrizione completata!", "success"); showRegisterModal.value = false; registerName.value = ''; registerPass.value = '';
+
+          const newUserObj = {
+            username: nameTrimmed,
+            password: registerPass.value,
+            avatar: registerAvatar.value,
+            role: 'user'
+          };
+
+          await dbWrite('users', nameTrimmed, newUserObj);
+          showToast("Iscrizione completata con successo! Ora puoi accedere.", "success");
+          showRegisterModal.value = false;
+          registerName.value = '';
+          registerPass.value = '';
         };
 
-        const savePrediction = async (mId, g) => {
-          if (!isBettingOpen(g)) { showToast("Tempo scaduto!", "error"); return; }
-          const b = tempBets.value[mId];
-          if (b.scoreHome === '' || b.scoreAway === '' || b.scoreHome === null || b.scoreAway === null) return;
-          const pId = `${currentUser.value.username}_${mId}`;
-          const nP = { id: pId, username: currentUser.value.username, match_id: String(mId), score_home: parseInt(b.scoreHome), score_away: parseInt(b.scoreAway), scorer_home: b.scorerHome, scorer_away: b.scorerAway };
-          
-          if (isCloudMode.value) { 
-            await supabase.from('predictions').upsert([nP]); 
-            await syncData(); 
-          } else { 
-            predictions.value = predictions.value.filter(x => x.id !== pId); 
-            predictions.value.push(nP); 
-            localStorage.setItem('l_p', JSON.stringify(predictions.value)); 
+        // --- SALVATAGGIO PRONOSTICO ---
+        const savePrediction = async (matchId, giornata) => {
+          if (!currentUser.value) return;
+          if (!isBettingOpen(giornata)) {
+            showToast("Le scommesse per questa giornata sono chiuse!", "error");
+            return;
           }
-          showToast("Pronostico salvato!", "success");
+
+          const bet = tempBets.value[matchId];
+          if (bet.scoreHome === "" || bet.scoreAway === "" || bet.scoreHome === null || bet.scoreAway === null) {
+            showToast("Completa il pronostico dei gol!", "error");
+            return;
+          }
+
+          const pId = `${currentUser.value.username}_${matchId}`;
+          const predictionObj = {
+            id: pId,
+            username: currentUser.value.username,
+            match_id: String(matchId),
+            score_home: parseInt(bet.scoreHome),
+            score_away: parseInt(bet.scoreAway),
+            scorer_home: bet.scorerHome || "Nessuno",
+            scorer_away: bet.scorerAway || "Nessuno"
+          };
+
+          await dbWrite('predictions', pId, predictionObj);
+          showToast("Pronostico salvato online!", "success");
         };
 
-        const startEditing = (u) => { editingUser.value = { ...u }; };
+        // --- GESTIONE MASTER ---
+        const startEditing = (user) => {
+          editingUser.value = { ...user };
+        };
+
         const updateUser = async () => {
-          if (isCloudMode.value) { await supabase.from('users').update({ password: editingUser.value.password, avatar: editingUser.value.avatar }).eq('username', editingUser.value.username); syncData(); }
-          else { users.value = users.value.map(x => x.username === editingUser.value.username ? editingUser.value : x); localStorage.setItem('l_u', JSON.stringify(users.value)); }
-          editingUser.value = null; showToast("Utente modificato!", "success");
+          if (!editingUser.value) return;
+          await dbWrite('users', editingUser.value.username, editingUser.value);
+          editingUser.value = null;
+          showToast("Dati modificati con successo!", "success");
         };
 
-        const deleteUser = async (name) => {
-          if (!confirm("Eliminare?")) return;
-          if (isCloudMode.value) { await supabase.from('users').delete().eq('username', name); syncData(); }
-          else { users.value = users.value.filter(x => x.username !== name); localStorage.setItem('l_u', JSON.stringify(users.value)); }
-          showToast("Eliminato!", "success");
+        const deleteUser = async (username) => {
+          if (!confirm(`Sei sicuro di voler eliminare definitivamente l'utente ${username}?`)) return;
+          await dbDelete('users', username);
+          showToast("Giocatore eliminato dal torneo.", "success");
         };
 
-        const saveDeadline = async (g) => {
-          const v = document.getElementById('dl-' + g).value; if (!v) return;
-          if (isCloudMode.value) { await supabase.from('giornate_settings').upsert([{ giornata: parseInt(g), deadline: new Date(v).toISOString() }]); syncData(); }
-          else { settings.value.deadlines[g] = v; localStorage.setItem('l_d', JSON.stringify(settings.value.deadlines)); showToast("Scadenza salvata!", "success"); }
+        const saveDeadline = async (giornata) => {
+          const val = document.getElementById('dl-' + giornata).value;
+          if (!val) return;
+          
+          settings.value.deadlines[giornata] = val;
+          await dbWrite('settings', 'global', settings.value);
+          showToast(`Chiusura Giorno ${giornata} salvata!`, "success");
         };
 
         const toggleMatchActive = async (id) => {
-          const match = matches.value.find(x => String(x.id) === String(id)); if (!match) return;
-          const count = matches.value.filter(x => x.giornata === selectedGiorno.value).length;
-          let nextG = match.giornata === selectedGiorno.value ? null : selectedGiorno.value;
-          if (nextG && count >= 2) { showToast("Massimo 2 partite al giorno!", "error"); return; }
-          
-          if (isCloudMode.value) { await supabase.from('matches').update({ giornata: nextG }).eq('id', id); syncData(); }
-          else { match.giornata = nextG; localStorage.setItem('l_m', JSON.stringify(matches.value)); showToast("Assegnazione aggiornata!", "success"); }
+          const matchToUpdate = matches.value.find(m => m.id === id);
+          if (!matchToUpdate) return;
+
+          const currentCount = matches.value.filter(m => m.giornata === selectedGiorno.value).length;
+          let nextGiornata = matchToUpdate.giornata === selectedGiorno.value ? null : selectedGiorno.value;
+
+          if (nextGiornata && currentCount >= 2) {
+            showToast("Puoi associare massimo 2 partite a ciascun Giorno di Gioco!", "error");
+            return;
+          }
+
+          matchToUpdate.giornata = nextGiornata;
+          await dbWrite('matches', String(id), matchToUpdate);
+          showToast("Stato partita modificato!", "success");
         };
 
         const saveMatchResult = async (id) => {
-          const sH = document.getElementById('h-score-' + id).value, sA = document.getElementById('a-score-' + id).value;
-          const scH = document.getElementById('h-scorer-' + id).value, scA = document.getElementById('a-scorer-' + id).value;
-          if (sH === "" || sA === "") return;
-          const upd = { score_home: parseInt(sH), score_away: parseInt(sA), scorer_home: scH, scorer_away: scA };
-          
-          if (isCloudMode.value) { await supabase.from('matches').update(upd).eq('id', id); syncData(); }
-          else { matches.value = matches.value.map(x => String(x.id) === String(id) ? { ...x, ...upd } : x); localStorage.setItem('l_m', JSON.stringify(matches.value)); showToast("Risultato salvato!", "success"); }
+          const scoreHomeVal = document.getElementById('h-score-' + id).value;
+          const scoreAwayVal = document.getElementById('a-score-' + id).value;
+          const scorerHomeVal = document.getElementById('h-scorer-' + id).value;
+          const scorerAwayVal = document.getElementById('a-scorer-' + id).value;
+
+          if (scoreHomeVal === "" || scoreAwayVal === "") {
+            showToast("Dati del punteggio mancanti!", "error");
+            return;
+          }
+
+          const matchUpdate = {
+            score_home: parseInt(scoreHomeVal),
+            score_away: parseInt(scoreAwayVal),
+            scorer_home: scorerHomeVal,
+            scorer_away: scorerAwayVal
+          };
+
+          await dbWrite('matches', String(id), matchUpdate, true);
+          showToast("Risultato registrato ufficialmente!", "success");
         };
 
-        return { activeTab, users, matches, predictions, settings, selectedGiorno, giornateList, currentUser, loginName, loginPass, loginError, showRegisterModal, registerName, registerPass, registerAvatar, avatars, editingUser, tempBets, toast, loading, isCloudMode, setupUrl, setupKey, isConfigured, saveDatabaseConfig, formatDatetime, getGiornoDeadline, isBettingOpen, getPlayersList, sortedUsers, matchesForSelectedGiorno, hasSavedPrediction, getSavedPred, login, logout, registerUser, savePrediction, startEditing, updateUser, deleteUser, saveDeadline, toggleMatchActive, saveMatchResult };
+        return {
+          activeTab,
+          users,
+          matches,
+          predictions,
+          selectedGiorno,
+          giornateList,
+          settings,
+          currentUser,
+          loginName,
+          loginPass,
+          loginError,
+          showRegisterModal,
+          registerName,
+          registerPass,
+          registerAvatar,
+          avatars,
+          editingUser,
+          tempBets,
+          toast,
+          loading,
+          isCloudMode,
+          formatDatetime,
+          getGiornoDeadline,
+          isBettingOpen,
+          getPlayersList,
+          sortedUsers,
+          matchesForSelectedGiorno,
+          hasSavedPrediction,
+          getSavedPred,
+          login,
+          logout,
+          registerUser,
+          savePrediction,
+          startEditing,
+          updateUser,
+          deleteUser,
+          saveDeadline,
+          toggleMatchActive,
+          saveMatchResult
+        };
       }
     }).mount('#app');
   </script>
 </body>
 </html>
 
+```
