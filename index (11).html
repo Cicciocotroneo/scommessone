@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Scommessone 2026 – Mondiali Americani</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #eef2ef;
+            padding: 16px 12px 40px 12px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 16px 20px;
+            border-radius: 48px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1b5e3f, #0f3b2a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .toggle-group {
+            display: flex;
+            gap: 8px;
+            background: #f0f2ef;
+            padding: 5px;
+            border-radius: 60px;
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #3f5e4e;
+            white-space: nowrap;
+        }
+
+        .view-btn.active {
+            background: #2c5a47;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Viste */
+        .view-section {
+            display: none;
+        }
+
+        .match-card {
+            background: white;
+            border-radius: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #e2e0d6;
+        }
+
+        .match-header {
+            background: #faf9f4;
+            padding: 14px 18px;
+            border-bottom: 1px solid #e9e6dd;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .match-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Caselle di testo appunti */
+        .admin-note-match {
+            background: #fffdf5;
+            border: 1px dashed #d1cbb3;
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #b22222;
+            width: 100px;
+            text-align: center;
+        }
+
+        .admin-note-points {
+            background: #fdfdfd;
+            border: 1px dashed #cccbc0;
+            border-radius: 60px;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #2c5a47;
+            width: 55px;
+            text-align: center;
+            margin-left: auto;
+        }
+
+        .bets-list {
+            padding: 4px 0;
+        }
+
+        .bet-row {
+            padding: 12px 18px;
+            border-bottom: 1px solid #f0efe8;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bet-row:last-child {
+            border-bottom: none;
+        }
+
+        .better-name {
+            font-weight: 700;
+            background: #eef5f1;
+            padding: 3px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            min-width: 110px;
+            color: #1a4d39;
+        }
+
+        .prediction {
+            font-size: 0.85rem;
+            color: #2f3e36;
+            flex: 1;
+        }
+
+        .score-badge {
+            font-weight: 700;
+            background: #f5ede0;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-family: monospace;
+            margin-right: 8px;
+        }
+
+        .scorers-text {
+            color: #6a6a5c;
+            font-size: 0.75rem;
+        }
+
+        /* Griglia */
+        .grid-view {
+            overflow-x: auto;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+            border: 1px solid #e2e0d6;
+        }
+
+        .grid-table {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            min-width: 800px;
+        }
+
+        .grid-header {
+            display: table-header-group;
+        }
+        .grid-body {
+            display: table-row-group;
+        }
+        .header-row, .match-row {
+            display: table-row;
+        }
+        .header-cell, .cell {
+            display: table-cell;
+            padding: 12px 8px;
+            border-bottom: 1px solid #efede5;
+            border-right: 1px solid #efede5;
+            vertical-align: top;
+        }
+        .header-cell:first-child, .cell:first-child {
+            position: sticky;
+            left: 0;
+            background: white;
+            font-weight: 600;
+            z-index: 1;
+        }
+        .header-cell {
+            background: #f8f7f2;
+            font-weight: 700;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .pred-grid {
+            font-size: 0.7rem;
+            line-height: 1.3;
+        }
+        .score-grid {
+            font-weight: 700;
+            background: #f2eee5;
+            display: inline-block;
+            padding: 1px 4px;
+            border-radius: 12px;
+            font-family: monospace;
+        }
+        .no-bet {
+            color: #bbb8aa;
+            font-style: italic;
+        }
+        
+        /* Stile dicitura risultato ufficiale nella cella partita */
+        .result-value-grid {
+            display: block;
+            margin-top: 6px;
+            font-weight: bold;
+            color: #b22222;
+            font-size: 0.7rem;
+        }
+        .saved-points-grid {
+            display: block;
+            margin-top: 4px;
+            font-weight: bold;
+            color: #2c5a47;
+            font-size: 0.7rem;
+        }
+
+        /* Classifica Card / List */
+        .leaderboard-card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+            border: 1px solid #e2e0d6;
+            padding: 8px 0;
+            max-width: 600px;
+            margin: 0 auto;
+	    overflow: hidden;
+        }
+
+        .leaderboard-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 24px;
+            border-bottom: 1px solid #f0efe8;
+            transition: background 0.2s;
+        }
+
+        .leaderboard-row:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-row:hover {
+            background: #faf9f4;
+        }
+
+        .rank-name {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .rank-number {
+            font-weight: 800;
+            font-size: 1.1rem;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #f0f2ef;
+            color: #4a5d51;
+	    border: 1px solid  #4a5d51;
+        }
+
+        /* Podio Custom Stills */
+        .rank-1 .rank-number { background: #ffd700; color: #5a4500;  border: 1px solid #4a5d51; }
+        .rank-2 .rank-number { background: #c0c0c0; color: #464646;  border: 1px solid #4a5d51; }
+        .rank-3 .rank-number { background: #cd7f32; color: #5c340e;  border: 1px solid #4a5d51; }
+
+        .leaderboard-row.rank-1 { background: #f7e1a0; }
+	.leaderboard-row.rank-2 { background: #e3e3e3; }
+	.leaderboard-row.rank-3 { background: #e7cfae; }
+
+        .player-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #1a4d39;
+        }
+
+        .player-points {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #2c5a47;
+            background: #eef5f1;
+            padding: 4px 14px;
+            border-radius: 20px;
+	    border: 1px solid  #4a5d51;
+        }
+
+        /* Nuova Sezione Palinsesto */
+        .schedule-day {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid #e2e0d6;
+        }
+        .schedule-date {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a4d39;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eef5f1;
+            padding-bottom: 8px;
+        }
+        .schedule-match-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #f0efe8;
+            font-size: 0.9rem;
+        }
+        .schedule-match-item:last-child {
+            border-bottom: none;
+        }
+        .schedule-match-name {
+            font-weight: 600;
+            color: #2f3e36;
+        }
+        .schedule-match-info {
+            color: #7a7a6c;
+            font-size: 0.8rem;
+        }
+        .copy-btn {
+            background: #2c5a47;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .copy-btn:hover {
+            background: #1b3b2e;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #9c9b8d;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 650px) {
+            .view-header {
+                flex-direction: column;
+                align-items: center;
+                border-radius: 24px;
+                padding: 12px;
+            }
+            .toggle-group {
+                width: 100%;
+                justify-content: center;
+            }
+            .view-btn {
+                flex: 1;
+                padding: 8px 10px;
+                font-size: 0.8rem;
+                text-align: center;
+            }
+            .bet-row {
+                flex-direction: row;
+                align-items: center;
+            }
+            .better-name {
+                margin-bottom: 0px;
+            }
+        }
+
+        /* CSS SPECIFICO PER LA STAMPA PDF */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .view-header, .copy-btn, footer {
+                display: none !important;
+            }
+            .view-section {
+                display: block !important;
+            }
+            .match-card {
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+            .admin-note-match, .admin-note-points {
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                text-align: right;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="view-header">
+        <h1>⚽ Scommessone 2026</h1>
+        <div class="toggle-group">
+            <button class="view-btn active" data-view="matches">📋 Per partita</button>
+            <button class="view-btn" data-view="grid">📊 Griglia</button>
+            <button class="view-btn" data-view="leaderboard">🏆 Classifica</button>
+            <button class="view-btn" data-view="schedule">📅 Palinsesto</button>
+        </div>
+    </div>
+
+    <div id="matchesView" class="view-section" style="display: block;"></div>
+    <div id="gridView" class="view-section grid-view"></div>
+    <div id="leaderboardView" class="view-section"></div>
+    <div id="scheduleView" class="view-section"></div>
+
+    <footer>Aggiornato al 29 giugno 2026 ore 08.00</footer>
+</div>
+
+<script>
+    // DATI CLASSIFICA
+    const leaderboardData = [
+        { rank: 1, better: "mullah", points: 62 },
+        { rank: 2, better: "barella", points: 58 },
+        { rank: 3, better: "zimbellone", points: 57 },
+        { rank: 4, better: "kant", points: 56 },
+        { rank: 5, better: "baldin", points: 55 },
+        { rank: 6, better: "prof recchia", points: 55 },
+        { rank: 7, better: "cervo", points: 54 },
+        { rank: 8, better: "zimbellino", points: 46 },
+        { rank: 9, better: "mastro", points: 44 },
+        { rank: 10, better: "il nonno", points: 42 }
+    ];
+
+    // DATI COMPLETI - TUTTE LE SCOMMESSE
+    const betsData = [
+        // === PARTITE PRECEDENTI (11-15 giugno) ===
+        { match: "🇲🇽 Messico – 🇿🇦 Sudafrica", better: "prof recchia", result: "Sudafrica 0-1 Messico", scorers: "Jemenez" },
+        { match: "🇲🇽 Messico – 🇿🇦 Sudafrica", better: "zimbellino", result: "Messico 1-0 Sudafrica", scorers: "" },
+        { match: "🇲🇽 Messico – 🇿🇦 Sudafrica", better: "mullah", result: "Messico 1-1 Sudafrica", scorers: "" },
+        { match: "🇲🇽 Messico – 🇿🇦 Sudafrica", better: "mastro", result: "Messico 3-1 Sudafrica", scorers: "Alvarez, Jimenez, Vega / Foster" },
+        { match: "🇲🇽 Messico – 🇿🇦 Sudafrica", better: "il nonno", result: "Messico 2-1 Sudafrica", scorers: "Raul Jimenez, Pineda / Foster" },
+        { match: "🇲🇽 Messico – 🇿🇦 Sudafrica", better: "cervo", result: "Messico 3-2 Sudafrica", scorers: "" },
+        { match: "🇲🇽 Messico – 🇿🇦 Sudafrica", better: "kant", result: "Messico 1-0 Sudafrica", scorers: "Jimenez" },
+        { match: "🇲🇽 Messico – 🇿🇦 Sudafrica", better: "barella", result: "Messico 3-1 Sudafrica", scorers: "" },
+        { match: "🇲🇽 Messico – 🇿🇦 Sudafrica", better: "baldin", result: "Messico 1-0 Sudafrica", scorers: "" },
+        { match: "🇲🇽 Messico – 🇿🇦 Sudafrica", better: "zimbellone", result: "Messico 2-0 Sudafrica", scorers: "Raul Jimenez, Santiago Gimenez" },
+        
+        { match: "🇨🇿 Rep. Ceca – 🇰🇷 Corea Sud", better: "prof recchia", result: "Rep. Ceca 1-0 Corea", scorers: "Schick" },
+        { match: "🇨🇿 Rep. Ceca – 🇰🇷 Corea Sud", better: "mastro", result: "Rep. Ceca 2-2 Corea", scorers: "Schick(2) / Son, J.Lee" },
+        { match: "🇨🇿 Rep. Ceca – 🇰🇷 Corea Sud", better: "mullah", result: "Rep. Ceca 3-2 Corea", scorers: "" },
+        { match: "🇨🇿 Rep. Ceca – 🇰🇷 Corea Sud", better: "il nonno", result: "Rep. Ceca 2-0 Corea", scorers: "Provod, Schick" },
+        { match: "🇨🇿 Rep. Ceca – 🇰🇷 Corea Sud", better: "cervo", result: "Rep. Ceca 2-1 Corea", scorers: "" },
+        { match: "🇨🇿 Rep. Ceca – 🇰🇷 Corea Sud", better: "kant", result: "Rep. Ceca 0-1 Corea", scorers: "" },
+        { match: "🇨🇿 Rep. Ceca – 🇰🇷 Corea Sud", better: "barella", result: "Rep. Ceca 0-1 Corea", scorers: "" },
+        { match: "🇨🇿 Rep. Ceca – 🇰🇷 Corea Sud", better: "baldin", result: "Corea 0-3 Rep. Ceca", scorers: "" },
+        { match: "🇨🇿 Rep. Ceca – 🇰🇷 Corea Sud", better: "zimbellone", result: "Rep. Ceca 1-2 Corea", scorers: "Schick / Son, Lee Kang-in" },
+        
+        { match: "🇨🇦 Canada – 🇧🇦 Bosnia", better: "prof recchia", result: "Canada 1-1 Bosnia", scorers: "Kone / Kolasinac" },
+        { match: "🇨🇦 Canada – 🇧🇦 Bosnia", better: "zimbellone", result: "Canada 1-0 Bosnia", scorers: "David" },
+        { match: "🇨🇦 Canada – 🇧🇦 Bosnia", better: "il nonno", result: "Canada 0-2 Bosnia", scorers: "Dzeko, Dedic" },
+        { match: "🇨🇦 Canada – 🇧🇦 Bosnia", better: "cervo", result: "Canada 1-1 Bosnia", scorers: "" },
+        { match: "🇨🇦 Canada – 🇧🇦 Bosnia", better: "mastro", result: "Canada 0-2 Bosnia", scorers: "Dzeko(2)" },
+        { match: "🇨🇦 Canada – 🇧🇦 Bosnia", better: "mullah", result: "Canada 1-2 Bosnia", scorers: "" },
+        { match: "🇨🇦 Canada – 🇧🇦 Bosnia", better: "baldin", result: "Canada 0-2 Bosnia", scorers: "" },
+        { match: "🇨🇦 Canada – 🇧🇦 Bosnia", better: "kant", result: "Canada 0-0 Bosnia", scorers: "" },
+        { match: "🇨🇦 Canada – 🇧🇦 Bosnia", better: "barella", result: "Canada 1-2 Bosnia", scorers: "Larin / Dzeko, Demirovic" },
+        
+        { match: "🇺🇸 USA – 🇵🇾 Paraguay", better: "prof recchia", result: "USA 1-1 Paraguay", scorers: "Pulisic / Diego Gomez" },
+        { match: "🇺🇸 USA – 🇵🇾 Paraguay", better: "zimbellone", result: "USA 1-0 Paraguay", scorers: "Balogun" },
+        { match: "🇺🇸 USA – 🇵🇾 Paraguay", better: "il nonno", result: "USA 1-1 Paraguay", scorers: "Pulisic / Sanabria" },
+        { match: "🇺🇸 USA – 🇵🇾 Paraguay", better: "mastro", result: "USA 1-2 Paraguay", scorers: "McKennie / Sanabria, Bobadilla" },
+        { match: "🇺🇸 USA – 🇵🇾 Paraguay", better: "mullah", result: "Paraguay 2-1 USA", scorers: "Pulisic, Balogun / Sanabria" },
+        { match: "🇺🇸 USA – 🇵🇾 Paraguay", better: "baldin", result: "USA 1-1 Paraguay", scorers: "" },
+        { match: "🇺🇸 USA – 🇵🇾 Paraguay", better: "kant", result: "USA 0-0 Paraguay", scorers: "" },
+        
+        { match: "🇶🇦 Qatar – 🇨🇭 Svizzera", better: "prof recchia", result: "Qatar 0-2 Svizzera", scorers: "Embolo, Ndoye" },
+        { match: "🇶🇦 Qatar – 🇨🇭 Svizzera", better: "mastro", result: "Qatar 1-2 Svizzera", scorers: "" },
+        { match: "🇶🇦 Qatar – 🇨🇭 Svizzera", better: "il nonno", result: "Qatar 0-3 Svizzera", scorers: "Ndoye(2), Embolo" },
+        { match: "🇶🇦 Qatar – 🇨🇭 Svizzera", better: "cervo", result: "Qatar 1-3 Svizzera", scorers: "" },
+        { match: "🇶🇦 Qatar – 🇨🇭 Svizzera", better: "kant", result: "Qatar 0-3 Svizzera", scorers: "" },
+        { match: "🇶🇦 Qatar – 🇨🇭 Svizzera", better: "barella", result: "Qatar 0-2 Svizzera", scorers: "Ndoye, Jashari" },
+        { match: "🇶🇦 Qatar – 🇨🇭 Svizzera", better: "baldin", result: "Qatar 0-3 Svizzera", scorers: "" },
+        { match: "🇶🇦 Qatar – 🇨🇭 Svizzera", better: "zimbellone", result: "Qatar 2-0 Svizzera", scorers: "Ndoye, Embolo" },
+        
+        { match: "🇧🇷 Brasile – 🇲🇦 Marocco", better: "mullah", result: "Brasile 3-2 Marocco", scorers: "" },
+        { match: "🇧🇷 Brasile – 🇲🇦 Marocco", better: "il nonno", result: "Brasile 3-1 Marocco", scorers: "Casemiro, Paquetá, Vinicius Jr / Saibari" },
+        { match: "🇧🇷 Brasile – 🇲🇦 Marocco", better: "cervo", result: "Brasile 2-2 Marocco", scorers: "" },
+        { match: "🇧🇷 Brasile – 🇲🇦 Marocco", better: "kant", result: "Brasile 1-0 Marocco", scorers: "" },
+        { match: "🇧🇷 Brasile – 🇲🇦 Marocco", better: "barella", result: "Brasile 1-2 Marocco", scorers: "Raphinha / El Ayanoui, Brahim" },
+        { match: "🇧🇷 Brasile – 🇲🇦 Marocco", better: "baldin", result: "Brasile 2-1 Marocco", scorers: "" },
+        { match: "🇧🇷 Brasile – 🇲🇦 Marocco", better: "zimbellone", result: "Brasile 2-0 Marocco", scorers: "Vinicius, Rodrygo / En Nesiri" },
+        
+        { match: "🇭🇹 Haiti – 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia", better: "prof recchia", result: "Haiti 0-4 Scozia", scorers: "tutti Scozia" },
+        { match: "🇭🇹 Haiti – 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia", better: "mastro", result: "Haiti 0-3 Scozia", scorers: "" },
+        { match: "🇭🇹 Haiti – 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia", better: "il nonno", result: "Haiti 0-2 Scozia", scorers: "McTominay, Adams" },
+        { match: "🇭🇹 Haiti – 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia", better: "cervo", result: "Haiti 0-4 Scozia", scorers: "" },
+        { match: "🇭🇹 Haiti – 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia", better: "kant", result: "Haiti 0-1 Scozia", scorers: "" },
+        { match: "🇭🇹 Haiti – 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia", better: "mullah", result: "Haiti 0-4 Scozia", scorers: "" },
+        { match: "🇭🇹 Haiti – 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia", better: "barella", result: "Haiti 0-3 Scozia", scorers: "McTominay, Dykes, Adams" },
+        { match: "🇭🇹 Haiti – 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia", better: "baldin", result: "Haiti 0-2 Scozia", scorers: "" },
+        { match: "🇭🇹 Haiti – 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia", better: "zimbellone", result: "Haiti 0-2 Scozia", scorers: "Che Adams, McTominay" },
+        
+        { match: "🇦🇺 Australia – 🇹🇷 Turchia", better: "prof recchia", result: "Australia 1-2 Turchia", scorers: "" },
+        { match: "🇦🇺 Australia – 🇹🇷 Turchia", better: "mastro", result: "Australia 0-4 Turchia", scorers: "" },
+        { match: "🇦🇺 Australia – 🇹🇷 Turchia", better: "il nonno", result: "Australia 0-3 Turchia", scorers: "Calhanoglu, Yilmaz, Yildiz" },
+        { match: "🇦🇺 Australia – 🇹🇷 Turchia", better: "cervo", result: "Australia 1-2 Turchia", scorers: "" },
+        { match: "🇦🇺 Australia – 🇹🇷 Turchia", better: "kant", result: "Australia 1-2 Turchia", scorers: "" },
+        { match: "🇦🇺 Australia – 🇹🇷 Turchia", better: "mullah", result: "Australia 1-2 Turchia", scorers: "" },
+        { match: "🇦🇺 Australia – 🇹🇷 Turchia", better: "barella", result: "Australia 0-4 Turchia", scorers: "Yildiz(2), Guler, aut.Burgess" },
+        { match: "🇦🇺 Australia – 🇹🇷 Turchia", better: "baldin", result: "Australia 1-1 Turchia", scorers: "" },
+        { match: "🇦🇺 Australia – 🇹🇷 Turchia", better: "zimbellone", result: "Australia 0-2 Turchia", scorers: "Yildiz, Akturcoglu" },
+        
+        { match: "🇩🇪 Germania – 🇨🇼 Curaçao", better: "prof recchia", result: "Germania 4-0 Curaçao", scorers: "Havertz, Musiala(2), Wirtz" },
+        { match: "🇩🇪 Germania – 🇨🇼 Curaçao", better: "zimbellino", result: "Germania 6-2 Curaçao", scorers: "" },
+        { match: "🇩🇪 Germania – 🇨🇼 Curaçao", better: "mullah", result: "Germania 3-0 Curaçao", scorers: "Havertz, Musiala, Kimmich" },
+        { match: "🇩🇪 Germania – 🇨🇼 Curaçao", better: "mastro", result: "Germania 5-1 Curaçao", scorers: "" },
+        { match: "🇩🇪 Germania – 🇨🇼 Curaçao", better: "il nonno", result: "Germania 4-0 Curaçao", scorers: "Sane(2), Musiala, Havertz" },
+        { match: "🇩🇪 Germania – 🇨🇼 Curaçao", better: "cervo", result: "Germania 5-1 Curaçao", scorers: "" },
+        { match: "🇩🇪 Germania – 🇨🇼 Curaçao", better: "kant", result: "Germania 5-0 Curaçao", scorers: "" },
+        { match: "🇩🇪 Germania – 🇨🇼 Curaçao", better: "barella", result: "Germania 4-1 Curaçao", scorers: "" },
+        { match: "🇩🇪 Germania – 🇨🇼 Curaçao", better: "baldin", result: "Germania 3-0 Curaçao", scorers: "" },
+        { match: "🇩🇪 Germania – 🇨🇼 Curaçao", better: "zimbellone", result: "Germania 5-0 Curaçao", scorers: "Havertz(2), Sanè, Musiala, Wirtz" },
+        
+        { match: "🇳🇱 Olanda – 🇯🇵 Giappone", better: "prof recchia", result: "Olanda 2-1 Giappone", scorers: "Malen, Depay / Kubo" },
+        { match: "🇳🇱 Olanda – 🇯🇵 Giappone", better: "zimbellino", result: "Olanda 1-2 Giappone", scorers: "" },
+        { match: "🇳🇱 Olanda – 🇯🇵 Giappone", better: "mullah", result: "Olanda 3-1 Giappone", scorers: "" },
+        { match: "🇳🇱 Olanda – 🇯🇵 Giappone", better: "mastro", result: "Olanda 2-2 Giappone", scorers: "" },
+        { match: "🇳🇱 Olanda – 🇯🇵 Giappone", better: "il nonno", result: "Olanda 2-1 Giappone", scorers: "Malen, Depay / Kubo" },
+        { match: "🇳🇱 Olanda – 🇯🇵 Giappone", better: "cervo", result: "Olanda 2-1 Giappone", scorers: "" },
+        { match: "🇳🇱 Olanda – 🇯🇵 Giappone", better: "kant", result: "Olanda 2-2 Giappone", scorers: "" },
+        { match: "🇳🇱 Olanda – 🇯🇵 Giappone", better: "barella", result: "Olanda 2-2 Giappone", scorers: "" },
+        { match: "🇳🇱 Olanda – 🇯🇵 Giappone", better: "baldin", result: "Olanda 0-0 Giappone", scorers: "" },
+        { match: "🇳🇱 Olanda – 🇯🇵 Giappone", better: "zimbellone", result: "Olanda 2-2 Giappone", scorers: "Malen, Dumfries / Ueda(2)" },
+        
+        { match: "🇨🇮 Costa d'Avorio – 🇪🇨 Ecuador", better: "prof recchia", result: "Costa d'Avorio 1-1 Ecuador", scorers: "Kessie / Valencia" },
+        { match: "🇨🇮 Costa d'Avorio – 🇪🇨 Ecuador", better: "zimbellino", result: "Costa d'Avorio 2-2 Ecuador", scorers: "" },
+        { match: "🇨🇮 Costa d'Avorio – 🇪🇨 Ecuador", better: "mullah", result: "Costa d'Avorio 1-2 Ecuador", scorers: "" },
+        { match: "🇨🇮 Costa d'Avorio – 🇪🇨 Ecuador", better: "mastro", result: "Costa d'Avorio 2-2 Ecuador", scorers: "" },
+        { match: "🇨🇮 Costa d'Avorio – 🇪🇨 Ecuador", better: "il nonno", result: "Costa d'Avorio 0-2 Ecuador", scorers: "Yeboah, Valencia" },
+        { match: "🇨🇮 Costa d'Avorio – 🇪🇨 Ecuador", better: "cervo", result: "Costa d'Avorio 0-1 Ecuador", scorers: "" },
+        { match: "🇨🇮 Costa d'Avorio – 🇪🇨 Ecuador", better: "kant", result: "Costa d'Avorio 0-0 Ecuador", scorers: "" },
+        { match: "🇨🇮 Costa d'Avorio – 🇪🇨 Ecuador", better: "barella", result: "Costa d'Avorio 1-3 Ecuador", scorers: "" },
+        { match: "🇨🇮 Costa d'Avorio – 🇪🇨 Ecuador", better: "baldin", result: "Costa d'Avorio 1-1 Ecuador", scorers: "" },
+        { match: "🇨🇮 Costa d'Avorio – 🇪🇨 Ecuador", better: "zimbellone", result: "Costa d'Avorio 2-1 Ecuador", scorers: "Diomande, Diallo / Caicedo" },
+        
+        { match: "🇸🇪 Svezia – 🇹🇳 Tunisia", better: "prof recchia", result: "Svezia 1-0 Tunisia", scorers: "Gyokeres" },
+        { match: "🇸🇪 Svezia – 🇹🇳 Tunisia", better: "zimbellino", result: "Svezia 3-1 Tunisia", scorers: "" },
+        { match: "🇸🇪 Svezia – 🇹🇳 Tunisia", better: "mullah", result: "Svezia 2-0 Tunisia", scorers: "" },
+        { match: "🇸🇪 Svezia – 🇹🇳 Tunisia", better: "mastro", result: "Svezia 1-1 Tunisia", scorers: "" },
+        { match: "🇸🇪 Svezia – 🇹🇳 Tunisia", better: "il nonno", result: "Svezia 2-1 Tunisia", scorers: "Gyokeres(2) / Mastouri" },
+        { match: "🇸🇪 Svezia – 🇹🇳 Tunisia", better: "cervo", result: "Svezia 1-1 Tunisia", scorers: "" },
+        { match: "🇸🇪 Svezia – 🇹🇳 Tunisia", better: "kant", result: "Svezia 0-0 Tunisia", scorers: "" },
+        { match: "🇸🇪 Svezia – 🇹🇳 Tunisia", better: "barella", result: "Svezia 0-1 Tunisia", scorers: "" },
+        { match: "🇸🇪 Svezia – 🇹🇳 Tunisia", better: "baldin", result: "Svezia 2-0 Tunisia", scorers: "" },
+        { match: "🇸🇪 Svezia – 🇹🇳 Tunisia", better: "zimbellone", result: "Svezia 2-0 Tunisia", scorers: "Gyokeres, Isak" },
+
+        // === 15 GIUGNO ===
+        { match: "🇪🇸 Spagna – 🇨🇻 Capo Verde", better: "zimbellone", result: "Spagna 6-0 Capo Verde", scorers: "Rodri, Fabian Ruiz, Ferran Torres (2), Baena (2)" },
+        { match: "🇪🇸 Spagna – 🇨🇻 Capo Verde", better: "zimbellino", result: "Spagna 3-1 Capo Verde", scorers: "" },
+        { match: "🇪🇸 Spagna – 🇨🇻 Capo Verde", better: "kant", result: "Spagna 6-0 Capo Verde", scorers: "" },
+        { match: "🇪🇸 Spagna – 🇨🇻 Capo Verde", better: "prof recchia", result: "Spagna 5-0 Capo Verde", scorers: "" },
+        { match: "🇪🇸 Spagna – 🇨🇻 Capo Verde", better: "mullah", result: "Spagna 4-0 Capo Verde", scorers: "" },
+        { match: "🇪🇸 Spagna – 🇨🇻 Capo Verde", better: "cervo", result: "Spagna 5-1 Capo Verde", scorers: "" },
+        { match: "🇪🇸 Spagna – 🇨🇻 Capo Verde", better: "il nonno", result: "Spagna 4-1 Capo Verde", scorers: "Oyarzabal, Ferran Torres (2), Pedri / Livramento" },
+        { match: "🇪🇸 Spagna – 🇨🇻 Capo Verde", better: "mastro", result: "Spagna 6-1 Capo Verde", scorers: "" },
+        { match: "🇪🇸 Spagna – 🇨🇻 Capo Verde", better: "barella", result: "Spagna 1-1 Uruguay", scorers: "" },
+        
+        { match: "🇧🇪 Belgio – 🇪🇬 Egitto", better: "zimbellone", result: "Belgio 3-2 Egitto", scorers: "Lukaku (2), Witsel / Marmoush, Salah" },
+        { match: "🇧🇪 Belgio – 🇪🇬 Egitto", better: "zimbellino", result: "Belgio 2-2 Egitto", scorers: "" },
+        { match: "🇧🇪 Belgio – 🇪🇬 Egitto", better: "kant", result: "Belgio 1-2 Egitto", scorers: "" },
+        { match: "🇧🇪 Belgio – 🇪🇬 Egitto", better: "prof recchia", result: "Belgio 2-1 Egitto", scorers: "" },
+        { match: "🇧🇪 Belgio – 🇪🇬 Egitto", better: "mullah", result: "Belgio 2-1 Egitto", scorers: "" },
+        { match: "🇧🇪 Belgio – 🇪🇬 Egitto", better: "cervo", result: "Belgio 1-0 Egitto", scorers: "" },
+        { match: "🇧🇪 Belgio – 🇪🇬 Egitto", better: "il nonno", result: "Belgio 3-0 Egitto", scorers: "Vanaken, Moreira, Lukaku" },
+        { match: "🇧🇪 Belgio – 🇪🇬 Egitto", better: "mastro", result: "Belgio 2-2 Egitto", scorers: "" },
+        { match: "🇧🇪 Belgio – 🇪🇬 Egitto", better: "barella", result: "Belgio 3-2 Giordania", scorers: "" },
+        
+        { match: "🇸🇦 Arabia Saudita – 🇺🇾 Uruguay", better: "zimbellone", result: "Arabia Saudita 0-1 Uruguay", scorers: "B. Rodriguez" },
+        { match: "🇸🇦 Arabia Saudita – 🇺🇾 Uruguay", better: "zimbellino", result: "Arabia Saudita 1-3 Uruguay", scorers: "" },
+        { match: "🇸🇦 Arabia Saudita – 🇺🇾 Uruguay", better: "kant", result: "Arabia Saudita 0-1 Uruguay", scorers: "" },
+        { match: "🇸🇦 Arabia Saudita – 🇺🇾 Uruguay", better: "prof recchia", result: "Arabia Saudita 0-1 Uruguay", scorers: "" },
+        { match: "🇸🇦 Arabia Saudita – 🇺🇾 Uruguay", better: "mullah", result: "Arabia Saudita 0-1 Uruguay", scorers: "" },
+        { match: "🇸🇦 Arabia Saudita – 🇺🇾 Uruguay", better: "cervo", result: "Arabia Saudita 1-2 Uruguay", scorers: "" },
+        { match: "🇸🇦 Arabia Saudita – 🇺🇾 Uruguay", better: "il nonno", result: "Arabia Saudita 1-3 Uruguay", scorers: "Al-Buraikan / Valverde, Bentancur, B. Rodriguez" },
+        { match: "🇸🇦 Arabia Saudita – 🇺🇾 Uruguay", better: "mastro", result: "Arabia Saudita 1-2 Uruguay", scorers: "" },
+        { match: "🇸🇦 Arabia Saudita – 🇺🇾 Uruguay", better: "barella", result: "Arabia Saudita 1-1 Uruguay", scorers: "" },
+        
+        { match: "🇮🇷 Iran – 🇳🇿 Nuova Zelanda", better: "zimbellone", result: "Iran 2-0 Nuova Zelanda", scorers: "Taremi, Mohebbi" },
+        { match: "🇮🇷 Iran – 🇳🇿 Nuova Zelanda", better: "zimbellino", result: "Iran 2-0 Nuova Zelanda", scorers: "" },
+        { match: "🇮🇷 Iran – 🇳🇿 Nuova Zelanda", better: "kant", result: "Iran 1-0 Nuova Zelanda", scorers: "" },
+        { match: "🇮🇷 Iran – 🇳🇿 Nuova Zelanda", better: "prof recchia", result: "Iran 1-0 Nuova Zelanda", scorers: "" },
+        { match: "🇮🇷 Iran – 🇳🇿 Nuova Zelanda", better: "mullah", result: "Iran 1-0 Nuova Zelanda", scorers: "" },
+        { match: "🇮🇷 Iran – 🇳🇿 Nuova Zelanda", better: "cervo", result: "Iran 1-1 Nuova Zelanda", scorers: "" },
+        { match: "🇮🇷 Iran – 🇳🇿 Nuova Zelanda", better: "il nonno", result: "Iran 1-2 Nuova Zelanda", scorers: "Taremi / Singh, Wood" },
+        { match: "🇮🇷 Iran – 🇳🇿 Nuova Zelanda", better: "mastro", result: "Iran 1-1 Nuova Zelanda", scorers: "" },
+        { match: "🇮🇷 Iran – 🇳🇿 Nuova Zelanda", better: "barella", result: "Iran 2-0 Nuova Zelanda", scorers: "" },
+
+        // === 16 GIUGNO ===
+        { match: "🇫🇷 Francia – 🇸🇳 Senegal", better: "mullah", result: "Francia 3-1 Senegal", scorers: "" },
+        { match: "🇫🇷 Francia – 🇸🇳 Senegal", better: "zimbellino", result: "Francia 1-1 Senegal", scorers: "" },
+        { match: "🇫🇷 Francia – 🇸🇳 Senegal", better: "kant", result: "Francia 1-1 Senegal", scorers: "" },
+        { match: "🇫🇷 Francia – 🇸🇳 Senegal", better: "cervo", result: "Francia 3-1 Senegal", scorers: "" },
+        { match: "🇫🇷 Francia – 🇸🇳 Senegal", better: "prof recchia", result: "Francia 1-1 Senegal", scorers: "" },
+        { match: "🇫🇷 Francia – 🇸🇳 Senegal", better: "barella", result: "Francia 0-2 Senegal", scorers: "" },
+        { match: "🇫🇷 Francia – 🇸🇳 Senegal", better: "zimbellone", result: "Francia 3-1 Senegal", scorers: "Douè, Mbappe(2) / Manè" },
+        { match: "🇫🇷 Francia – 🇸🇳 Senegal", better: "mastro", result: "Francia 2-2 Senegal", scorers: "" },
+        { match: "🇫🇷 Francia – 🇸🇳 Senegal", better: "il nonno", result: "Francia 2-1 Senegal", scorers: "Rabiot, Dembelé / Mané" },
+        { match: "🇫🇷 Francia – 🇸🇳 Senegal", better: "baldin", result: "Francia 2-0 Senegal", scorers: "" },
+        
+        { match: "🇮🇶 Iraq – 🇳🇴 Norvegia", better: "mullah", result: "Iraq 0-5 Norvegia", scorers: "" },
+        { match: "🇮🇶 Iraq – 🇳🇴 Norvegia", better: "zimbellino", result: "Iraq 0-5 Norvegia", scorers: "" },
+        { match: "🇮🇶 Iraq – 🇳🇴 Norvegia", better: "kant", result: "Iraq 0-3 Norvegia", scorers: "" },
+        { match: "🇮🇶 Iraq – 🇳🇴 Norvegia", better: "cervo", result: "Iraq 0-4 Norvegia", scorers: "" },
+        { match: "🇮🇶 Iraq – 🇳🇴 Norvegia", better: "prof recchia", result: "Iraq 0-3 Norvegia", scorers: "" },
+        { match: "🇮🇶 Iraq – 🇳🇴 Norvegia", better: "barella", result: "Iraq 1-4 Norvegia", scorers: "" },
+        { match: "🇮🇶 Iraq – 🇳🇴 Norvegia", better: "zimbellone", result: "Iraq 0-3 Norvegia", scorers: "Haland(2), Nusa" },
+        { match: "🇮🇶 Iraq – 🇳🇴 Norvegia", better: "mastro", result: "Iraq 0-5 Norvegia", scorers: "" },
+        { match: "🇮🇶 Iraq – 🇳🇴 Norvegia", better: "il nonno", result: "Iraq 0-3 Norvegia", scorers: "Haaland 2, Nusa" },
+        { match: "🇮🇶 Iraq – 🇳🇴 Norvegia", better: "baldin", result: "Iraq 0-3 Norvegia", scorers: "" },
+        
+        { match: "🇦🇷 Argentina – 🇩🇿 Algeria", better: "mullah", result: "Argentina 2-1 Algeria", scorers: "" },
+        { match: "🇦🇷 Argentina – 🇩🇿 Algeria", better: "zimbellino", result: "Argentina 2-1 Algeria", scorers: "" },
+        { match: "🇦🇷 Argentina – 🇩🇿 Algeria", better: "kant", result: "Argentina 2-1 Algeria", scorers: "" },
+        { match: "🇦🇷 Argentina – 🇩🇿 Algeria", better: "cervo", result: "Argentina 1-0 Algeria", scorers: "" },
+        { match: "🇦🇷 Argentina – 🇩🇿 Algeria", better: "prof recchia", result: "Argentina 2-1 Algeria", scorers: "" },
+        { match: "🇦🇷 Argentina – 🇩🇿 Algeria", better: "barella", result: "Argentina 1-0 Algeria", scorers: "" },
+        { match: "🇦🇷 Argentina – 🇩🇿 Algeria", better: "zimbellone", result: "Argentina 2-0 Algeria", scorers: "Martinez, Paredes" },
+        { match: "🇦🇷 Argentina – 🇩🇿 Algeria", better: "mastro", result: "Argentina 3-2 Algeria", scorers: "" },
+        { match: "🇦🇷 Argentina – 🇩🇿 Algeria", better: "il nonno", result: "Argentina 2-0 Algeria", scorers: "Messi, Lautaro Martinez" },
+        { match: "🇦🇷 Argentina – 🇩🇿 Algeria", better: "baldin", result: "Argentina 2-0 Algeria", scorers: "" },
+        
+        { match: "🇦🇹 Austria – 🇯🇴 Giordania", better: "mullah", result: "Austria 3-0 Giordania", scorers: "" },
+        { match: "🇦🇹 Austria – 🇯🇴 Giordania", better: "zimbellino", result: "Austria 0-0 Giordania", scorers: "" },
+        { match: "🇦🇹 Austria – 🇯🇴 Giordania", better: "kant", result: "Austria 2-0 Giordania", scorers: "" },
+        { match: "🇦🇹 Austria – 🇯🇴 Giordania", better: "cervo", result: "Austria 1-1 Giordania", scorers: "" },
+        { match: "🇦🇹 Austria – 🇯🇴 Giordania", better: "prof recchia", result: "Austria 1-0 Giordania", scorers: "" },
+        { match: "🇦🇹 Austria – 🇯🇴 Giordania", better: "barella", result: "Austria 3-2 Giordania", scorers: "" },
+        { match: "🇦🇹 Austria – 🇯🇴 Giordania", better: "zimbellone", result: "Austria 2-0 Giordania", scorers: "Arnautovic, Sabitzer" },
+        { match: "🇦🇹 Austria – 🇯🇴 Giordania", better: "mastro", result: "Austria 1-0 Giordania", scorers: "" },
+        { match: "🇦🇹 Austria – 🇯🇴 Giordania", better: "il nonno", result: "Austria 2-0 Giordania", scorers: "Sabitzer, Arnautovic" },
+        { match: "🇦🇹 Austria – 🇯🇴 Giordania", better: "baldin", result: "Austria 3-0 Giordania", scorers: "" },
+
+        // === 17 GIUGNO ===
+        { match: "🇵🇹 Portogallo – 🇨🇩 R.D. Congo", better: "mullah", result: "Portogallo 1-1 R.D. Congo", scorers: "" },
+        { match: "🇵🇹 Portogallo – 🇨🇩 R.D. Congo", better: "zimbellone", result: "Portogallo 4-0 R.D. Congo", scorers: "CR7 (2), Bruno Fernandes, Leao" },
+        { match: "🇵🇹 Portogallo – 🇨🇩 R.D. Congo", better: "cervo", result: "Portogallo 3-1 R.D. Congo", scorers: "Montera, Monterà Sica, Montesanto" },
+        { match: "🇵🇹 Portogallo – 🇨🇩 R.D. Congo", better: "barella", result: "Portogallo 3-0 R.D. Congo", scorers: "" },
+        { match: "🇵🇹 Portogallo – 🇨🇩 R.D. Congo", better: "baldin", result: "Portogallo 2-0 R.D. Congo", scorers: "" },
+        { match: "🇵🇹 Portogallo – 🇨🇩 R.D. Congo", better: "kant", result: "Portogallo s.v. R.D. Congo", scorers: "" },
+        { match: "🇵🇹 Portogallo – 🇨🇩 R.D. Congo", better: "zimbellino", result: "Portogallo 4-1 R.D. Congo", scorers: "" },
+        { match: "🇵🇹 Portogallo – 🇨🇩 R.D. Congo", better: "mastro", result: "Portogallo 3-1 R.D. Congo", scorers: "" },
+        { match: "🇵🇹 Portogallo – 🇨🇩 R.D. Congo", better: "il nonno", result: "Portogallo 3-0 R.D. Congo", scorers: "Bernardo Silva, Cristiano Ronaldo, Joao Felix" },
+
+        { match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇭🇷 Croazia", better: "mullah", result: "Inghilterra 1-1 Croazia", scorers: "" },
+        { match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇭🇷 Croazia", better: "zimbellone", result: "Inghilterra 1-0 Croazia", scorers: "Keane" },
+        { match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇭🇷 Croazia", better: "cervo", result: "Inghilterra 2-1 Croazia", scorers: "" },
+        { match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇭🇷 Croazia", better: "barella", result: "Inghilterra 1-1 Croazia", scorers: "" },
+        { match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇭🇷 Croazia", better: "baldin", result: "Inghilterra 0-0 Croazia", scorers: "" },
+        { match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇭🇷 Croazia", better: "kant", result: "Inghilterra 1-1 Croazia", scorers: "" },
+        { match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇭🇷 Croazia", better: "zimbellino", result: "Inghilterra 1-1 Croazia", scorers: "" },
+        { match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇭🇷 Croazia", better: "mastro", result: "Inghilterra 1-2 Croazia", scorers: "" },
+        { match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇭🇷 Croazia", better: "il nonno", result: "Inghilterra 1-1 Croazia", scorers: "Kane (I); Baturina (C)" },
+
+        { match: "🇬🇭 Ghana – 🇵🇦 Panama", better: "mullah", result: "Ghana 2-1 Panama", scorers: "" },
+        { match: "🇬🇭 Ghana – 🇵🇦 Panama", better: "zimbellone", result: "Ghana 2-0 Panama", scorers: "Semenyo, Ayew" },
+        { match: "🇬🇭 Ghana – 🇵🇦 Panama", better: "cervo", result: "Ghana 3-1 Panama", scorers: "" },
+        { match: "🇬🇭 Ghana – 🇵🇦 Panama", better: "barella", result: "Ghana 1-1 Panama", scorers: "" },
+        { match: "🇬🇭 Ghana – 🇵🇦 Panama", better: "baldin", result: "Ghana 2-0 Panama", scorers: "" },
+        { match: "🇬🇭 Ghana – 🇵🇦 Panama", better: "kant", result: "Ghana 1-0 Panama", scorers: "" },
+        { match: "🇬🇭 Ghana – 🇵🇦 Panama", better: "zimbellino", result: "Ghana 0-0 Panama", scorers: "" },
+        { match: "🇬🇭 Ghana – 🇵🇦 Panama", better: "mastro", result: "Ghana 2-0 Panama", scorers: "" },
+        { match: "🇬🇭 Ghana – 🇵🇦 Panama", better: "il nonno", result: "Ghana 3-0 Panama", scorers: "Semenyo, Ayew" },
+
+        { match: "🇺🇿 Uzbekistan – 🇨🇴 Colombia", better: "mullah", result: "Uzbekistan 0-2 Colombia", scorers: "" },
+        { match: "🇺🇿 Uzbekistan – 🇨🇴 Colombia", better: "zimbellone", result: "Uzbekistan 1-2 Colombia", scorers: "Shomurodov, Rodriguez, Diaz" },
+        { match: "🇺🇿 Uzbekistan – 🇨🇴 Colombia", better: "cervo", result: "Uzbekistan 0-2 Colombia", scorers: "" },
+        { match: "🇺🇿 Uzbekistan – 🇨🇴 Colombia", better: "barella", result: "Uzbekistan 1-2 Colombia", scorers: "" },
+        { match: "🇺🇿 Uzbekistan – 🇨🇴 Colombia", better: "baldin", result: "Uzbekistan 0-2 Colombia", scorers: "" },
+        { match: "🇺🇿 Uzbekistan – 🇨🇴 Colombia", better: "kant", result: "Uzbekistan 0-2 Colombia", scorers: "" },
+        { match: "🇺🇿 Uzbekistan – 🇨🇴 Colombia", better: "zimbellino", result: "Uzbekistan 1-0 Colombia", scorers: "" },
+        { match: "🇺🇿 Uzbekistan – 🇨🇴 Colombia", better: "mastro", result: "Uzbekistan 0-3 Colombia", scorers: "" },
+        { match: "🇺🇿 Uzbekistan – 🇨🇴 Colombia", better: "il nonno", result: "Uzbekistan 0-3 Colombia", scorers: "Rodriguez, Diaz, Suarez" },
+
+        { match: "🇨🇿 Rep Ceca – 🇿🇦 Sud Africa", better: "mullah", result: "Repubblica Ceca 1-1 Sud Africa", scorers: "" },
+        { match: "🇨🇿 Rep Ceca – 🇿🇦 Sud Africa", better: "zimbellone", result: "Repubblica Ceca 2-0 Sud Africa", scorers: "Schick, Hlozek" },
+        { match: "🇨🇿 Rep Ceca – 🇿🇦 Sud Africa", better: "cervo", result: "Repubblica Ceca 1-1 Sud Africa", scorers: "" },
+        { match: "🇨🇿 Rep Ceca – 🇿🇦 Sud Africa", better: "barella", result: "Repubblica Ceca 1-0 Sud Africa", scorers: "Schick" },
+        { match: "🇨🇿 Rep Ceca – 🇿🇦 Sud Africa", better: "baldin", result: "Repubblica Ceca 2-1 Sud Africa", scorers: "" },
+        { match: "🇨🇿 Rep Ceca – 🇿🇦 Sud Africa", better: "kant", result: "Repubblica Ceca 2-0 Sud Africa", scorers: "Schick, Soucer" },
+        { match: "🇨🇿 Rep Ceca – 🇿🇦 Sud Africa", better: "zimbellino", result: "Repubblica Ceca 0-1 Sud Africa", scorers: "" },
+        { match: "🇨🇿 Rep Ceca – 🇿🇦 Sud Africa", better: "mastro", result: "Repubblica Ceca 2-0 Sud Africa", scorers: "" },
+        { match: "🇨🇿 Rep Ceca – 🇿🇦 Sud Africa", better: "il nonno", result: "Repubblica Ceca 2-1 Sud Africa", scorers: "Krejci, Schick, Mbatha" },
+        { match: "🇨🇿 Rep Ceca – 🇿🇦 Sud Africa", better: "prof recchia", result: "Repubblica Ceca 1-0 Sud Africa", scorers: "" },
+
+        { match: "🇨🇭 Svizzera – 🇧🇦 Bosnia", better: "mullah", result: "Svizzera 2-1 Bosnia", scorers: "" },
+        { match: "🇨🇭 Svizzera – 🇧🇦 Bosnia", better: "zimbellone", result: "Svizzera 1-0 Bosnia", scorers: "Embolo" },
+        { match: "🇨🇭 Svizzera – 🇧🇦 Bosnia", better: "cervo", result: "Svizzera 3-1 Bosnia", scorers: "" },
+        { match: "🇨🇭 Svizzera – 🇧🇦 Bosnia", better: "barella", result: "Svizzera 1-1 Bosnia", scorers: "Freuler, Dzeko" },
+        { match: "🇨🇭 Svizzera – 🇧🇦 Bosnia", better: "baldin", result: "Svizzera 1-1 Bosnia", scorers: "" },
+        { match: "🇨🇭 Svizzera – 🇧🇦 Bosnia", better: "kant", result: "Svizzera 2-1 Bosnia", scorers: "Ndoye, Embolo, Demirovic" },
+        { match: "🇨🇭 Svizzera – 🇧🇦 Bosnia", better: "zimbellino", result: "Svizzera 0-1 Bosnia", scorers: "" },
+        { match: "🇨🇭 Svizzera – 🇧🇦 Bosnia", better: "mastro", result: "Svizzera 3-2 Bosnia", scorers: "" },
+        { match: "🇨🇭 Svizzera – 🇧🇦 Bosnia", better: "il nonno", result: "Svizzera 2-1 Bosnia", scorers: "R.Vargas, Embolo, Kolasinac" },
+        { match: "🇨🇭 Svizzera – 🇧🇦 Bosnia", better: "prof recchia", result: "Svizzera 2-1 Bosnia", scorers: "" },
+
+        { match: "🇨🇦 Canada – 🇶🇦 Qatar", better: "mullah", result: "Canada 1-1 Qatar", scorers: "" },
+        { match: "🇨🇦 Canada – 🇶🇦 Qatar", better: "zimbellone", result: "Canada 1-1 Qatar", scorers: "David, Afif" },
+        { match: "🇨🇦 Canada – 🇶🇦 Qatar", better: "cervo", result: "Canada 2-1 Qatar", scorers: "" },
+        { match: "🇨🇦 Canada – 🇶🇦 Qatar", better: "barella", result: "Canada 2-0 Qatar", scorers: "David 2" },
+        { match: "🇨🇦 Canada – 🇶🇦 Qatar", better: "baldin", result: "Canada 1-0 Qatar", scorers: "" },
+        { match: "🇨🇦 Canada – 🇶🇦 Qatar", better: "kant", result: "Canada 2-0 Qatar", scorers: "Buchanan, David" },
+        { match: "🇨🇦 Canada – 🇶🇦 Qatar", better: "zimbellino", result: "Canada 0-1 Qatar", scorers: "" },
+        { match: "🇨🇦 Canada – 🇶🇦 Qatar", better: "mastro", result: "Canada 1-1 Qatar", scorers: "" },
+        { match: "🇨🇦 Canada – 🇶🇦 Qatar", better: "il nonno", result: "Canada 1-0 Qatar", scorers: "Larin" },
+        { match: "🇨🇦 Canada – 🇶🇦 Qatar", better: "prof recchia", result: "Canada 2-0 Qatar", scorers: "" },
+
+        { match: "🇲🇽 Messico – 🇰🇷 Corea Sud", better: "mullah", result: "Messico 2-2 Corea", scorers: "" },
+        { match: "🇲🇽 Messico – 🇰🇷 Corea Sud", better: "zimbellone", result: "Messico 1-2 Corea", scorers: "Son, Gimenez, Kim" },
+        { match: "🇲🇽 Messico – 🇰🇷 Corea Sud", better: "cervo", result: "Messico 2-1 Corea", scorers: "" },
+        { match: "🇲🇽 Messico – 🇰🇷 Corea Sud", better: "barella", result: "Messico 1-3 Corea", scorers: "" },
+        { match: "🇲🇽 Messico – 🇰🇷 Corea Sud", better: "baldin", result: "Messico 1-2 Corea", scorers: "" },
+        { match: "🇲🇽 Messico – 🇰🇷 Corea Sud", better: "kant", result: "Messico 1-1 Corea", scorers: "Quinones, Son" },
+        { match: "🇲🇽 Messico – 🇰🇷 Corea Sud", better: "zimbellino", result: "Messico 0-1 Corea", scorers: "" },
+        { match: "🇲🇽 Messico – 🇰🇷 Corea Sud", better: "mastro", result: "Messico 3-1 Corea", scorers: "" },
+        { match: "🇲🇽 Messico – 🇰🇷 Corea Sud", better: "il nonno", result: "Messico 2-1 Corea", scorers: "Lira, Jimenez, Son Heung-Min" },
+        { match: "🇲🇽 Messico – 🇰🇷 Corea Sud", better: "prof recchia", result: "Messico 2-1 Corea", scorers: "" },
+
+	{ match: "🇺🇸 USA – 🇦🇺 Australia", better: "prof recchia", result: "USA 2-0 Australia", scorers: "" },
+	{ match: "🇺🇸 USA – 🇦🇺 Australia", better: "zimbellino", result: "USA 1-2 Australia", scorers: "" },
+	{ match: "🇺🇸 USA – 🇦🇺 Australia", better: "mullah", result: "USA 3-1 Australia", scorers: "" },
+	{ match: "🇺🇸 USA – 🇦🇺 Australia", better: "mastro", result: "USA 3-1 Australia", scorers: "Balogun (2), Pulisic, Volpato" },
+	{ match: "🇺🇸 USA – 🇦🇺 Australia", better: "il nonno", result: "USA 3-0 Australia", scorers: "McKennie, Pulisic, Balogun" },
+	{ match: "🇺🇸 USA – 🇦🇺 Australia", better: "cervo", result: "USA 3-1 Australia", scorers: "" },
+	{ match: "🇺🇸 USA – 🇦🇺 Australia", better: "kant", result: "USA 2-1 Australia", scorers: "Balogun, Pulisic, Circati" },
+	{ match: "🇺🇸 USA – 🇦🇺 Australia", better: "barella", result: "USA 3-1 Australia", scorers: "" },
+	{ match: "🇺🇸 USA – 🇦🇺 Australia", better: "baldin", result: "USA 2-1 Australia", scorers: "" },
+	{ match: "🇺🇸 USA – 🇦🇺 Australia", better: "zimbellone", result: "USA 3-0 Australia", scorers: "Balogun, Pulisic, McKennie" },
+
+    // === 20 GIUGNO ===
+	{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇲🇦 Marocco", better: "prof recchia", result: "Scozia 1-1 Marocco", scorers: "" },
+	{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇲🇦 Marocco", better: "zimbellino", result: "Scozia 1-1 Marocco", scorers: "" },
+	{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇲🇦 Marocco", better: "mullah", result: "Scozia 0-2 Marocco", scorers: "" },
+	{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇲🇦 Marocco", better: "mastro", result: "Scozia 0-2 Marocco", scorers: "Bouaddi, Hakitemmurt, Hakimi" },
+	{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇲🇦 Marocco", better: "il nonno", result: "Scozia 1-1 Marocco", scorers: "McTominay (S); Saibari (M)" },
+	{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇲🇦 Marocco", better: "cervo", result: "Scozia 1-3 Marocco", scorers: "" },
+	{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇲🇦 Marocco", better: "kant", result: "Scozia 0-1 Marocco", scorers: "Bouaddi" },
+	{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇲🇦 Marocco", better: "barella", result: "Scozia 0-2 Marocco", scorers: "" },
+	{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇲🇦 Marocco", better: "baldin", result: "Scozia 1-2 Marocco", scorers: "" },
+	{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇲🇦 Marocco", better: "zimbellone", result: "Scozia 0-1 Marocco", scorers: "Brahim Diaz" },
+
+	{ match: "🇧🇷 Brasile – 🇭🇹 Haiti", better: "prof recchia", result: "Brasile 6-0 Haiti", scorers: "" },
+	{ match: "🇧🇷 Brasile – 🇭🇹 Haiti", better: "zimbellino", result: "Brasile 2-1 Haiti", scorers: "" },
+	{ match: "🇧🇷 Brasile – 🇭🇹 Haiti", better: "mullah", result: "Brasile 4-0 Haiti", scorers: "" },
+	{ match: "🇧🇷 Brasile – 🇭🇹 Haiti", better: "mastro", result: "Brasile 5-0 Haiti", scorers: "Vinicius J (4), Rafinha" },
+	{ match: "🇧🇷 Brasile – 🇭🇹 Haiti", better: "il nonno", result: "Brasile 4-0 Haiti", scorers: "Casemiro, Paqueta (2), Cunha" },
+	{ match: "🇧🇷 Brasile – 🇭🇹 Haiti", better: "cervo", result: "Brasile 5-1 Haiti", scorers: "" },
+	{ match: "🇧🇷 Brasile – 🇭🇹 Haiti", better: "kant", result: "Brasile 4-0 Haiti", scorers: "Vinicius J (2), Rafinha, Paqueta" },
+	{ match: "🇧🇷 Brasile – 🇭🇹 Haiti", better: "barella", result: "Brasile 5-1 Haiti", scorers: "" },
+	{ match: "🇧🇷 Brasile – 🇭🇹 Haiti", better: "baldin", result: "Brasile 3-0 Haiti", scorers: "" },
+	{ match: "🇧🇷 Brasile – 🇭🇹 Haiti", better: "zimbellone", result: "Brasile 6-0 Haiti", scorers: "Vinicius J (2), Rafinha, Paqueta, Marauinos, Hendrick" },
+
+	{ match: "🇹🇷 Turchia – 🇵🇾 Paraguay", better: "prof recchia", result: "Turchia 1-2 Paraguay", scorers: "" },
+	{ match: "🇹🇷 Turchia – 🇵🇾 Paraguay", better: "zimbellino", result: "Turchia 0-2 Paraguay", scorers: "" },
+	{ match: "🇹🇷 Turchia – 🇵🇾 Paraguay", better: "mullah", result: "Turchia 2-1 Paraguay", scorers: "" },
+	{ match: "🇹🇷 Turchia – 🇵🇾 Paraguay", better: "mastro", result: "Turchia 3-0 Paraguay", scorers: "Chala (2), Guler" },
+	{ match: "🇹🇷 Turchia – 🇵🇾 Paraguay", better: "il nonno", result: "Turchia 1-0 Paraguay", scorers: "Calhanoglu" },
+	{ match: "🇹🇷 Turchia – 🇵🇾 Paraguay", better: "cervo", result: "Turchia 3-1 Paraguay", scorers: "" },
+	{ match: "🇹🇷 Turchia – 🇵🇾 Paraguay", better: "kant", result: "Turchia 2-0 Paraguay", scorers: "Chala, Guler" },
+	{ match: "🇹🇷 Turchia – 🇵🇾 Paraguay", better: "barella", result: "Turchia 2-0 Paraguay", scorers: "" },
+	{ match: "🇹🇷 Turchia – 🇵🇾 Paraguay", better: "baldin", result: "Turchia 1-1 Paraguay", scorers: "" },
+	{ match: "🇹🇷 Turchia – 🇵🇾 Paraguay", better: "zimbellone", result: "Turchia 3-0 Paraguay", scorers: "Yldiz, Arda Guler, Ylmaz" },
+
+	{ match: "🇳🇱 Olanda – 🇸🇪 Svezia", better: "prof recchia", result: "Olanda 2-0 Svezia", scorers: "Cody Gakpo, Xavi Simons" },
+	{ match: "🇳🇱 Olanda – 🇸🇪 Svezia", better: "zimbellino", result: "Olanda 2-1 Svezia", scorers: "" },
+	{ match: "🇳🇱 Olanda – 🇸🇪 Svezia", better: "mullah", result: "Olanda 2-2 Svezia", scorers: "" },
+	{ match: "🇳🇱 Olanda – 🇸🇪 Svezia", better: "mastro", result: "Olanda 2-2 Svezia", scorers: "" },
+	{ match: "🇳🇱 Olanda – 🇸🇪 Svezia", better: "il nonno", result: "Olanda 1-1 Svezia", scorers: "" },
+	{ match: "🇳🇱 Olanda – 🇸🇪 Svezia", better: "cervo", result: "Olanda 2-1 Svezia", scorers: "" },
+	{ match: "🇳🇱 Olanda – 🇸🇪 Svezia", better: "kant", result: "Olanda 1–1 Svezia", scorers: "" },
+	{ match: "🇳🇱 Olanda – 🇸🇪 Svezia", better: "barella", result: "Olanda 1-2 Svezia", scorers: "" },
+	{ match: "🇳🇱 Olanda – 🇸🇪 Svezia", better: "baldin", result: "Olanda 1-1 Svezia", scorers: "" },
+	{ match: "🇳🇱 Olanda – 🇸🇪 Svezia", better: "zimbellone", result: "Olanda - Svezia", scorers: "" },
+
+	{ match: "🇩🇪 Germania – 🇨🇮 Costa d'Avorio", better: "prof recchia", result: "Germania 2-0 Costa d'Avorio", scorers: "Jamal Musiala, Kai Havertz" },
+	{ match: "🇩🇪 Germania – 🇨🇮 Costa d'Avorio", better: "zimbellino", result: "Germania 4-1 Costa d'Avorio", scorers: "" },
+	{ match: "🇩🇪 Germania – 🇨🇮 Costa d'Avorio", better: "mullah", result: "Germania 2-1 Costa d'Avorio", scorers: "" },
+	{ match: "🇩🇪 Germania – 🇨🇮 Costa d'Avorio", better: "mastro", result: "Germania 4-2 Costa d'Avorio", scorers: "" },
+	{ match: "🇩🇪 Germania – 🇨🇮 Costa d'Avorio", better: "il nonno", result: "Germania 3-0 Costa d'Avorio", scorers: "" },
+	{ match: "🇩🇪 Germania – 🇨🇮 Costa d'Avorio", better: "cervo", result: "Germania 4-0 Costa d'Avorio", scorers: "" },
+	{ match: "🇩🇪 Germania – 🇨🇮 Costa d'Avorio", better: "kant", result: "Germania 2-1 Costa d'Avorio", scorers: "" },
+	{ match: "🇩🇪 Germania – 🇨🇮 Costa d'Avorio", better: "barella", result: "Germania 2-1 Costa d'Avorio", scorers: "" },
+	{ match: "🇩🇪 Germania – 🇨🇮 Costa d'Avorio", better: "baldin", result: "Germania 3-1 Costa d'Avorio", scorers: "" },
+	{ match: "🇩🇪 Germania – 🇨🇮 Costa d'Avorio", better: "zimbellone", result: "Germania - Costa d'Avorio", scorers: "" },
+
+    // === 21 GIUGNO ===
+	{ match: "🇪🇨 Ecuador – 🇨🇼 Curaçao", better: "prof recchia", result: "Ecuador 2-0 Curaçao", scorers: "Enner Valencia, Kendry Páez" },
+	{ match: "🇪🇨 Ecuador – 🇨🇼 Curaçao", better: "zimbellino", result: "Ecuador 1-1 Curaçao", scorers: "" },
+	{ match: "🇪🇨 Ecuador – 🇨🇼 Curaçao", better: "mullah", result: "Ecuador 2-1 Curaçao", scorers: "" },
+	{ match: "🇪🇨 Ecuador – 🇨🇼 Curaçao", better: "mastro", result: "Ecuador 3-0 Curaçao", scorers: "" },
+	{ match: "🇪🇨 Ecuador – 🇨🇼 Curaçao", better: "il nonno", result: "Ecuador 4-0 Curaçao", scorers: "" },
+	{ match: "🇪🇨 Ecuador – 🇨🇼 Curaçao", better: "cervo", result: "Ecuador 3-1 Curaçao", scorers: "" },
+	{ match: "🇪🇨 Ecuador – 🇨🇼 Curaçao", better: "kant", result: "Ecuador 3–0 Curaçao", scorers: "" },
+	{ match: "🇪🇨 Ecuador – 🇨🇼 Curaçao", better: "barella", result: "Ecuador 3-0 Curaçao", scorers: "" },
+	{ match: "🇪🇨 Ecuador – 🇨🇼 Curaçao", better: "baldin", result: "Ecuador 2-0 Curaçao", scorers: "" },
+	{ match: "🇪🇨 Ecuador – 🇨🇼 Curaçao", better: "zimbellone", result: "Ecuador - Curaçao", scorers: "" },
+
+	{ match: "🇹🇳 Tunisia – 🇯🇵 Giappone", better: "prof recchia", result: "Tunisia 1-1 Giappone", scorers: "Youssef Msakni, Takefusa Kubo" },
+	{ match: "🇹🇳 Tunisia – 🇯🇵 Giappone", better: "zimbellino", result: "Tunisia 0-2 Giappone", scorers: "" },
+	{ match: "🇹🇳 Tunisia – 🇯🇵 Giappone", better: "mullah", result: "Tunisia 1-2 Giappone", scorers: "" },
+	{ match: "🇹🇳 Tunisia – 🇯🇵 Giappone", better: "mastro", result: "Tunisia 2-2 Giappone", scorers: "" },
+	{ match: "🇹🇳 Tunisia – 🇯🇵 Giappone", better: "il nonno", result: "Tunisia 1-1 Giappone", scorers: "" },
+	{ match: "🇹🇳 Tunisia – 🇯🇵 Giappone", better: "cervo", result: "Tunisia 2-3 Giappone", scorers: "" },
+	{ match: "🇹🇳 Tunisia – 🇯🇵 Giappone", better: "kant", result: "Tunisia 1-1 Giappone", scorers: "" },
+	{ match: "🇹🇳 Tunisia – 🇯🇵 Giappone", better: "barella", result: "Tunisia 1-3 Giappone", scorers: "" },
+	{ match: "🇹🇳 Tunisia – 🇯🇵 Giappone", better: "baldin", result: "Tunisia 1-2 Giappone", scorers: "" },
+	{ match: "🇹🇳 Tunisia – 🇯🇵 Giappone", better: "zimbellone", result: "Tunisia - Giappone", scorers: "" },
+
+{ match: "🇪🇸 Spagna – 🇸🇦 Arabia Saudita", better: "prof recchia", result: "Spagna 2-0 Arabia Saudita", scorers: "Mikel Oyarzabal, Lamine Yamal" },
+{ match: "🇪🇸 Spagna – 🇸🇦 Arabia Saudita", better: "zimbellino", result: "Spagna 3-1 Arabia Saudita", scorers: "" },
+{ match: "🇪🇸 Spagna – 🇸🇦 Arabia Saudita", better: "mullah", result: "Spagna 3-1 Arabia Saudita", scorers: "" },
+{ match: "🇪🇸 Spagna – 🇸🇦 Arabia Saudita", better: "mastro", result: "Spagna 4-1 Arabia Saudita", scorers: "" },
+{ match: "🇪🇸 Spagna – 🇸🇦 Arabia Saudita", better: "il nonno", result: "Spagna 2-0 Arabia Saudita", scorers: "Yamal, Oyarzabal" },
+{ match: "🇪🇸 Spagna – 🇸🇦 Arabia Saudita", better: "cervo", result: "Spagna 3-1 Arabia Saudita", scorers: "" },
+{ match: "🇪🇸 Spagna – 🇸🇦 Arabia Saudita", better: "kant", result: "Spagna 3-0 Arabia Saudita", scorers: "Yamal, Oyarzabal, Olmo" },
+{ match: "🇪🇸 Spagna – 🇸🇦 Arabia Saudita", better: "barella", result: "Spagna 5-0 Arabia Saudita", scorers: "" },
+{ match: "🇪🇸 Spagna – 🇸🇦 Arabia Saudita", better: "baldin", result: "Spagna 3-0 Arabia Saudita", scorers: "" },
+{ match: "🇪🇸 Spagna – 🇸🇦 Arabia Saudita", better: "zimbellone", result: "Spagna 3-0 Arabia Saudita", scorers: "Fabian Ruiz, Nico Williams, Yamal" },
+
+{ match: "🇧🇪 Belgio – 🇮🇷 Iran", better: "prof recchia", result: "Belgio 2-1 Iran", scorers: "Romelu Lukaku, Jérémy Doku | Mehdi Taremi" },
+{ match: "🇧🇪 Belgio – 🇮🇷 Iran", better: "zimbellino", result: "Belgio 1-2 Iran", scorers: "" },
+{ match: "🇧🇪 Belgio – 🇮🇷 Iran", better: "mullah", result: "Belgio 2-0 Iran", scorers: "" },
+{ match: "🇧🇪 Belgio – 🇮🇷 Iran", better: "mastro", result: "Belgio 3-1 Iran", scorers: "" },
+{ match: "🇧🇪 Belgio – 🇮🇷 Iran", better: "il nonno", result: "Belgio 2-1 Iran", scorers: "De Ketelaere, Lukaku (B)" },
+{ match: "🇧🇪 Belgio – 🇮🇷 Iran", better: "cervo", result: "Belgio 2-1 Iran", scorers: "" },
+{ match: "🇧🇪 Belgio – 🇮🇷 Iran", better: "kant", result: "Belgio 2-1 Iran", scorers: "Tielemans, De Ketelare | Goddos" },
+{ match: "🇧🇪 Belgio – 🇮🇷 Iran", better: "barella", result: "Belgio 1-1 Iran", scorers: "" },
+{ match: "🇧🇪 Belgio – 🇮🇷 Iran", better: "baldin", result: "Belgio 2-1 Iran", scorers: "" },
+{ match: "🇧🇪 Belgio – 🇮🇷 Iran", better: "zimbellone", result: "Belgio 2-1 Iran", scorers: "Lukaku, De Bruyne | Taremi" },
+
+{ match: "🇺🇾 Uruguay – 🇨🇻 Capo Verde", better: "prof recchia", result: "Uruguay 3-0 Capo Verde", scorers: "Darwin Núñez (doppietta), Federico Valverde" },
+{ match: "🇺🇾 Uruguay – 🇨🇻 Capo Verde", better: "zimbellino", result: "Uruguay 1-1 Capo Verde", scorers: "" },
+{ match: "🇺🇾 Uruguay – 🇨🇻 Capo Verde", better: "mullah", result: "Uruguay 1-1 Capo Verde", scorers: "" },
+{ match: "🇺🇾 Uruguay – 🇨🇻 Capo Verde", better: "mastro", result: "Uruguay 1-0 Capo Verde", scorers: "" },
+{ match: "🇺🇾 Uruguay – 🇨🇻 Capo Verde", better: "il nonno", result: "Uruguay 1-0 Capo Verde", scorers: "Valverde" },
+{ match: "🇺🇾 Uruguay – 🇨🇻 Capo Verde", better: "cervo", result: "Uruguay 3-0 Capo Verde", scorers: "" },
+{ match: "🇺🇾 Uruguay – 🇨🇻 Capo Verde", better: "kant", result: "Uruguay 2-0 Capo Verde", scorers: "Valverde, Vinas" },
+{ match: "🇺🇾 Uruguay – 🇨🇻 Capo Verde", better: "barella", result: "Uruguay 2-1 Capo Verde", scorers: "" },
+{ match: "🇺🇾 Uruguay – 🇨🇻 Capo Verde", better: "baldin", result: "Uruguay 2-0 Capo Verde", scorers: "" },
+{ match: "🇺🇾 Uruguay – 🇨🇻 Capo Verde", better: "zimbellone", result: "Uruguay 2-0 Capo Verde", scorers: "Valverde, Darwin Nunez" },
+
+{ match: "🇳🇿 Nuova Zelanda – 🇪🇬 Egitto", better: "prof recchia", result: "Nuova Zelanda 1-2 Egitto", scorers: "Chris Wood | Omar Marmoush, Mostafa Mohamed" },
+{ match: "🇳🇿 Nuova Zelanda – 🇪🇬 Egitto", better: "zimbellino", result: "Nuova Zelanda 0-1 Egitto", scorers: "" },
+{ match: "🇳🇿 Nuova Zelanda – 🇪🇬 Egitto", better: "mullah", result: "Nuova Zelanda 0-2 Egitto", scorers: "" },
+{ match: "🇳🇿 Nuova Zelanda – 🇪🇬 Egitto", better: "mastro", result: "Nuova Zelanda 1-4 Egitto", scorers: "" },
+{ match: "🇳🇿 Nuova Zelanda – 🇪🇬 Egitto", better: "il nonno", result: "Nuova Zelanda 1-2 Egitto", scorers: "Wood (Z); Marmoush, Salah (E)" },
+{ match: "🇳🇿 Nuova Zelanda – 🇪🇬 Egitto", better: "cervo", result: "Nuova Zelanda 1-2 Egitto", scorers: "" },
+{ match: "🇳🇿 Nuova Zelanda – 🇪🇬 Egitto", better: "kant", result: "Nuova Zelanda 0-2 Egitto", scorers: "Marmoush, Ashour" },
+{ match: "🇳🇿 Nuova Zelanda – 🇪🇬 Egitto", better: "barella", result: "Nuova Zelanda 2-3 Egitto", scorers: "" },
+{ match: "🇳🇿 Nuova Zelanda – 🇪🇬 Egitto", better: "baldin", result: "Nuova Zelanda 1-0 Egitto", scorers: "" },
+{ match: "🇳🇿 Nuova Zelanda – 🇪🇬 Egitto", better: "zimbellone", result: "Nuova Zelanda 0-3 Egitto", scorers: "Marmoush (2), Salah" },
+
+{ match: "🇦🇷 Argentina – 🇦🇹 Austria", better: "prof recchia", result: "Argentina 2-1 Austria", scorers: "Lionel Messi, Julián Álvarez, Marko Arnautović" },
+{ match: "🇦🇷 Argentina – 🇦🇹 Austria", better: "zimbellino", result: "Argentina 2-0 Austria", scorers: "" },
+{ match: "🇦🇷 Argentina – 🇦🇹 Austria", better: "mullah", result: "Argentina 1-1 Austria", scorers: "" },
+{ match: "🇦🇷 Argentina – 🇦🇹 Austria", better: "mastro", result: "Argentina 4-1 Austria", scorers: "" },
+{ match: "🇦🇷 Argentina – 🇦🇹 Austria", better: "il nonno", result: "Argentina 2-1 Austria", scorers: "Mac Allister, Lautaro Martinez (Arg); Sabitzer (Aus)" },
+{ match: "🇦🇷 Argentina – 🇦🇹 Austria", better: "cervo", result: "Argentina 4-2 Austria", scorers: "" },
+{ match: "🇦🇷 Argentina – 🇦🇹 Austria", better: "kant", result: "Argentina 1-1 Austria", scorers: "1 Messi, 1 Arna" },
+{ match: "🇦🇷 Argentina – 🇦🇹 Austria", better: "barella", result: "Argentina 2-0 Austria", scorers: "2 Lautaro" },
+{ match: "🇦🇷 Argentina – 🇦🇹 Austria", better: "baldin", result: "Argentina - Austria", scorers: "" },
+{ match: "🇦🇷 Argentina – 🇦🇹 Austria", better: "zimbellone", result: "Argentina 2-1 Austria", scorers: "Messi, Alvarez, Arnautovic" },
+
+{ match: "🇫🇷 Francia – 🇮🇶 Iraq", better: "prof recchia", result: "Francia 3-0 Iraq", scorers: "Kylian Mbappé (2), Michael Olise" },
+{ match: "🇫🇷 Francia – 🇮🇶 Iraq", better: "zimbellino", result: "Francia 3-1 Iraq", scorers: "" },
+{ match: "🇫🇷 Francia – 🇮🇶 Iraq", better: "mullah", result: "Francia 4-0 Iraq", scorers: "Kylian Mbappé (2), Michael Olise, Dembelè" },
+{ match: "🇫🇷 Francia – 🇮🇶 Iraq", better: "mastro", result: "Francia 5-0 Iraq", scorers: "" },
+{ match: "🇫🇷 Francia – 🇮🇶 Iraq", better: "il nonno", result: "Francia 3-0 Iraq", scorers: "Olise, Mbappe 2 (F)" },
+{ match: "🇫🇷 Francia – 🇮🇶 Iraq", better: "cervo", result: "Francia 4-1 Iraq", scorers: "" },
+{ match: "🇫🇷 Francia – 🇮🇶 Iraq", better: "kant", result: "Francia 3-0 Iraq", scorers: "1 Mbappé, 2 Dembele" },
+{ match: "🇫🇷 Francia – 🇮🇶 Iraq", better: "barella", result: "Francia 3-0 Iraq", scorers: "1 Mbappé, 2 Dembele" },
+{ match: "🇫🇷 Francia – 🇮🇶 Iraq", better: "baldin", result: "Francia 3-0 Iraq", scorers: "" },
+{ match: "🇫🇷 Francia – 🇮🇶 Iraq", better: "zimbellone", result: "Francia 4-0 Iraq", scorers: "Mbappe (2), Dembele, Olise" },
+
+{ match: "🇳🇴 Norvegia – 🇸🇳 Senegal", better: "prof recchia", result: "Norvegia 2-1 Senegal", scorers: "Erling Haaland (2), Nicolas Jackson" },
+{ match: "🇳🇴 Norvegia – 🇸🇳 Senegal", better: "zimbellino", result: "Norvegia 5-1 Senegal", scorers: "" },
+{ match: "🇳🇴 Norvegia – 🇸🇳 Senegal", better: "mullah", result: "Norvegia 3-1 Senegal", scorers: "" },
+{ match: "🇳🇴 Norvegia – 🇸🇳 Senegal", better: "mastro", result: "Norvegia 4-1 Senegal", scorers: "" },
+{ match: "🇳🇴 Norvegia – 🇸🇳 Senegal", better: "il nonno", result: "Norvegia 2-1 Senegal", scorers: "Haaland, Nusa (N); Mané (S)" },
+{ match: "🇳🇴 Norvegia – 🇸🇳 Senegal", better: "cervo", result: "Norvegia 4-1 Senegal", scorers: "" },
+{ match: "🇳🇴 Norvegia – 🇸🇳 Senegal", better: "kant", result: "Norvegia 4-2 Senegal", scorers: "" },
+{ match: "🇳🇴 Norvegia – 🇸🇳 Senegal", better: "barella", result: "Norvegia 3-1 Senegal", scorers: "3 Haaland; Diarra" },
+{ match: "🇳🇴 Norvegia – 🇸🇳 Senegal", better: "baldin", result: "Norvegia 3-2 Senegal", scorers: "" },
+{ match: "🇳🇴 Norvegia – 🇸🇳 Senegal", better: "zimbellone", result: "Norvegia 3-1 Senegal", scorers: "Haaland (2), Nusa, Jackson" },
+
+{ match: "🇯🇴 Giordania – 🇩🇿 Algeria", better: "prof recchia", result: "Giordania 0-2 Algeria", scorers: "Riyad Mahrez, Ibrahim Maza" },
+{ match: "🇯🇴 Giordania – 🇩🇿 Algeria", better: "zimbellino", result: "Giordania 0-1 Algeria", scorers: "" },
+{ match: "🇯🇴 Giordania – 🇩🇿 Algeria", better: "mullah", result: "Giordania 1-2 Algeria", scorers: "" },
+{ match: "🇯🇴 Giordania – 🇩🇿 Algeria", better: "mastro", result: "Giordania 1-1 Algeria", scorers: "" },
+{ match: "🇯🇴 Giordania – 🇩🇿 Algeria", better: "il nonno", result: "Giordania 2-2 Algeria", scorers: "Abu Taha, Olwan (G); Amoura, Maza (A)" },
+{ match: "🇯🇴 Giordania – 🇩🇿 Algeria", better: "cervo", result: "Giordania 0-3 Algeria", scorers: "" },
+{ match: "🇯🇴 Giordania – 🇩🇿 Algeria", better: "kant", result: "Giordania 1-1 Algeria", scorers: "Tamari; Amoura" },
+{ match: "🇯🇴 Giordania – 🇩🇿 Algeria", better: "barella", result: "Giordania 1-2 Algeria", scorers: "Tamari; Amoura, Chaibi" },
+{ match: "🇯🇴 Giordania – 🇩🇿 Algeria", better: "baldin", result: "Giordania 1-2 Algeria", scorers: "" },
+{ match: "🇯🇴 Giordania – 🇩🇿 Algeria", better: "zimbellone", result: "Giordania 0-2 Algeria", scorers: "Mahrez, Maza" },
+
+// === 23-24 GIUGNO ===
+{ match: "🇵🇹 Portogallo – 🇺🇿 Uzbekistan", better: "prof recchia", result: "Portogallo - Uzbekistan", scorers: "" },
+{ match: "🇵🇹 Portogallo – 🇺🇿 Uzbekistan", better: "zimbellino", result: "Portogallo 2-0 Uzbekistan", scorers: "Ronaldo, Bruno Fernandes" },
+{ match: "🇵🇹 Portogallo – 🇺🇿 Uzbekistan", better: "mullah", result: "Portogallo 3-0 Uzbekistan", scorers: "" },
+{ match: "🇵🇹 Portogallo – 🇺🇿 Uzbekistan", better: "mastro", result: "Portogallo 2-1 Uzbekistan", scorers: "" },
+{ match: "🇵🇹 Portogallo – 🇺🇿 Uzbekistan", better: "il nonno", result: "Portogallo 4-0 Uzbekistan", scorers: "Vitinha, Neto (2), Ronaldo (P)" },
+{ match: "🇵🇹 Portogallo – 🇺🇿 Uzbekistan", better: "cervo", result: "Portogallo 3-1 Uzbekistan", scorers: "" },
+{ match: "🇵🇹 Portogallo – 🇺🇿 Uzbekistan", better: "kant", result: "Portogallo 2-1 Uzbekistan", scorers: "Ronaldo, Bruno Fernandes, Shomurodov" },
+{ match: "🇵🇹 Portogallo – 🇺🇿 Uzbekistan", better: "barella", result: "Portogallo 2-1 Uzbekistan", scorers: "" },
+{ match: "🇵🇹 Portogallo – 🇺🇿 Uzbekistan", better: "baldin", result: "Portogallo 2-0 Uzbekistan", scorers: "" },
+{ match: "🇵🇹 Portogallo – 🇺🇿 Uzbekistan", better: "zimbellone", result: "Portogallo 3-0 Uzbekistan", scorers: "Ronaldo, Leao, Bruno Fernandes" },
+
+{ match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇬🇭 Ghana", better: "prof recchia", result: "Inghilterra 3-0 Ghana", scorers: "18' Harry Kane, 52' Bukayo Saka, 81' Jude Bellingham" },
+{ match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇬🇭 Ghana", better: "zimbellino", result: "Inghilterra 2-1 Ghana", scorers: "Kane, Bellingham; Semenyo" },
+{ match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇬🇭 Ghana", better: "mullah", result: "Inghilterra 2-1 Ghana", scorers: "" },
+{ match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇬🇭 Ghana", better: "mastro", result: "Inghilterra 3-2 Ghana", scorers: "" },
+{ match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇬🇭 Ghana", better: "il nonno", result: "Inghilterra 4-1 Ghana", scorers: "Kane (2), Rice, Bellingham (I); Ayew (G)" },
+{ match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇬🇭 Ghana", better: "cervo", result: "Inghilterra 3-1 Ghana", scorers: "" },
+{ match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇬🇭 Ghana", better: "kant", result: "Inghilterra 1-0 Ghana", scorers: "Kane" },
+{ match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇬🇭 Ghana", better: "barella", result: "Inghilterra 3-0 Ghana", scorers: "" },
+{ match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇬🇭 Ghana", better: "baldin", result: "Inghilterra 3-1 Ghana", scorers: "" },
+{ match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇬🇭 Ghana", better: "zimbellone", result: "Inghilterra 3-1 Ghana", scorers: "Kane 2, Shaka; Kudus" },
+
+{ match: "🇵🇦 Panama – 🇭🇷 Croazia", better: "prof recchia", result: "Panama 0-3 Croazia", scorers: "24' Andrej Kramarić, 61' Joško Gvardiol, 77' Luka Sučić" },
+{ match: "🇵🇦 Panama – 🇭🇷 Croazia", better: "zimbellino", result: "Panama 0-2 Croazia", scorers: "Modric, Kramaric" },
+{ match: "🇵🇦 Panama – 🇭🇷 Croazia", better: "mullah", result: "Panama 1-2 Croazia", scorers: "" },
+{ match: "🇵🇦 Panama – 🇭🇷 Croazia", better: "mastro", result: "Panama 0-3 Croazia", scorers: "" },
+{ match: "🇵🇦 Panama – 🇭🇷 Croazia", better: "il nonno", result: "Panama 0-3 Croazia", scorers: "Pasalic, Perisic, Musa (C)" },
+{ match: "🇵🇦 Panama – 🇭🇷 Croazia", better: "cervo", result: "Panama 0-2 Croazia", scorers: "" },
+{ match: "🇵🇦 Panama – 🇭🇷 Croazia", better: "kant", result: "Panama 0-3 Croazia", scorers: "Perisic, Pasalic Kramaric" },
+{ match: "🇵🇦 Panama – 🇭🇷 Croazia", better: "barella", result: "Panama 1-4 Croazia", scorers: "" },
+{ match: "🇵🇦 Panama – 🇭🇷 Croazia", better: "baldin", result: "Panama 1-1 Croazia", scorers: "" },
+{ match: "🇵🇦 Panama – 🇭🇷 Croazia", better: "zimbellone", result: "Panama 1-2 Croazia", scorers: "Perisic, Kramaric, Fajardo" },
+
+{ match: "🇨🇴 Colombia – 🇨🇩 R.D. Congo", better: "prof recchia", result: "Colombia 2-1 R.D. Congo", scorers: "15' Luis Díaz, 49' Jhon Durán, 73' Cédric Bakambu" },
+{ match: "🇨🇴 Colombia – 🇨🇩 R.D. Congo", better: "zimbellino", result: "Colombia 2-1 R.D. Congo", scorers: "Luis Diaz, Jhon Duran; Wissa" },
+{ match: "🇨🇴 Colombia – 🇨🇩 R.D. Congo", better: "mullah", result: "Colombia 2-1 R.D. Congo", scorers: "" },
+{ match: "🇨🇴 Colombia – 🇨🇩 R.D. Congo", better: "mastro", result: "Colombia 0-0 R.D. Congo", scorers: "" },
+{ match: "🇨🇴 Colombia – 🇨🇩 R.D. Congo", better: "il nonno", result: "Colombia 2-1 R.D. Congo", scorers: "L. Diaz, L. Suarez (Col.); Edo Kayembe (Con.)" },
+{ match: "🇨🇴 Colombia – 🇨🇩 R.D. Congo", better: "cervo", result: "Colombia 2-0 R.D. Congo", scorers: "" },
+{ match: "🇨🇴 Colombia – 🇨🇩 R.D. Congo", better: "kant", result: "Colombia 1-1 R.D. Congo", scorers: "Diaz, Wissa" },
+{ match: "🇨🇴 Colombia – 🇨🇩 R.D. Congo", better: "barella", result: "Colombia 2-2 R.D. Congo", scorers: "" },
+{ match: "🇨🇴 Colombia – 🇨🇩 R.D. Congo", better: "baldin", result: "Colombia 1-0 R.D. Congo", scorers: "" },
+{ match: "🇨🇴 Colombia – 🇨🇩 R.D. Congo", better: "zimbellone", result: "Colombia 2-0 R.D. Congo", scorers: "Luis Diaz, Duran" },
+
+// === 24 GIUGNO ===
+{ match: "🇨🇭 Svizzera – 🇨🇦 Canada", better: "prof recchia", result: "Svizzera 2-1 Canada", scorers: "Embolo, Ndoye | David" },
+{ match: "🇨🇭 Svizzera – 🇨🇦 Canada", better: "zimbellino", result: "Svizzera 2-1 Canada", scorers: "Embolo, Amdouni; David" },
+{ match: "🇨🇭 Svizzera – 🇨🇦 Canada", better: "mullah", result: "Svizzera 2-1 Canada", scorers: "" },
+{ match: "🇨🇭 Svizzera – 🇨🇦 Canada", better: "mastro", result: "Svizzera 3-0 Canada", scorers: "" },
+{ match: "🇨🇭 Svizzera – 🇨🇦 Canada", better: "il nonno", result: "Svizzera - Canada", scorers: "" },
+{ match: "🇨🇭 Svizzera – 🇨🇦 Canada", better: "cervo", result: "Svizzera 2-1 Canada", scorers: "" },
+{ match: "🇨🇭 Svizzera – 🇨🇦 Canada", better: "kant", result: "Svizzera 1-1 Canada", scorers: "Manzambi, Buchanan" },
+{ match: "🇨🇭 Svizzera – 🇨🇦 Canada", better: "barella", result: "Svizzera 3-1 Canada", scorers: "Freuler, 2 Ndoye; Larin" },
+{ match: "🇨🇭 Svizzera – 🇨🇦 Canada", better: "baldin", result: "Svizzera 2-1 Canada", scorers: "" },
+{ match: "🇨🇭 Svizzera – 🇨🇦 Canada", better: "zimbellone", result: "Svizzera 2-1 Canada", scorers: "Embolo Ndoye Larin" },
+
+{ match: "🇧🇦 Bosnia – 🇶🇦 Qatar", better: "prof recchia", result: "Bosnia 2-1 Qatar", scorers: "Demirović, Džeko | Afif" },
+{ match: "🇧🇦 Bosnia – 🇶🇦 Qatar", better: "zimbellino", result: "Bosnia 2-0 Qatar", scorers: "Demirović, Džeko" },
+{ match: "🇧🇦 Bosnia – 🇶🇦 Qatar", better: "mullah", result: "Bosnia 3-0 Qatar", scorers: "Demirović, Džeko" },
+{ match: "🇧🇦 Bosnia – 🇶🇦 Qatar", better: "mastro", result: "Bosnia 1-1 Qatar", scorers: "" },
+{ match: "🇧🇦 Bosnia – 🇶🇦 Qatar", better: "il nonno", result: "Bosnia - Qatar", scorers: "" },
+{ match: "🇧🇦 Bosnia – 🇶🇦 Qatar", better: "cervo", result: "Bosnia 1-1 Qatar", scorers: "" },
+{ match: "🇧🇦 Bosnia – 🇶🇦 Qatar", better: "kant", result: "Bosnia 2-0 Qatar", scorers: "Demirović, Džeko" },
+{ match: "🇧🇦 Bosnia – 🇶🇦 Qatar", better: "barella", result: "Bosnia 1-0 Qatar", scorers: "Demirović" },
+{ match: "🇧🇦 Bosnia – 🇶🇦 Qatar", better: "baldin", result: "Bosnia 1-0 Qatar", scorers: "" },
+{ match: "🇧🇦 Bosnia – 🇶🇦 Qatar", better: "zimbellone", result: "Bosnia 2-1 Qatar", scorers: "Demirović, Džeko, Afif" },
+
+{ match: "🇲🇦 Marocco – 🇭🇹 Haiti", better: "prof recchia", result: "Marocco 3-0 Haiti", scorers: "En-Nesyri, Ounahi, Hakimi" },
+{ match: "🇲🇦 Marocco – 🇭🇹 Haiti", better: "zimbellino", result: "Marocco 3-1 Haiti", scorers: "En-Nesyri, Ziyech, Díaz; Nazon" },
+{ match: "🇲🇦 Marocco – 🇭🇹 Haiti", better: "mullah", result: "Marocco 3-0 Haiti", scorers: "En-Nesyri, Ziyech, Díaz; Saibari" },
+{ match: "🇲🇦 Marocco – 🇭🇹 Haiti", better: "mastro", result: "Marocco 4-0 Haiti", scorers: "" },
+{ match: "🇲🇦 Marocco – 🇭🇹 Haiti", better: "il nonno", result: "Marocco 2-0 Haiti", scorers: "Brahim Diaz, Saibari (M)" },
+{ match: "🇲🇦 Marocco – 🇭🇹 Haiti", better: "cervo", result: "Marocco 3-1 Haiti", scorers: "" },
+{ match: "🇲🇦 Marocco – 🇭🇹 Haiti", better: "kant", result: "Marocco 4-0 Haiti", scorers: "En-Nesyri, Ziyech, Díaz; Saibari" },
+{ match: "🇲🇦 Marocco – 🇭🇹 Haiti", better: "barella", result: "Marocco 2-1 Haiti", scorers: "Bouaddi, Saibari; Pierrot" },
+{ match: "🇲🇦 Marocco – 🇭🇹 Haiti", better: "baldin", result: "Marocco 2-0 Haiti", scorers: "" },
+{ match: "🇲🇦 Marocco – 🇭🇹 Haiti", better: "zimbellone", result: "Marocco 3-0 Haiti", scorers: "Ounahi, Saibiri, Hakimi" },
+
+{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇧🇷 Brasile", better: "prof recchia", result: "Scozia 1-1 Brasile", scorers: "McTominay | Vinícius Júnior" },
+{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇧🇷 Brasile", better: "zimbellino", result: "Scozia 1-2 Brasile", scorers: "McTominay; Vinícius Jr., Rodrygo" },
+{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇧🇷 Brasile", better: "mullah", result: "Scozia 1-3 Brasile", scorers: "Vinícius Jr., Cuhna" },
+{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇧🇷 Brasile", better: "mastro", result: "Scozia 1-3 Brasile", scorers: "" },
+{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇧🇷 Brasile", better: "il nonno", result: "Scozia 1-2 Brasile", scorers: "Adams (S); Paqueta, Cunha (B)" },
+{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇧🇷 Brasile", better: "cervo", result: "Scozia 0-2 Brasile", scorers: "" },
+{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇧🇷 Brasile", better: "kant", result: "Scozia 0-2 Brasile", scorers: "Vinícius Jr., Cuhna" },
+{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇧🇷 Brasile", better: "barella", result: "Scozia 1-2 Brasile", scorers: "McTominay ; Cunha, Paqueta" },
+{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇧🇷 Brasile", better: "baldin", result: "Scozia 2-1 Brasile", scorers: "" },
+{ match: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇧🇷 Brasile", better: "zimbellone", result: "Scozia 1-2 Brasile", scorers: "Vinícius Jr., Rodrygo, McTominay" },
+
+{ match: "🇿🇦 Sudafrica – 🇰🇷 Corea Sud", better: "prof recchia", result: "Sudafrica 0-2 Corea", scorers: "Son Heung-min, Lee Kang-in" },
+{ match: "🇿🇦 Sudafrica – 🇰🇷 Corea Sud", better: "zimbellino", result: "Sudafrica 0-1 Corea", scorers: "Son Heung-min" },
+{ match: "🇿🇦 Sudafrica – 🇰🇷 Corea Sud", better: "mullah", result: "Sudafrica 0-2 Corea", scorers: "Lee Kang-in" },
+{ match: "🇿🇦 Sudafrica – 🇰🇷 Corea Sud", better: "mastro", result: "Sudafrica 0-2 Corea", scorers: "" },
+{ match: "🇿🇦 Sudafrica – 🇰🇷 Corea Sud", better: "il nonno", result: "Sudafrica 1-1 Corea", scorers: "Maseko (S); Son Heung-min (C)" },
+{ match: "🇿🇦 Sudafrica – 🇰🇷 Corea Sud", better: "cervo", result: "Sudafrica 1-2 Corea", scorers: "" },
+{ match: "🇿🇦 Sudafrica – 🇰🇷 Corea Sud", better: "kant", result: "Sudafrica 0-1 Corea", scorers: "Lee Kang-in" },
+{ match: "🇿🇦 Sudafrica – 🇰🇷 Corea Sud", better: "barella", result: "Sudafrica 0-3 Corea", scorers: "Son, Lee Kang-in, Seol" },
+{ match: "🇿🇦 Sudafrica – 🇰🇷 Corea Sud", better: "baldin", result: "Sudafrica 0-1 Corea", scorers: "" },
+{ match: "🇿🇦 Sudafrica – 🇰🇷 Corea Sud", better: "zimbellone", result: "Sudafrica 0-2 Corea", scorers: "Son, Lee Kang-in" },
+
+{ match: "🇨🇿 Rep. Ceca – 🇲🇽 Messico", better: "prof recchia", result: "Rep. Ceca 1-2 Messico", scorers: "Schick | Raúl Jiménez, Santiago Giménez" },
+{ match: "🇨🇿 Rep. Ceca – 🇲🇽 Messico", better: "zimbellino", result: "Rep. Ceca 2-1 Messico", scorers: "Schick, Souček; Giménez" },
+{ match: "🇨🇿 Rep. Ceca – 🇲🇽 Messico", better: "mullah", result: "Rep. Ceca 1-2 Messico", scorers: "Hllozek, Alvarado" },
+{ match: "🇨🇿 Rep. Ceca – 🇲🇽 Messico", better: "mastro", result: "Rep. Ceca 0-2 Messico", scorers: "" },
+{ match: "🇨🇿 Rep. Ceca – 🇲🇽 Messico", better: "il nonno", result: "Rep. Ceca 1-2 Messico", scorers: "Schick (RC); Gimenez, Quinones (M)" },
+{ match: "🇨🇿 Rep. Ceca – 🇲🇽 Messico", better: "cervo", result: "Rep. Ceca 1-1 Messico", scorers: "" },
+{ match: "🇨🇿 Rep. Ceca – 🇲🇽 Messico", better: "kant", result: "Rep. Ceca 1-1 Messico", scorers: "Hllozek, Alvarado" },
+{ match: "🇨🇿 Rep. Ceca – 🇲🇽 Messico", better: "barella", result: "Rep. Ceca 1-1 Messico", scorers: "Schick ; Santiago Giménez" },
+{ match: "🇨🇿 Rep. Ceca – 🇲🇽 Messico", better: "baldin", result: "Rep. Ceca 1-1 Messico", scorers: "" },
+{ match: "🇨🇿 Rep. Ceca – 🇲🇽 Messico", better: "zimbellone", result: "Rep. Ceca 1-2 Messico", scorers: "Jimenez Gimenez Schik" },
+
+{ match: "🇨🇼 Curaçao – 🇨🇮 Costa d'Avorio", better: "prof recchia", result: "Curaçao 0-2 Costa d'Avorio", scorers: "Haller, Adingra" },
+{ match: "🇨🇼 Curaçao – 🇨🇮 Costa d'Avorio", better: "zimbellino", result:"Curaçao 1-2 Costa d'Avorio", scorers: "Janga; Haller, Adingra" },
+{ match: "🇨🇼 Curaçao – 🇨🇮 Costa d'Avorio", better: "mullah", result: "Curaçao 1-4 Costa d'Avorio", scorers: "" },
+{ match: "🇨🇼 Curaçao – 🇨🇮 Costa d'Avorio", better: "mastro", result: "Curaçao 0-3 Costa d'Avorio", scorers: "" },
+{ match: "🇨🇼 Curaçao – 🇨🇮 Costa d'Avorio", better: "il nonno", result: "Curaçao 1-2 Costa d'Avorio", scorers: "Locadia (Cur); Pépé, Bonny (Cd'A)" },
+{ match: "🇨🇼 Curaçao – 🇨🇮 Costa d'Avorio", better: "cervo", result: "Curaçao 2-1 Costa d'Avorio", scorers: "sica sica - sciancalepore" },
+{ match: "🇨🇼 Curaçao – 🇨🇮 Costa d'Avorio", better: "kant", result: "Curaçao 0-3 Costa d'Avorio", scorers: "Diomande Kessie Diallo" },
+{ match: "🇨🇼 Curaçao – 🇨🇮 Costa d'Avorio", better: "barella", result: "Curaçao 0-1 Costa d'Avorio", scorers: "" },
+{ match: "🇨🇼 Curaçao – 🇨🇮 Costa d'Avorio", better: "baldin", result: "Curaçao 1-1 Costa d'Avorio", scorers: "" },
+{ match: "🇨🇼 Curaçao – 🇨🇮 Costa d'Avorio", better: "zimbellone", result: "Curaçao 0-4 Costa d'Avorio", scorers: "Diomande Kessie Diallo Wahi" },
+
+{ match: "🇪🇨 Ecuador – 🇩🇪 Germania", better: "prof recchia", result: "Ecuador 0-3 Germania", scorers: "Musiala, Havertz, Füllkrug" },
+{ match: "🇪🇨 Ecuador – 🇩🇪 Germania", better: "zimbellino", result: "Ecuador 0-3 Germania", scorers: "Musiala, Havertz, Füllkrug" },
+{ match: "🇪🇨 Ecuador – 🇩🇪 Germania", better: "mullah", result: "Ecuador 1-4 Germania", scorers: "" },
+{ match: "🇪🇨 Ecuador – 🇩🇪 Germania", better: "mastro", result: "Ecuador 0-3 Germania", scorers: "" },
+{ match: "🇪🇨 Ecuador – 🇩🇪 Germania", better: "il nonno", result: "Ecuador 1-3 Germania", scorers: "Yeboah (E); Musiala, Wirtz, Undav (G)" },
+{ match: "🇪🇨 Ecuador – 🇩🇪 Germania", better: "cervo", result: "Ecuador 0-3 Germania", scorers: "tripletta di lucibello" },
+{ match: "🇪🇨 Ecuador – 🇩🇪 Germania", better: "kant", result: "Ecuador 0-0 Germania", scorers: "" },
+{ match: "🇪🇨 Ecuador – 🇩🇪 Germania", better: "barella", result: "Ecuador 2-2 Germania", scorers: "" },
+{ match: "🇪🇨 Ecuador – 🇩🇪 Germania", better: "baldin", result: "Ecuador 1-3 Germania", scorers: "" },
+{ match: "🇪🇨 Ecuador – 🇩🇪 Germania", better: "zimbellone", result: "Ecuador 0-2 Germania", scorers: "Wirtz Havertz" },
+
+// === 26 GIUGNO ===
+{ match: "🇹🇳 Tunisia – 🇳🇱 Olanda", better: "prof recchia", result: "Tunisia 0-2 Olanda", scorers: "Gakpo, Depay" },
+{ match: "🇹🇳 Tunisia – 🇳🇱 Olanda", better: "zimbellino", result: "Tunisia 1-2 Olanda", scorers: "Ben Romdhane; Gakpo, Depay" },
+{ match: "🇹🇳 Tunisia – 🇳🇱 Olanda", better: "mullah", result: "Tunisia 1-2 Olanda", scorers: "" },
+{ match: "🇹🇳 Tunisia – 🇳🇱 Olanda", better: "mastro", result: "Tunisia 0-3 Olanda", scorers: "" },
+{ match: "🇹🇳 Tunisia – 🇳🇱 Olanda", better: "il nonno", result: "Tunisia 1-3 Olanda", scorers: "Saad (T); Reijnders, Malen 2 (O)" },
+{ match: "🇹🇳 Tunisia – 🇳🇱 Olanda", better: "cervo", result: "Tunisia 1-3 Olanda", scorers: "bisogno - fiorillo- montesanto ( doppietta post mortem)" },
+{ match: "🇹🇳 Tunisia – 🇳🇱 Olanda", better: "kant", result: "Tunisia 0-0 Olanda", scorers: "" },
+{ match: "🇹🇳 Tunisia – 🇳🇱 Olanda", better: "barella", result: "Tunisia 1-3 Olanda", scorers: "" },
+{ match: "🇹🇳 Tunisia – 🇳🇱 Olanda", better: "baldin", result: "Tunisia 1-2 Olanda", scorers: "" },
+{ match: "🇹🇳 Tunisia – 🇳🇱 Olanda", better: "zimbellone", result: "Tunisia 0-3 Olanda", scorers: "Gakpo Malen de Jong" },
+
+{ match: "🇯🇵 Giappone – 🇸🇪 Svezia", better: "prof recchia", result: "Giappone 2-1 Svezia", scorers: "Kubo, Mitoma; Isak" },
+{ match: "🇯🇵 Giappone – 🇸🇪 Svezia", better: "zimbellino", result: "Giappone 2-1 Svezia", scorers: "Kubo, Mitoma; Isak" },
+{ match: "🇯🇵 Giappone – 🇸🇪 Svezia", better: "mullah", result: "Giappone 2-2 Svezia", scorers: "" },
+{ match: "🇯🇵 Giappone – 🇸🇪 Svezia", better: "mastro", result: "Giappone 2-0 Svezia", scorers: "" },
+{ match: "🇯🇵 Giappone – 🇸🇪 Svezia", better: "il nonno", result: "Giappone 1-1 Svezia", scorers: "Maeda (G); Gyokeres (S)" },
+{ match: "🇯🇵 Giappone – 🇸🇪 Svezia", better: "cervo", result: "Giappone 3-2 Svezia", scorers: "nabukazu takemura - mischima- kore eda" },
+{ match: "🇯🇵 Giappone – 🇸🇪 Svezia", better: "kant", result: "Giappone 0-0 Svezia", scorers: "" },
+{ match: "🇯🇵 Giappone – 🇸🇪 Svezia", better: "barella", result: "Giappone 3-2 Svezia", scorers: "" },
+{ match: "🇯🇵 Giappone – 🇸🇪 Svezia", better: "baldin", result: "Giappone 1-2 Svezia", scorers: "" },
+{ match: "🇯🇵 Giappone – 🇸🇪 Svezia", better: "zimbellone", result: "Giappone 3-2 Svezia", scorers: "Gyokeres Isak Kamada Ueda (2)" },
+
+{ match: "🇹🇷 Turchia – 🇺🇸 USA", better: "prof recchia", result: "Turchia 0-2 USA", scorers: "Pulisic, Balogun" },
+{ match: "🇹🇷 Turchia – 🇺🇸 USA", better: "zimbellino", result: "Turchia 0-3 USA", scorers: "Pulisic, Balogun, Weah" },
+{ match: "🇹🇷 Turchia – 🇺🇸 USA", better: "mullah", result: "Turchia 1-3 USA", scorers: "" },
+{ match: "🇹🇷 Turchia – 🇺🇸 USA", better: "mastro", result: "Turchia 0-2 USA", scorers: "" },
+{ match: "🇹🇷 Turchia – 🇺🇸 USA", better: "il nonno", result: "Turchia 1-3 USA", scorers: "Calhanoglu (T); Weah, Reyna, Pepi (USA)" },
+{ match: "🇹🇷 Turchia – 🇺🇸 USA", better: "cervo", result: "Turchia 2-2 USA", scorers: "flyng lotus - moby- iosseliani - ceylan" },
+{ match: "🇹🇷 Turchia – 🇺🇸 USA", better: "kant", result: "Turchia 0-0 USA", scorers: "" },
+{ match: "🇹🇷 Turchia – 🇺🇸 USA", better: "barella", result: "Turchia 1-2 USA", scorers: "" },
+{ match: "🇹🇷 Turchia – 🇺🇸 USA", better: "baldin", result: "Turchia 1-3 USA", scorers: "" },
+{ match: "🇹🇷 Turchia – 🇺🇸 USA", better: "zimbellone", result: "Turchia 1-2 USA", scorers: "Pulisic, Balogun Yldiz" },
+
+{ match: "🇵🇾 Paraguay – 🇦🇺 Australia", better: "prof recchia", result: "Paraguay 1-1 Australia", scorers: "Almirón; Duke" },
+{ match: "🇵🇾 Paraguay – 🇦🇺 Australia", better: "zimbellino", result: "Paraguay 0-1 Australia", scorers: "Duke" },
+{ match: "🇵🇾 Paraguay – 🇦🇺 Australia", better: "mullah", result: "Paraguay 1-1 Australia", scorers: "" },
+{ match: "🇵🇾 Paraguay – 🇦🇺 Australia", better: "mastro", result: "Paraguay 2-2 Australia", scorers: "" },
+{ match: "🇵🇾 Paraguay – 🇦🇺 Australia", better: "il nonno", result: "Paraguay 2-1 Australia", scorers: "Enciso 2 (P); Touré (A)" },
+{ match: "🇵🇾 Paraguay – 🇦🇺 Australia", better: "cervo", result: "Paraguay 1-0 Australia", scorers: "Santana" },
+{ match: "🇵🇾 Paraguay – 🇦🇺 Australia", better: "kant", result: "Paraguay 0-0 Australia", scorers: "" },
+{ match: "🇵🇾 Paraguay – 🇦🇺 Australia", better: "barella", result: "Paraguay 0-2 Australia", scorers: "" },
+{ match: "🇵🇾 Paraguay – 🇦🇺 Australia", better: "baldin", result: "Paraguay 0-0 Australia", scorers: "" },
+{ match: "🇵🇾 Paraguay – 🇦🇺 Australia", better: "zimbellone", result: "Paraguay 1-1 Australia", scorers: "Irankunda Enciso" },
+
+{ match: "🇳🇴 Norvegia – 🇫🇷 Francia", better: "prof recchia", result: "Norvegia 2-2 Francia", scorers: "Haaland 2; Mbappé, Domenique Mastrangiolé" },
+{ match: "🇳🇴 Norvegia – 🇫🇷 Francia", better: "zimbellino", result: "Norvegia 1-3 Francia", scorers: "Haand; Mbappé, Thuram, Griezmann" },
+{ match: "🇳🇴 Norvegia – 🇫🇷 Francia", better: "mullah", result: "Norvegia 2-3 Francia", scorers: "" },
+{ match: "🇳🇴 Norvegia – 🇫🇷 Francia", middle: "mastro", result: "Norvegia 3-2 Francia", scorers: "" },
+{ match: "🇳🇴 Norvegia – 🇫🇷 Francia", better: "il nonno", result: "Norvegia 2-2 Francia", scorers: "Bobb, Larsen; Dembélé, Mbappé" },
+{ match: "🇳🇴 Norvegia – 🇫🇷 Francia", better: "cervo", result: "Norvegia 2-2 Francia", scorers: "" },
+{ match: "🇳🇴 Norvegia – 🇫🇷 Francia", better: "kant", result: "Norvegia 2-2 Francia", scorers: "Haaland, Sorloth; Mbappe, Dembele" },
+{ match: "🇳🇴 Norvegia – 🇫🇷 Francia", better: "barella", result: "Norvegia 2-0 Francia", scorers: "" },
+{ match: "🇳🇴 Norvegia – 🇫🇷 Francia", better: "baldin", result: "Norvegia 2-2 Francia", scorers: "" },
+{ match: "🇳🇴 Norvegia – 🇫🇷 Francia", better: "zimbellone", result: "Norvegia 1-2 Francia", scorers: "Haaland; Mbappe, Dembele" },
+
+{ match: "🇸🇳 Senegal – 🇮🇶 Iraq", better: "prof recchia", result: "Senegal 2-0 Iraq", scorers: "Ismaïla Sarr, Nicolas Jackson" },
+{ match: "🇸🇳 Senegal – 🇮🇶 Iraq", better: "zimbellino", result: "Senegal 1-0 Iraq", scorers: "Mané" },
+{ match: "🇸🇳 Senegal – 🇮🇶 Iraq", better: "mullah", result: "Senegal 3-0 Iraq", scorers: "" },
+{ match: "🇸🇳 Senegal – 🇮🇶 Iraq", better: "mastro", result: "Senegal 3-0 Iraq", scorers: "" },
+{ match: "🇸🇳 Senegal – 🇮🇶 Iraq", better: "il nonno", result: "Senegal 3-1 Iraq", scorers: "Sarr, S. Mané, Mbaye; Al Hamadi" },
+{ match: "🇸🇳 Senegal – 🇮🇶 Iraq", better: "cervo", result: "Senegal 3-1 Iraq", scorers: "" },
+{ match: "🇸🇳 Senegal – 🇮🇶 Iraq", better: "kant", result: "Senegal 4-1 Iraq", scorers: "Manè, Sarr, Jackson 2; Al Ahmadi" },
+{ match: "🇸🇳 Senegal – 🇮🇶 Iraq", better: "barella", result: "Senegal 4-0 Iraq", scorers: "" },
+{ match: "🇸🇳 Senegal – 🇮🇶 Iraq", better: "baldin", result: "Senegal 3-1 Iraq", scorers: "" },
+{ match: "🇸🇳 Senegal – 🇮🇶 Iraq", better: "zimbellone", result: "Senegal 2-0 Iraq", scorers: "Manè, Sarr" },
+
+// === 27 GIUGNO ===
+{ match: "🇨🇻 Capo Verde – 🇸🇦 Arabia Saudita", better: "prof recchia", result: "Capo Verde 0-0 Arabia Saudita", scorers: "Bebé; Salem Al-Dawsari" },
+{ match: "🇨🇻 Capo Verde – 🇸🇦 Arabia Saudita", better: "zimbellino", result: "Capo Verde 2-1 Arabia Saudita", scorers: "Ryan Mendes, Bebé; Al-Dawsari" },
+{ match: "🇨🇻 Capo Verde – 🇸🇦 Arabia Saudita", better: "mullah", result: "Capo Verde 1-1 Arabia Saudita", scorers: "" },
+{ match: "🇨🇻 Capo Verde – 🇸🇦 Arabia Saudita", better: "mastro", result: "Capo Verde 1-0 Arabia Saudita", scorers: "" },
+{ match: "🇨🇻 Capo Verde – 🇸🇦 Arabia Saudita", better: "il nonno", result: "Capo Verde 2-0 Arabia Saudita", scorers: "Benchimol 2" },
+{ match: "🇨🇻 Capo Verde – 🇸🇦 Arabia Saudita", better: "cervo", result: "Capo Verde 2-1 Arabia Saudita", scorers: "" },
+{ match: "🇨🇻 Capo Verde – 🇸🇦 Arabia Saudita", better: "kant", result: "Capo Verde 2-1 Arabia Saudita", scorers: "Livramento, Duarte; al Bukiran" },
+{ match: "🇨🇻 Capo Verde – 🇸🇦 Arabia Saudita", better: "barella", result: "Capo Verde 1-1 Arabia Saudita", scorers: "" },
+{ match: "🇨🇻 Capo Verde – 🇸🇦 Arabia Saudita", better: "baldin", result: "Capo Verde 0-0 Arabia Saudita", scorers: "" },
+{ match: "🇨🇻 Capo Verde – 🇸🇦 Arabia Saudita", better: "zimbellone", result: "Capo Verde 1-0 Arabia Saudita", scorers: "Livramento" },
+
+{ match: "🇺🇾 Uruguay – 🇪🇸 Spagna", better: "prof recchia", result: "Uruguay 1-2 Spagna", scorers: "Darwin Núñez; Lamine Yamal, Guillermo Cantillo" },
+{ match: "🇺🇾 Uruguay – 🇪🇸 Spagna", better: "zimbellino", result: "Uruguay 1-2 Spagna", scorers: "Darwin Núñez; Lamine Yamal, Nico Williams" },
+{ match: "🇺🇾 Uruguay – 🇪🇸 Spagna", better: "mullah", result: "Uruguay 1-2 Spagna", scorers: "" },
+{ match: "🇺🇾 Uruguay – 🇪🇸 Spagna", better: "mastro", result: "Uruguay 1-3 Spagna", scorers: "" },
+{ match: "🇺🇾 Uruguay – 🇪🇸 Spagna", better: "il nonno", result: "Uruguay 1-2 Spagna", scorers: "Valverde; Lamine Yamal, Alex Baena" },
+{ match: "🇺🇾 Uruguay – 🇪🇸 Spagna", better: "cervo", result: "Uruguay 1-2 Spagna", scorers: "" },
+{ match: "🇺🇾 Uruguay – 🇪🇸 Spagna", better: "kant", result: "Uruguay 1-2 Spagna", scorers: "Valverde; Yamal, Williams" },
+{ match: "🇺🇾 Uruguay – 🇪🇸 Spagna", better: "barella", result: "Uruguay 1-4 Spagna", scorers: "" },
+{ match: "🇺🇾 Uruguay – 🇪🇸 Spagna", better: "baldin", result: "Uruguay 1-2 Spagna", scorers: "" },
+{ match: "🇺🇾 Uruguay – 🇪🇸 Spagna", better: "zimbellone", result: "Uruguay 1-2 Spagna", scorers: "Nunez; Oyarzabal, Yanal, Ferran Torres" },
+
+{ match: "🇳🇿 Nuova Zelanda – 🇧🇪 Belgio", better: "prof recchia", result: "Nuova Zelanda 0-2 Belgio", scorers: "Romelu Lukaku, Jérémy Doku" },
+{ match: "🇳🇿 Nuova Zelanda – 🇧🇪 Belgio", better: "zimbellino", result: "Nuova Zelanda 1-3 Belgio", scorers: "Wood; Openda, De Bruyne, Doku" },
+{ match: "🇳🇿 Nuova Zelanda – 🇧🇪 Belgio", better: "mullah", result: "Nuova Zelanda 0-2 Belgio", scorers: "" },
+{ match: "🇳🇿 Nuova Zelanda – 🇧🇪 Belgio", better: "mastro", result: "Nuova Zelanda 0-4 Belgio", scorers: "" },
+{ match: "🇳🇿 Nuova Zelanda – 🇧🇪 Belgio", better: "il nonno", result: "Nuova Zelanda 1-1 Belgio", scorers: "Singh; De Bruyne" },
+{ match: "🇳🇿 Nuova Zelanda – 🇧🇪 Belgio", better: "cervo", result: "Nuova Zelanda 0-3 Belgio", scorers: "" },
+{ match: "🇳🇿 Nuova Zelanda – 🇧🇪 Belgio", better: "kant", result: "Nuova Zelanda 1-3 Belgio", scorers: "Wood; Lukaku, Salemakers, LaBruna" },
+{ match: "🇳🇿 Nuova Zelanda – 🇧🇪 Belgio", better: "barella", result: "Nuova Zelanda 1-2 Belgio", scorers: "" },
+{ match: "🇳🇿 Nuova Zelanda – 🇧🇪 Belgio", better: "baldin", result: "Nuova Zelanda 0-2 Belgio", scorers: "" },
+{ match: "🇳🇿 Nuova Zelanda – 🇧🇪 Belgio", better: "zimbellone", result: "Nuova Zelanda 0-3 Belgio", scorers: "Lukaku, Domu, KDB" },
+
+{ match: "🇪🇬 Egitto – 🇮🇷 Iran", better: "prof recchia", result: "Egitto 1-0 Iran", scorers: "Salah" },
+{ match: "🇪🇬 Egitto – 🇮🇷 Iran", better: "zimbellino", result: "Egitto 1-1 Iran", scorers: "Salah; Taremi" },
+{ match: "🇪🇬 Egitto – 🇮🇷 Iran", better: "mullah", result: "Egitto 2-1 Iran", scorers: "" },
+{ match: "🇪🇬 Egitto – 🇮🇷 Iran", better: "mastro", result: "Egitto 2-1 Iran", scorers: "" },
+{ match: "🇪🇬 Egitto – 🇮🇷 Iran", better: "il nonno", result: "Egitto 2-1 Iran", scorers: "Salah, Emam Ashour; Taremi" },
+{ match: "🇪🇬 Egitto – 🇮🇷 Iran", better: "cervo", result: "Egitto 2-1 Iran", scorers: "" },
+{ match: "🇪🇬 Egitto – 🇮🇷 Iran", better: "kant", result: "Egitto 1-1 Iran", scorers: "Ziko, Ghoddos" },
+{ match: "🇪🇬 Egitto – 🇮🇷 Iran", better: "barella", result: "Egitto 2-2 Iran", scorers: "" },
+{ match: "🇪🇬 Egitto – 🇮🇷 Iran", better: "baldin", result: "Egitto 3-2 Iran", scorers: "" },
+{ match: "🇪🇬 Egitto – 🇮🇷 Iran", better: "zimbellone", result: "Egitto 1-2 Iran", scorers: "Salah; Taremi, Azmoun" },
+
+{ match: "🇵🇦 Panama – 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra", better: "prof recchia", result: "Panama 0-2 Inghilterra", scorers: "Bellingham, Kane" },
+{ match: "🇵🇦 Panama – 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra", better: "zimbellino", result: "Panama 0-4 Inghilterra", scorers: "Bellingham, Kane, Foden, Saka" },
+{ match: "🇵🇦 Panama – 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra", better: "mullah", result: "Panama 0-4 Inghilterra", scorers: "" },
+{ match: "🇵🇦 Panama – 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra", better: "mastro", result: "Panama 0-3 Inghilterra", scorers: "" },
+{ match: "🇵🇦 Panama – 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra", better: "il nonno", result: "Panama 0-3 Inghilterra", scorers: "Kane 2, Bellingham" },
+{ match: "🇵🇦 Panama – 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra", better: "cervo", result: "Panama 0-2 Inghilterra", scorers: "" },
+{ match: "🇵🇦 Panama – 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra", better: "kant", result: "Panama 0-3 Inghilterra", scorers: "Bellingham, Kane, Saka" },
+{ match: "🇵🇦 Panama – 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra", better: "barella", result: "Panama 0-5 Inghilterra", scorers: "" },
+{ match: "🇵🇦 Panama – 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra", better: "baldin", result: "Panama 0-3 Inghilterra", scorers: "" },
+{ match: "🇵🇦 Panama – 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra", better: "zimbellone", result: "Panama 0-4 Inghilterra", scorers: "Bellingham, Rushford, Kane 2" },
+
+{ match: "🇭🇷 Croazia – 🇬🇭 Ghana", better: "prof recchia", result: "Croazia 0-0 Ghana", scorers: "" },
+{ match: "🇭🇷 Croazia – 🇬🇭 Ghana", better: "zimbellino", result: "Croazia 2-1 Ghana", scorers: "Kramarić, Pašalić; Kudus" },
+{ match: "🇭🇷 Croazia – 🇬🇭 Ghana", better: "mullah", result: "Croazia 2-1 Ghana", scorers: "" },
+{ match: "🇭🇷 Croazia – 🇬🇭 Ghana", better: "mastro", result: "Croazia 2-1 Ghana", scorers: "" },
+{ match: "🇭🇷 Croazia – 🇬🇭 Ghana", better: "il nonno", result: "Croazia 1-2 Ghana", scorers: "Baturina; Ayew, Semenyo" },
+{ match: "🇭🇷 Croazia – 🇬🇭 Ghana", better: "cervo", result: "Croazia 2-2 Ghana", scorers: "" },
+{ match: "🇭🇷 Croazia – 🇬🇭 Ghana", better: "kant", result: "Croazia 1-1 Ghana", scorers: "Budimir; Semenyio" },
+{ match: "🇭🇷 Croazia – 🇬🇭 Ghana", better: "barella", result: "Croazia 2-2 Ghana", scorers: "" },
+{ match: "🇭🇷 Croazia – 🇬🇭 Ghana", better: "baldin", result: "Croazia 2-1 Ghana", scorers: "" },
+{ match: "🇭🇷 Croazia – 🇬🇭 Ghana", better: "zimbellone", result: "Croazia 1-0 Ghana", scorers: "Kramaric" },
+
+{ match: "🇨🇴 Colombia – 🇵🇹 Portogallo", better: "prof recchia", result: "Colombia 0-1 Portogallo", scorers: "Bruno Fernandes" },
+{ match: "🇨🇴 Colombia – 🇵🇹 Portogallo", better: "zimbellino", result: "Colombia 1-2 Portogallo", scorers: "Luis Díaz; Cristiano Ronaldo, Bruno Fernandes" },
+{ match: "🇨🇴 Colombia – 🇵🇹 Portogallo", better: "mullah", result: "Colombia 1-3 Portogallo", scorers: "" },
+{ match: "🇨🇴 Colombia – 🇵🇹 Portogallo", better: "mastro", result: "Colombia 1-2 Portogallo", scorers: "" },
+{ match: "🇨🇴 Colombia – 🇵🇹 Portogallo", better: "il nonno", result: "Colombia 1-3 Portogallo", scorers: "L. Diaz; Bruno Fernandes, Joao Felix, Cristiano Ronaldo" },
+{ match: "🇨🇴 Colombia – 🇵🇹 Portogallo", better: "cervo", result: "Colombia 1-2 Portogallo", scorers: "" },
+{ match: "🇨🇴 Colombia – 🇵🇹 Portogallo", better: "kant", result: "Colombia 2-2 Portogallo", scorers: "Luis Díaz, Munoz; Cristiano Ronaldo, Bruno Fernandes" },
+{ match: "🇨🇴 Colombia – 🇵🇹 Portogallo", better: "barella", result: "Colombia 1-1 Portogallo", scorers: "" },
+{ match: "🇨🇴 Colombia – 🇵🇹 Portogallo", better: "baldin", result: "Colombia 2-1 Portogallo", scorers: "" },
+{ match: "🇨🇴 Colombia – 🇵🇹 Portogallo", better: "zimbellone", result: "Colombia 1-3 Portogallo", scorers: "Louis Diaz; CR7, Bruno Fernandez, Joao Neves" },
+
+{ match: "🇨🇩 R.D. Congo – 🇺🇿 Uzbekistan", better: "prof recchia", result: "R.D. Congo 2-1 Uzbekistan", scorers: "Wissa, Guglielmo Kantillo, Flavio Cermola" },
+{ match: "🇨🇩 R.D. Congo – 🇺🇿 Uzbekistan", better: "zimbellino", result: "R.D. Congo 1-1 Uzbekistan", scorers: "Wissa; Shomurodov" },
+{ match: "🇨🇩 R.D. Congo – 🇺🇿 Uzbekistan", better: "mullah", result: "R.D. Congo 3-0 Uzbekistan", scorers: "" },
+{ match: "🇨🇩 R.D. Congo – 🇺🇿 Uzbekistan", better: "mastro", result: "R.D. Congo 2-1 Uzbekistan", scorers: "" },
+{ match: "🇨🇩 R.D. Congo – 🇺🇿 Uzbekistan", better: "il nonno", result: "R.D. Congo 2-0 Uzbekistan", scorers: "Bakambu, Wissa" },
+{ match: "🇨🇩 R.D. Congo – 🇺🇿 Uzbekistan", better: "cervo", result: "R.D. Congo 2-1 Uzbekistan", scorers: "" },
+{ match: "🇨🇩 R.D. Congo – 🇺🇿 Uzbekistan", better: "kant", result: "R.D. Congo 2-0 Uzbekistan", scorers: "Wissa 2" },
+{ match: "🇨🇩 R.D. Congo – 🇺🇿 Uzbekistan", better: "barella", result: "R.D. Congo 2-1 Uzbekistan", scorers: "" },
+{ match: "🇨🇩 R.D. Congo – 🇺🇿 Uzbekistan", better: "baldin", result: "R.D. Congo 1-0 Uzbekistan", scorers: "" },
+{ match: "🇨🇩 R.D. Congo – 🇺🇿 Uzbekistan", better: "zimbellone", result: "R.D. Congo 2-0 Uzbekistan", scorers: "Wissa, Bakambu" },
+
+{ match: "🇩🇿 Algeria – 🇦🇹 Austria", better: "prof recchia", result: "Algeria 1-0 Austria", scorers: "Mahrez" },
+{ match: "🇩🇿 Algeria – 🇦🇹 Austria", better: "zimbellino", result: "Algeria 1-2 Austria", scorers: "Mahrez; Baumgartner, Sabitzer" },
+{ match: "🇩🇿 Algeria – 🇦🇹 Austria", better: "mullah", result: "Algeria 1-1 Austria", scorers: "" },
+{ match: "🇩🇿 Algeria – 🇦🇹 Austria", better: "mastro", result: "Algeria 2-2 Austria", scorers: "" },
+{ match: "🇩🇿 Algeria – 🇦🇹 Austria", better: "il nonno", result: "Algeria 1-1 Austria", scorers: "Chaïbi; Sabitzer" },
+{ match: "🇩🇿 Algeria – 🇦🇹 Austria", better: "cervo", result: "Algeria 1-1 Austria", scorers: "" },
+{ match: "🇩🇿 Algeria – 🇦🇹 Austria", better: "kant", result: "Algeria 1-1 Austria", scorers: "Mahrez, Sabitzer" },
+{ match: "🇩🇿 Algeria – 🇦🇹 Austria", better: "barella", result: "Algeria 1-2 Austria", scorers: "" },
+{ match: "🇩🇿 Algeria – 🇦🇹 Austria", better: "baldin", result: "Algeria 2-1 Austria", scorers: "" },
+{ match: "🇩🇿 Algeria – 🇦🇹 Austria", better: "zimbellone", result: "Algeria 1-2 Austria", scorers: "Mahrez; Sabitzer, Arnautovic" },
+
+{ match: "🇯🇴 Giordania – 🇦🇷 Argentina", better: "prof recchia", result: "Giordania 0-2 Argentina", scorers: "Corrado De Rosa - Antonio De Rosa" },
+{ match: "🇯🇴 Giordania – 🇦🇷 Argentina", better: "zimbellino", result: "Giordania 0-5 Argentina", scorers: "Messi, Lautaro Martínez x2, Álvarez, Nico González" },
+{ match: "🇯🇴 Giordania – 🇦🇷 Argentina", better: "mullah", result: "Giordania 1-3 Argentina", scorers: "" },
+{ match: "🇯🇴 Giordania – 🇦🇷 Argentina", better: "mastro", result: "Giordania 0-4 Argentina", scorers: "" },
+{ match: "🇯🇴 Giordania – 🇦🇷 Argentina", better: "il nonno", result: "Giordania 0-3 Argentina", scorers: "Nico Paz, Lautaro Martinez 2" },
+{ match: "🇯🇴 Giordania – 🇦🇷 Argentina", better: "cervo", result: "Giordania 0-3 Argentina", scorers: "" },
+{ match: "🇯🇴 Giordania – 🇦🇷 Argentina", better: "kant", result: "Giordania 0-3 Argentina", scorers: "Lautaro, Lo Celso, Nico Paz" },
+{ match: "🇯🇴 Giordania – 🇦🇷 Argentina", better: "barella", result: "Giordania 0-4 Argentina", scorers: "" },
+{ match: "🇯🇴 Giordania – 🇦🇷 Argentina", better: "baldin", result: "Giordania 0-2 Argentina", scorers: "" },
+{ match: "🇯🇴 Giordania – 🇦🇷 Argentina", better: "zimbellone", result: "Giordania 0-3 Argentina", scorers: "Lautaro, Messi, Julian Alvarez" },
+
+// === 28 GIUGNO ===
+        { match: "🇿🇦 Sudafrica – 🇨🇦 Canada", better: "zimbellone", result: "Sudafrica 1-3 Canada", scorers: "David Buchanan Larin Makgopa" },
+        { match: "🇿🇦 Sudafrica – 🇨🇦 Canada", better: "cervo", result: "Sudafrica 1-2 Canada", scorers: "" },
+        { match: "🇿🇦 Sudafrica – 🇨🇦 Canada", better: "mullah", result: "Sudafrica 1-2 Canada", scorers: "Mammt mammt" },
+        { match: "🇿🇦 Sudafrica – 🇨🇦 Canada", better: "kant", result: "Sudafrica 0-1 Canada", scorers: "David" },
+        { match: "🇿🇦 Sudafrica – 🇨🇦 Canada", better: "mastro", result: "Sudafrica 2-3 Canada", scorers: "" },
+        { match: "🇿🇦 Sudafrica – 🇨🇦 Canada", better: "prof recchia", result: "Sudafrica 1-2 Canada", scorers: "david larin makpoba" },
+        { match: "🇿🇦 Sudafrica – 🇨🇦 Canada", better: "zimbellino", result: "Sudafrica 1-2 Canada", scorers: "david larin makpoba" },
+        { match: "🇿🇦 Sudafrica – 🇨🇦 Canada", better: "baldin", result: "Sud Africa 0-3 Canada", scorers: "David, Larin" },
+        { match: "🇿🇦 Sudafrica – 🇨🇦 Canada", better: "barella", result: "Sudafrica 0-2 Canada", scorers: "DavidJonathan David, Oluwaseyi" },
+
+
+// === 29 GIUGNO ===
+        { match: "🇧🇷 Brasile – 🇯🇵 Giappone", better: "zimbellino", result: "Brasile 3-1 Giappone", scorers: "Vinícius Jr., Rodrygo, Endrick | Mitoma" },
+        { match: "🇩🇪 Germania – 🇵🇾 Paraguay", better: "zimbellino", result: "Germania 3-0 Paraguay", scorers: "Musiala, Wirtz, Havertz" },
+        { match: "🇳🇱 Olanda – 🇲🇦 Marocco", better: "zimbellino", result: "Olanda 1-2 Marocco (dts)", scorers: "Gakpo | En-Nesyri, Hakimi" },
+
+        { match: "🇧🇷 Brasile – 🇯🇵 Giappone", better: "prof recchia", result: "Brasile 2-1 Giappone", scorers: "Vinícius Jr., Rodrygo | Mitoma" },
+        { match: "🇩🇪 Germania – 🇵🇾 Paraguay", better: "prof recchia", result: "Germania 2-0 Paraguay", scorers: "Musiala, Havertz" },
+        { match: "🇳🇱 Olanda – 🇲🇦 Marocco", better: "prof recchia", result: "Olanda 1-1 Marocco (Marocco ai rigori)", scorers: "Gakpo | En-Nesyri" },
+
+        { match: "🇧🇷 Brasile – 🇯🇵 Giappone", better: "mullah", result: "Brasile 3-2 Giappone", scorers: "" },
+        { match: "🇩🇪 Germania – 🇵🇾 Paraguay", better: "mullah", result: "Germania 2-1 Paraguay", scorers: "" },
+        { match: "🇳🇱 Olanda – 🇲🇦 Marocco", better: "mullah", result: "Olanda 3-2 Marocco", scorers: "" },
+
+        { match: "🇧🇷 Brasile – 🇯🇵 Giappone", better: "baldin", result: "Brasile 2-1 Giappone", scorers: "" },
+        { match: "🇩🇪 Germania – 🇵🇾 Paraguay", better: "baldin", result: "Germania 2-1 Paraguay", scorers: "" },
+        { match: "🇳🇱 Olanda – 🇲🇦 Marocco", better: "baldin", result: "Olanda 3-1 Marocco", scorers: "" },
+
+        { match: "🇧🇷 Brasile – 🇯🇵 Giappone", better: "cervo", result: "Brasile 2-2 Giappone", scorers: "" },
+        { match: "🇩🇪 Germania – 🇵🇾 Paraguay", better: "cervo", result: "Germania 3-1 Paraguay", scorers: "" },
+        { match: "🇳🇱 Olanda – 🇲🇦 Marocco", better: "cervo", result: "Olanda 2-1 Marocco", scorers: "" },
+
+        { match: "🇧🇷 Brasile – 🇯🇵 Giappone", better: "il nonno", result: "Brasile 3-1 Giappone", scorers: "Casemiro, Paqueta, Vinicius Jr. | Maeda" },
+        { match: "🇩🇪 Germania – 🇵🇾 Paraguay", better: "il nonno", result: "Germania 2-0 Paraguay", scorers: "Sané, Havertz" },
+        { match: "🇳🇱 Olanda – 🇲🇦 Marocco", better: "il nonno", result: "Olanda 2-1 Marocco", scorers: "Reijnders, Malen | Saibari" },
+
+        { match: "🇧🇷 Brasile – 🇯🇵 Giappone", better: "zimbellone", result: "Brasile 1-1 Giappone", scorers: "Matheus Cunha | Ueda" },
+        { match: "🇩🇪 Germania – 🇵🇾 Paraguay", better: "zimbellone", result: "Germania 3-0 Paraguay", scorers: "Havertz, Wirtz, Musiala" },
+        { match: "🇳🇱 Olanda – 🇲🇦 Marocco", better: "zimbellone", result: "Olanda 1-2 Marocco", scorers: "Gapko | Saibari, Brahim Diaz" },
+
+        { match: "🇧🇷 Brasile – 🇯🇵 Giappone", better: "kant", result: "Brasile 2-1 Giappone", scorers: "Cunha, Vinicius Jr | Ueda" },
+        { match: "🇩🇪 Germania – 🇵🇾 Paraguay", better: "kant", result: "Germania 2-0 Paraguay", scorers: "Havertz, Musiala" },
+        { match: "🇳🇱 Olanda – 🇲🇦 Marocco", better: "kant", result: "Olanda 1-1 Marocco", scorers: "Malen | Saibari" },
+
+        { match: "🇧🇷 Brasile – 🇯🇵 Giappone", better: "mastro", result: "Brasile 1-2 Giappone", scorers: "" },
+        { match: "🇩🇪 Germania – 🇵🇾 Paraguay", better: "mastro", result: "Germania 2-1 Paraguay", scorers: "" },
+        { match: "🇳🇱 Olanda – 🇲🇦 Marocco", better: "mastro", result: "Olanda 1-2 Marocco", scorers: "" }
+    ];
+
+    // STRUTTURA PALINSESTO ORIENTATA ALLA CONDIVISIONE
+    const scheduleData = [
+        {
+            date: "Giovedì 11 giugno",
+            matches: [
+                { text: "🇲🇽 Messico – 🇿🇦 Sudafrica", info: "Gruppo A, ore 21:00" },
+                { text: "🇰🇷 Corea Sud – 🇨🇿 Rep. Ceca", info: "Gruppo A, ore 04:00" }
+            ]
+        },
+        {
+            date: "Venerdì 12 giugno",
+            matches: [
+                { text: "🇨🇦 Canada – 🇧🇦 Bosnia", info: "Gruppo B, ore 21:00" },
+                { text: "🇺🇸 USA – 🇵🇾 Paraguay", info: "Gruppo D, ore 03:00" }
+            ]
+        },
+        {
+            date: "Sabato 13 giugno",
+            matches: [
+                { text: "🇶🇦 Qatar – 🇨🇭 Svizzera", info: "Gruppo B, ore 21:00" },
+                { text: "🇧🇷 Brasile – 🇲🇦 Marocco", info: "Gruppo C, ore 00:00" },
+                { text: "🇭🇹 Haiti – 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia", info: "Gruppo C, ore 03:00" },
+                { text: "🇦🇺 Australia – 🇹🇷 Turchia", info: "Gruppo D, ore 06:00" }
+            ]
+        },
+        {
+            date: "Domenica 14 giugno",
+            matches: [
+                { text: "🇩🇪 Germania – 🇨🇼 Curaçao", info: "Gruppo E, ore 19:00" },
+                { text: "🇳🇱 Olanda – 🇯🇵 Giappone", info: "Gruppo F, ore 22:00" },
+                { text: "🇨🇮 Costa d'Avorio – 🇪🇨 Ecuador", info: "Gruppo E, ore 01:00" },
+                { text: "🇸🇪 Svezia – 🇹🇳 Tunisia", info: "Gruppo F, ore 04:00" }
+            ]
+        },
+        {
+            date: "Lunedì 15 giugno",
+            matches: [
+                { text: "🇪🇸 Spagna – 🇨🇻 Capo Verde", info: "Gruppo H, ore 18:00" },
+                { text: "🇧🇪 Belgio – 🇪🇬 Egitto", info: "Gruppo G, ore 21:00" },
+                { text: "🇸🇦 Arabia Saudita – 🇺🇾 Uruguay", info: "Gruppo H, ore 00:00" },
+                { text: "🇮🇷 Iran – 🇳🇿 Nuova Zelanda", info: "Gruppo G, ore 03:00" }
+            ]
+        },
+        {
+            date: "Martedì 16 giugno",
+            matches: [
+                { text: "🇫🇷 Francia – 🇸🇳 Senegal", info: "Gruppo I, ore 21:00" },
+                { text: "🇮🇶 Iraq – 🇳🇴 Norvegia", info: "Gruppo I, ore 00:00" },
+                { text: "🇦🇷 Argentina – 🇩🇿 Algeria", info: "Gruppo J, ore 03:00" },
+                { text: "🇦🇹 Austria – 🇯🇴 Giordania", info: "Gruppo J, ore 06:00" }
+            ]
+        },
+        {
+            date: "Mercoledì 17 giugno",
+            matches: [
+                { text: "🇵🇹 Portogallo – 🇨🇩 R.D. Congo", info: "Gruppo K, ore 19:00" },
+                { text: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇭🇷 Croazia", info: "Gruppo L, ore 22:00" },
+                { text: "🇬🇭 Ghana – 🇵🇦 Panama", info: "Gruppo L, ore 01:00" },
+                { text: "🇺🇿 Uzbekistan – 🇨🇴 Colombia", info: "Gruppo K, ore 04:00" }
+            ]
+        },
+        {
+            date: "Giovedì 18 giugno",
+            matches: [
+                { text: "🇨🇿 Rep. Ceca – 🇿🇦 Sudafrica", info: "Gruppo A, ore 18:00" },
+                { text: "🇨🇭 Svizzera – 🇧🇦 Bosnia", info: "Gruppo B, ore 21:00" },
+                { text: "🇨🇦 Canada – 🇶🇦 Qatar", info: "Gruppo B, ore 00:00" },
+                { text: "🇲🇽 Messico – 🇰🇷 Corea Sud", info: "Gruppo A, ore 03:00" }
+            ]
+        },
+        {
+            date: "Venerdì 19 giugno",
+            matches: [
+                { text: "🇺🇸 USA – 🇦🇺 Australia", info: "Gruppo D, ore 21:00" },
+                { text: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇲🇦 Marocco", info: "Gruppo C, ore 00:00" },
+                { text: "🇧🇷 Brasile – 🇭🇹 Haiti", info: "Gruppo C, ore 02:30" },
+                { text: "🇹🇷 Turchia – 🇵🇾 Paraguay", info: "Gruppo D, ore 05:00" }
+            ]
+        },
+        {
+            date: "Sabato 20 giugno",
+            matches: [
+                { text: "🇳🇱 Olanda – 🇸🇪 Svezia", info: "Gruppo F, ore 19:00" },
+                { text: "🇩🇪 Germania – 🇨🇮 Costa d'Avorio", info: "Gruppo E, ore 22:00" },
+                { text: "🇪🇨 Ecuador – 🇨🇼 Curaçao", info: "Gruppo E, ore 02:00" },
+                { text: "🇹🇳 Tunisia – 🇯🇵 Giappone", info: "Gruppo F, ore 06:00" }
+            ]
+        },
+        {
+            date: "Domenica 21 giugno",
+            matches: [
+                { text: "🇪🇸 Spagna – 🇸🇦 Arabia Saudita", info: "Gruppo H, ore 18:00" },
+                { text: "🇧🇪 Belgio – 🇮🇷 Iran", info: "Gruppo G, ore 21:00" },
+                { text: "🇺🇾 Uruguay – 🇨🇻 Capo Verde", info: "Gruppo H, ore 00:00" },
+                { text: "🇳🇿 Nuova Zelanda – 🇪🇬 Egitto", info: "Gruppo G, ore 03:00" }
+            ]
+        },
+        {
+            date: "Lunedì 22 giugno",
+            matches: [
+                { text: "🇦🇷 Argentina – 🇦🇹 Austria", info: "Gruppo J, ore 19:00" },
+                { text: "🇫🇷 Francia – 🇮🇶 Iraq", info: "Gruppo I, ore 23:00" },
+                { text: "🇳🇴 Norvegia – 🇸🇳 Senegal", info: "Gruppo I, ore 02:00" },
+                { text: "🇯🇴 Giordania – 🇩🇿 Algeria", info: "Gruppo J, ore 05:00" }
+            ]
+        },
+        {
+            date: "Martedì 23 giugno",
+            matches: [
+                { text: "🇵🇹 Portogallo – 🇺🇿 Uzbekistan", info: "Gruppo K, ore 19:00" },
+                { text: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇬🇭 Ghana", info: "Gruppo L, ore 22:00" },
+                { text: "🇵🇦 Panama – 🇭🇷 Croazia", info: "Gruppo L, ore 01:00" },
+                { text: "🇨🇴 Colombia – 🇨🇩 R.D. Congo", info: "Gruppo K, ore 04:00" }
+            ]
+        },
+        {
+            date: "Mercoledì 24 giugno",
+            matches: [
+                { text: "🇨🇭 Svizzera – 🇨🇦 Canada", info: "Gruppo B, ore 21:00" },
+                { text: "🇧🇦 Bosnia – 🇶🇦 Qatar", info: "Gruppo B, ore 21:00" },
+                { text: "🇲🇦 Marocco – 🇭🇹 Haiti", info: "Gruppo C, ore 00:00" },
+                { text: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scozia – 🇧🇷 Brasile", info: "Gruppo C, ore 00:00" },
+                { text: "🇿🇦 Sudafrica – 🇰🇷 Corea Sud", info: "Gruppo A, ore 03:00" },
+                { text: "🇨🇿 Rep. Ceca – 🇲🇽 Messico", info: "Gruppo A, ore 03:00" }
+            ]
+        },
+        {
+            date: "Giovedì 25 giugno",
+            matches: [
+                { text: "🇨🇼 Curaçao – 🇨🇮 Costa d'Avorio", info: "Gruppo E, ore 22:00" },
+                { text: "🇪🇨 Ecuador – 🇩🇪 Germania", info: "Gruppo E, ore 22:00" },
+                { text: "🇹🇳 Tunisia – 🇳🇱 Olanda", info: "Gruppo F, ore 01:00" },
+                { text: "🇯🇵 Giappone – 🇸🇪 Svezia", info: "Gruppo F, ore 01:00" },
+                { text: "🇹🇷 Turchia – 🇺🇸 USA", info: "Gruppo D, ore 04:00" },
+                { text: "🇵🇾 Paraguay – 🇦🇺 Australia", info: "Gruppo D, ore 04:00" }
+            ]
+        },
+        {
+            date: "Venerdì 26 giugno",
+            matches: [
+                { text: "🇳🇴 Norvegia – 🇫🇷 Francia", info: "Gruppo I, ore 21:00" },
+                { text: "🇸🇳 Senegal – 🇮🇶 Iraq", info: "Gruppo I, ore 21:00" },
+                { text: "🇨🇻 Capo Verde – 🇸🇦 Arabia Saudita", info: "Gruppo H, ore 02:00" },
+                { text: "🇺🇾 Uruguay – 🇪🇸 Spagna", info: "Gruppo H, ore 02:00" },
+                { text: "🇳🇿 Nuova Zelanda – 🇧🇪 Belgio", info: "Gruppo G, ore 05:00" },
+                { text: "🇪🇬 Egitto – 🇮🇷 Iran", info: "Gruppo G, ore 05:00" }
+            ]
+        },
+        {
+            date: "Sabato 27 giugno",
+            matches: [
+                { text: "🇵🇦 Panama – 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra", info: "Gruppo L, ore 23:00" },
+                { text: "🇭🇷 Croazia – 🇬🇭 Ghana", info: "Gruppo L, ore 23:00" },
+                { text: "🇨🇴 Colombia – 🇵🇹 Portogallo", info: "Gruppo K, ore 01:30" },
+                { text: "🇨🇩 R.D. Congo – 🇺🇿 Uzbekistan", info: "Gruppo K, ore 01:30" },
+                { text: "🇩🇿 Algeria – 🇦🇹 Austria", info: "Gruppo J, ore 04:00" },
+                { text: "🇯🇴 Giordania – 🇦🇷 Argentina", info: "Gruppo J, ore 04:00" }
+            ]
+        },
+        {
+            date: "Domenica 28 giugno",
+            matches: [
+                { text: "🇿🇦 Sudafrica – 🇨🇦 Canada", info: "Sedicesimi, ore 21:00" }
+            ]
+        },
+        {
+            date: "Lunedì 29 giugno",
+            matches: [
+                { text: "🇧🇷 Brasile – 🇯🇵 Giappone", info: "Sedicesimi, ore 19:00" },
+                { text: "🇩🇪 Germania – 🇵🇾 Paraguay", info: "Sedicesimi, ore 22:30" },
+                { text: "🇳🇱 Olanda – 🇲🇦 Marocco", info: "Sedicesimi, ore 03:00" }
+            ]
+        },
+        {
+            date: "Martedì 30 giugno",
+            matches: [
+                { text: "🇨🇮 Costa d'Avorio – 🇳🇴 Norvegia", info: "Sedicesimi, ore 19:00" },
+                { text: "🇫🇷 Francia – 🇸🇪 Svezia", info: "Sedicesimi, ore 23:00" },
+                { text: "🇲🇽 Messico – 🇪🇨 Ecuador", info: "Sedicesimi, ore 03:00" }
+            ]
+        },
+        {
+            date: "Mercoledì 1 luglio",
+            matches: [
+                { text: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inghilterra – 🇨🇩 R.D. Congo", info: "Sedicesimi, ore 18:00" },
+                { text: "🇧🇪 Belgio – 🇸🇳 Senegal", info: "Sedicesimi, ore 22:00" },
+                { text: "🇺🇸 USA – 🇧🇦 Bosnia", info: "Sedicesimi, ore 02:00" }
+            ]
+        },
+        {
+            date: "Giovedì 2 luglio",
+            matches: [
+                { text: "🇪🇸 Spagna – 🇦🇹 Austria", info: "Sedicesimi, ore 21:00" },
+                { text: "🇵🇹 Portogallo – 🇭🇷 Croazia", info: "Sedicesimi, ore 01:00" },
+                { text: "🇨🇭 Svizzera – 🇩🇿 Algeria", info: "Sedicesimi, ore 05:00" }
+            ]
+        },
+        {
+            date: "Venerdì 3 luglio",
+            matches: [
+                { text: "🇦🇺 Australia – 🇪🇬 Egitto", info: "Sedicesimi, ore 20:00" },
+                { text: "🇦🇷 Argentina – 🇨🇻 Capo Verde", info: "Sedicesimi, ore 00:00" },
+                { text: "🇨🇴 Colombia – 🇬🇭 Ghana", info: "Sedicesimi, ore 03:30" }
+            ]
+        }
+    ];
+
+    const matches = [...new Map(betsData.map(b => [b.match, b.match])).keys()];
+    const validMatches = matches.filter(match => {
+        const matchBets = betsData.filter(b => b.match === match);
+        return matchBets.some(b => b.result && !b.result.includes(' - '));
+    });
+
+    validMatches.reverse();
+
+    const betterList = ["baldin", "barella", "cervo", "il nonno", "kant", "mastro", "mullah", "prof recchia", "zimbellino", "zimbellone"];
+
+    // Funzioni Helper per il salvataggio in LocalStorage dei dati volatili d'appunto
+    function saveNote(id, value) {
+        localStorage.setItem('scommessone_note_' + id, value);
+    }
+    function getNote(id) {
+        return localStorage.getItem('scommessone_note_' + id) || '';
+    }
+
+    function buildMatchView() {
+        const container = document.getElementById('matchesView');
+        container.innerHTML = '';
+        for (let match of validMatches) {
+            const matchBets = betsData.filter(b => b.match === match);
+            const card = document.createElement('div');
+            card.className = 'match-card';
+            
+            // Generiamo un ID pulito per associare il salvataggio della partita
+            const matchId = btoa(unescape(encodeURIComponent(match))).replace(/=/g, '');
+
+            card.innerHTML = `
+                <div class="match-header">
+                    <div class="match-title-wrap">
+                        <span class="flag">${match}</span>
+                    </div>
+                    <input type="text" class="admin-note-match" placeholder="Risultato" id="note-match-${matchId}" value="${getNote('match_' + matchId)}" oninput="saveNote('match_${matchId}', this.value)">
+                </div>
+                <div class="bets-list"></div>
+            `;
+            
+            const listDiv = card.querySelector('.bets-list');
+            for (let better of betterList) {
+   		const bet = matchBets.find(b => b.better === better);
+   		if (!bet) continue;
+                
+                const row = document.createElement('div');
+                row.className = 'bet-row';
+                
+                const betterSpan = document.createElement('span');
+                betterSpan.className = 'better-name';
+                betterSpan.innerText = bet.better;
+                
+                const predSpan = document.createElement('span');
+                predSpan.className = 'prediction';
+                predSpan.innerHTML = `<span class="score-badge">${bet.result}</span> ${bet.scorers ? `<span class="scorers-text">⚽ ${bet.scorers}</span>` : ''}`;
+                
+                // Generiamo un ID univoco per il punto assegnato al partecipante su questo specifico match
+                const betId = matchId + '_' + better;
+                
+                const pointInput = document.createElement('input');
+                pointInput.type = 'text';
+                pointInput.className = 'admin-note-points';
+                pointInput.placeholder = 'Punti';
+                pointInput.value = getNote('points_' + betId);
+                pointInput.setAttribute('oninput', `saveNote('points_${betId}', this.value)`);
+
+                row.appendChild(betterSpan);
+                row.appendChild(predSpan);
+                row.appendChild(pointInput);
+                listDiv.appendChild(row);
+            }
+            container.appendChild(card);
+        }
+    }
+
+    function buildGridView() {
+        const container = document.getElementById('gridView');
+        container.innerHTML = '';
+        const table = document.createElement('div');
+        table.className = 'grid-table';
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'grid-header';
+        const headerRow = document.createElement('div');
+        headerRow.className = 'header-row';
+        const firstCell = document.createElement('div');
+        firstCell.className = 'header-cell';
+        firstCell.innerText = '📅 Partita / Risultato';
+        headerRow.appendChild(firstCell);
+        for (let better of betterList) {
+            const cell = document.createElement('div');
+            cell.className = 'header-cell';
+            cell.innerText = better;
+            headerRow.appendChild(cell);
+        }
+        headerDiv.appendChild(headerRow);
+        table.appendChild(headerDiv);
+        const bodyDiv = document.createElement('div');
+        bodyDiv.className = 'grid-body';
+        
+        for (let match of validMatches) {
+            const matchId = btoa(unescape(encodeURIComponent(match))).replace(/=/g, '');
+            const savedMatchResult = getNote('match_' + matchId);
+
+            const matchRow = document.createElement('div');
+            matchRow.className = 'match-row';
+            
+            // Casella del nome della partita: adesso include al suo interno anche il risultato ufficiale appuntato
+            const matchCell = document.createElement('div');
+            matchCell.className = 'cell';
+            matchCell.innerHTML = `
+                <strong>${match}</strong>
+                ${savedMatchResult ? `<span class="result-value-grid">↳ Ufficiale: ${savedMatchResult}</span>` : ''}
+            `;
+            matchRow.appendChild(matchCell);
+            
+            // Popolamento dei pronostici dei partecipanti e delle relative stelle punti
+            for (let better of betterList) {
+                const bet = betsData.find(b => b.match === match && b.better === better);
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if (bet) {
+                    const betId = matchId + '_' + better;
+                    const savedPoints = getNote('points_' + betId);
+                    cell.innerHTML = `
+                        <div class="pred-grid">
+                            <span class="score-grid">${bet.result}</span> 
+                            ${bet.scorers ? `<span class="scorers-text">⚽ ${bet.scorers}</span>` : ''}
+                            ${savedPoints ? `<span class="saved-points-grid">⭐ Punti: ${savedPoints}</span>` : ''}
+                        </div>`;
+                } else {
+                    cell.innerHTML = '<span class="no-bet">—</span>';
+                }
+                matchRow.appendChild(cell);
+            }
+            bodyDiv.appendChild(matchRow);
+        }
+        table.appendChild(bodyDiv);
+        container.appendChild(table);
+    }
+
+    function buildLeaderboardView() {
+        const container = document.getElementById('leaderboardView');
+        container.innerHTML = '';
+        const card = document.createElement('div');
+        card.className = 'leaderboard-card';
+        
+        for (let entry of leaderboardData) {
+            const row = document.createElement('div');
+            row.className = `leaderboard-row rank-${entry.rank}`;
+            row.innerHTML = `
+                <div class="rank-name">
+                    <span class="rank-number">${entry.rank}</span>
+                    <span class="player-name">${entry.better}</span>
+                </div>
+                <span class="player-points">${entry.points} pt</span>
+            `;
+            card.appendChild(row);
+        }
+        container.appendChild(card);
+    }
+
+    function buildScheduleView() {
+        const container = document.getElementById('scheduleView');
+        container.innerHTML = '';
+        
+        const mesi = { "gennaio": 0, "febbraio": 1, "marzo": 2, "aprile": 3, "maggio": 4, "giugno": 5, "luglio": 6, "agosto": 7, "settembre": 8, "ottobre": 9, "novembre": 10, "dicembre": 11 };
+        
+        const oggi = new Date();
+        oggi.setHours(0, 0, 0, 0);
+
+        scheduleData.forEach((day, index) => {
+            const parti = day.date.split(' ');
+            const giornoNum = parseInt(parti[1], 10);
+            const meseNome = parti[2].toLowerCase();
+            
+            const dataPalinsesto = new Date(2026, mesi[meseNome], giornoNum);
+            dataPalinsesto.setHours(0, 0, 0, 0);
+            
+            if (dataPalinsesto < oggi) {
+                return;
+            }
+            const dayCard = document.createElement('div');
+            dayCard.className = 'schedule-day';
+            
+            let matchesHtml = '';
+            let textToCopy = `*${day.date}*\n`;
+            
+            day.matches.forEach(m => {
+                matchesHtml += `
+                    <div class="schedule-match-item">
+                        <span class="schedule-match-name">${m.text}</span>
+                        <span class="schedule-match-info">${m.info}</span>
+                    </div>`;
+                textToCopy += `${m.text}: \n`;
+            });
+            
+            dayCard.innerHTML = `
+                <div class="schedule-date">
+                    <span>${day.date}</span>
+                    <button class="copy-btn" id="copy-btn-${index}">📋 Copia per WhatsApp</button>
+                </div>
+                <div class="schedule-matches-list">
+                    ${matchesHtml}
+                </div>
+            `;
+            container.appendChild(dayCard);
+            
+            dayCard.querySelector(`#copy-btn-${index}`).addEventListener('click', function() {
+                navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+                    const originalText = this.innerText;
+                    this.innerText = '✅ Copiato!';
+                    this.style.background = '#1a4d39';
+                    setTimeout(() => {
+                        this.innerText = originalText;
+                        this.style.background = '#2c5a47';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Errore durante la copia: ', err);
+                });
+            });
+        });
+    }
+
+    const buttons = document.querySelectorAll('.view-btn');
+    const views = {
+        matches: document.getElementById('matchesView'),
+        grid: document.getElementById('gridView'),
+        leaderboard: document.getElementById('leaderboardView'),
+        schedule: document.getElementById('scheduleView')
+    };
+
+    function setActiveView(targetView) {
+        Object.keys(views).forEach(viewName => {
+            if (viewName === targetView) {
+                views[viewName].style.display = 'block';
+                if (viewName === 'grid') buildGridView();
+                if (viewName === 'matches') buildMatchView();
+            } else {
+                views[viewName].style.display = 'none';
+            }
+        });
+
+        buttons.forEach(btn => {
+            if (btn.getAttribute('data-view') === targetView) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            setActiveView(button.getAttribute('data-view'));
+        });
+    });
+
+    // Inizializzazione globale
+    buildMatchView();
+    buildGridView();
+    buildLeaderboardView();
+    buildScheduleView();
+    setActiveView('matches');
+</script>
+</body>
+</html>
